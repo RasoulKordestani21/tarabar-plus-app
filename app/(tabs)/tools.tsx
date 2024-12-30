@@ -6,7 +6,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import CustomHeader from "@/components/CustomHeader";
 
-export default function HomeScreen() {
+export default function ToolsScreen() {
   return (
     <View>
       <Text>salam</Text>
