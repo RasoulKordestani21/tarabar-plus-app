@@ -2,7 +2,7 @@ import { StyleSheet, View, Text } from "react-native";
 
 export default function InquiryScreen() {
   return (
-    <View>
+    <View style={styles.titleContainer}>
       <Text>حساب کاربری</Text>
     </View>
   );

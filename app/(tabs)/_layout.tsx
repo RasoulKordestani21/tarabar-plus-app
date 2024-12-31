@@ -1,50 +1,53 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform } from "react-native";
+import { Platform, StyleSheet, View, Pressable } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import CustomHeader from "@/components/CustomHeader";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
     <Tabs
-      screenOptions={{
-        tabBarItemStyle: {
-          backgroundColor: "#003366",
-          display: "flex",
-          flexDirection: "row-reverse",
-          alignItems: "center",
-          justifyContent: "center",
-          borderTopLeftRadius: 16,
-          borderTopRightRadius: 16
-        },
-        tabBarActiveTintColor: "white",
-        
-        // Colors[colorScheme ?? "light"].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
+      screenOptions={({ route }) => ({
         tabBarStyle: {
           borderTopLeftRadius: 14,
           borderTopRightRadius: 14,
-          height: 80,
-          borderRadius: 10,
-          backgroundColor: "#003366",
+          height: 85,
+          backgroundColor: "#002244",
           ...Platform.select({
             ios: {
-              // Use a transparent background on iOS to show the blur effect
               position: "absolute"
             },
             default: {}
           })
-        }
-      }}
+        },
+        tabBarItemStyle: {
+          display: "flex",
+          flexDirection: "row-reverse",
+          alignItems: "center",
+          justifyContent: "center"
+        },
+        tabBarActiveTintColor: "white",
+        headerShown: false,
+        tabBarButton: props => (
+          <Pressable
+            onPress={props.onPress}
+            style={({ pressed }) => [
+              styles.tabItem,
+              props.accessibilityState?.selected && styles.activeTab,
+              pressed && styles.pressedTab
+            ]}
+          >
+            {props.children}
+          </Pressable>
+        ),
+        tabBarBackground: TabBarBackground
+      })}
     >
       <Tabs.Screen
         name="account"
@@ -64,7 +67,6 @@ export default function TabLayout() {
           )
         }}
       />
-
       <Tabs.Screen
         name="inquiry"
         options={{
@@ -86,3 +88,20 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabItem: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  activeTab: {
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 10
+  },
+  pressedTab: {
+    opacity: 0.75
+  }
+});
