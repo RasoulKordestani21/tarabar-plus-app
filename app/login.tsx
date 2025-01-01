@@ -1,18 +1,12 @@
+import { ThemedText } from "@/components/ThemedText";
+import { CustomTheme } from "@/themes/customTheme";
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  Image,
-  Text,
-  Pressable,
-  Animated,
-  Platform
-} from "react-native";
-// import { ScreenContainer } from "react-native-screens";
+import { View, Image, Pressable, Animated } from "react-native";
+import tw from "twrnc";
 
 export default function LoginScreen({ onLoginDriver, onLoginOwner }) {
   const [showButtons, setShowButtons] = useState(false);
-  const fadeAnim = useState(new Animated.Value(0))[0]; // Ensure fadeAnim persists across renders
+  const fadeAnim = useState(new Animated.Value(0))[0];
 
   useEffect(() => {
     Animated.sequence([
@@ -30,51 +24,63 @@ export default function LoginScreen({ onLoginDriver, onLoginOwner }) {
   }, [fadeAnim]);
 
   return (
-    <View style={styles.container}>
+    <View
+      style={tw`flex-1 justify-center items-center px-5 py-15 bg-[#003366]`}
+    >
       {!showButtons ? (
-        <Animated.View style={[styles.logoContainer, { opacity: fadeAnim }]}>
+        <Animated.View
+          style={[tw`items-center justify-center mb-5`, { opacity: fadeAnim }]}
+        >
           <Image
-            source={require("@/assets/images/tarabarplusicon.png")} // مسیر لوگو
-            // style={styles.logo}
+            source={require("@/assets/images/tarabarplusicon.png")}
+            style={tw``}
           />
         </Animated.View>
       ) : (
-        <View style={styles.screenContainer}>
+        <View style={tw`w-full h-full items-center justify-between gap-12`}>
           <Image
             source={require("@/assets/images/tarabarplusicon.png")}
-            // style={styles.logo}
+            // style={tw`w-36 h-36`}
           />
-          <View style={styles.infoBox}>
-            <Text
-              style={{
-                ...styles.boldText,
-                ...Platform.select({
-                  android: {
-                    // borderColor: "#ee3388"
-                    // textAlign: "right"
-                  }
-                  //   default: {}
-                })
-              }}
+          <View
+            style={tw`w-full bg-[#4CAF50] p-4 rounded-lg items-center mb-5`}
+          >
+            <ThemedText
+              type="defaultSemiBold"
+              style={tw`text-white text-center mb-2`}
             >
-              به اپلیکیشن <Text style={{ color: "#FFB300" }}>ترابر پلاس</Text>{" "}
-              خوش آمدید.
-            </Text>
-            {/* <View style={[styles.separator]} /> */}
-            <Text style={styles.normalText}>
-              در این اپلیکیشن شما می‌توانید به عوان راننده یا معرف بار ثبت‌نام
-              نمایید .{"\n"} ۱- اگر به دنبال بار هستید می‌توانید به عنوان راننده
-              وارد شوید.{"\n"} ۲- اگر صاحب بار و یا معرف بار هستید به عنوان معرف
-              بار وارد شوید.
-            </Text>
+              به اپلیکیشن ۰۹۳۸۸۰۰۳۳۱۲۳۴۵۶۷۸۰
+            </ThemedText>
+            <ThemedText style={tw`text-white text-center mb-2`}>
+              ۰۹۳۸۸۰۰۳۳۱۲۳۴۵۶۷۸ در این اپلیکیشن شما می‌توانید به عوان راننده یا
+              معرف بار ثبت‌نام نمایید .{"\n"} ۱- اگر به دنبال بار هستید
+              می‌توانید به عنوان راننده وارد شوید.{"\n"} ۲- اگر صاحب بار و یا
+              معرف بار هستید به عنوان معرف بار وارد شوید.
+            </ThemedText>
+            <ThemedText style={tw`text-white text-right text-sm`}>
+              ۰۹۳۸۸۰۰۳۳۱۲۳۴۵۶۷۸ در این اپلیکیشن شما می‌توانید به عوان راننده یا
+              معرف بار ثبت‌نام نمایید .{"\n"} ۱- اگر به دنبال بار هستید
+              می‌توانید به عنوان راننده وارد شوید.{"\n"} ۲- اگر صاحب بار و یا
+              معرف بار هستید به عنوان معرف بار وارد شوید.
+            </ThemedText>
           </View>
 
-          <View style={styles.buttonsContainer}>
-            <Pressable style={styles.button} onPress={onLoginDriver}>
-              <Text style={styles.buttonText}>ورود به عنوان راننده </Text>
+          <View style={tw`w-full items-center`}>
+            <Pressable
+              style={tw`bg-[#4CAF50] py-4 rounded-lg w-full mb-5`}
+              onPress={onLoginDriver}
+            >
+              <ThemedText style={tw`text-white text-center text-lg`}>
+                ورود به عنوان راننده
+              </ThemedText>
             </Pressable>
-            <Pressable style={styles.button} onPress={onLoginOwner}>
-              <Text style={styles.buttonText}>ورود به عنوان صاحب بار</Text>
+            <Pressable
+              style={tw`bg-[#4CAF50] py-4 rounded-lg w-full`}
+              onPress={onLoginOwner}
+            >
+              <ThemedText style={tw`text-white text-center text-lg`}>
+                ورود به عنوان صاحب بار
+              </ThemedText>
             </Pressable>
           </View>
         </View>
@@ -82,88 +88,3 @@ export default function LoginScreen({ onLoginDriver, onLoginOwner }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#003366",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 60
-  },
-  logoContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20
-  },
-  logo: {
-    width: 150,
-    height: 150
-    // resizeMode: "contain"
-  },
-  screenContainer: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 50
-  },
-  buttonsContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%"
-    // gap: 20
-  },
-  infoBox: {
-    width: "100%",
-    backgroundColor: "#4CAF50",
-    padding: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 20
-  },
-  boldText: {
-    width: "100%",
-    fontSize: 14,
-    fontWeight: "bold",
-    marginBottom: 8,
-    color: "#eeeeee",
-    borderBottomWidth: 1,
-    borderColor: "#ffffff",
-    paddingBottom: 20,
-    textAlign: "center"
-  },
-  separator: {
-    width: "100%",
-    marginVertical: 8
-  },
-  normalText: {
-    fontSize: 14,
-    color: "#ffffff",
-    textAlign: "right"
-  },
-  button: {
-    backgroundColor: "#4CAF50",
-    paddingVertical: 15,
-    // paddingHorizontal: 24,
-    borderRadius: 8,
-    marginBottom: 20,
-    width: "100%",
-    textAlign: "center"
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center"
-  },
-  text: {
-    color: "white",
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 20
-  }
-});

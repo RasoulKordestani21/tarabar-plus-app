@@ -14,29 +14,36 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import LoginScreen from "./login";
 import CustomHeader from "@/components/CustomHeader";
 
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf")
+  const [fontsLoaded] = useFonts({
+    "Vazir-Bold": require("@/assets/fonts/Vazir-Bold-FD-WOL.ttf"),
+    "Vazir-Regular": require("@/assets/fonts/Vazir-FD-WOL.ttf")
   });
+
+  const colorScheme = useColorScheme();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    if (loaded) {
+    if (fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [fontsLoaded]);
 
-  if (!loaded) {
+  if (!fontsLoaded) {
     return null;
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <ThemeProvider
+      // theme={customTheme}
+      // value={CustomTheme}
+      value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+    >
       {isLoggedIn ? (
         <>
           <CustomHeader />
