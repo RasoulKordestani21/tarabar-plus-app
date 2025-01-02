@@ -1,7 +1,9 @@
+import CustomButton from "@/components/CustomButton";
 import { ThemedText } from "@/components/ThemedText";
 import { CustomTheme } from "@/themes/customTheme";
 import React, { useEffect, useState } from "react";
-import { View, Image, Pressable, Animated } from "react-native";
+import { View, Image, Pressable, Animated, Text } from "react-native";
+import { Redirect, router } from "expo-router";
 import tw from "twrnc";
 
 export default function LoginScreen({ onLoginDriver, onLoginOwner }) {
@@ -45,18 +47,10 @@ export default function LoginScreen({ onLoginDriver, onLoginOwner }) {
           <View
             style={tw`w-full bg-[#4CAF50] p-4 rounded-lg items-center mb-5`}
           >
-            <ThemedText
-              type="defaultSemiBold"
-              style={tw`text-white text-center mb-2`}
-            >
+            <Text style={tw`text-white text-center mb-2`}>
               به اپلیکیشن ۰۹۳۸۸۰۰۳۳۱۲۳۴۵۶۷۸۰
-            </ThemedText>
-            <ThemedText style={tw`text-white text-center mb-2`}>
-              ۰۹۳۸۸۰۰۳۳۱۲۳۴۵۶۷۸ در این اپلیکیشن شما می‌توانید به عوان راننده یا
-              معرف بار ثبت‌نام نمایید .{"\n"} ۱- اگر به دنبال بار هستید
-              می‌توانید به عنوان راننده وارد شوید.{"\n"} ۲- اگر صاحب بار و یا
-              معرف بار هستید به عنوان معرف بار وارد شوید.
-            </ThemedText>
+            </Text>
+            <Text style={tw`text-white text-center mb-2`}>salam</Text>
             <ThemedText style={tw`text-white text-right text-sm`}>
               ۰۹۳۸۸۰۰۳۳۱۲۳۴۵۶۷۸ در این اپلیکیشن شما می‌توانید به عوان راننده یا
               معرف بار ثبت‌نام نمایید .{"\n"} ۱- اگر به دنبال بار هستید
@@ -66,14 +60,11 @@ export default function LoginScreen({ onLoginDriver, onLoginOwner }) {
           </View>
 
           <View style={tw`w-full items-center`}>
-            <Pressable
-              style={tw`bg-[#4CAF50] py-4 rounded-lg w-full mb-5`}
-              onPress={onLoginDriver}
-            >
-              <ThemedText style={tw`text-white text-center text-lg`}>
-                ورود به عنوان راننده
-              </ThemedText>
-            </Pressable>
+            <CustomButton
+              title="ورود به عنوان راننده "
+              handlePress={() => router.push("/sign-in")}
+              containerStyles="w-full mt-7"
+            />
             <Pressable
               style={tw`bg-[#4CAF50] py-4 rounded-lg w-full`}
               onPress={onLoginOwner}
