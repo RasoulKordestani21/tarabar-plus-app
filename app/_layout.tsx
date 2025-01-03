@@ -52,7 +52,7 @@ export default function RootLayout() {
       ) : (
         <LoginScreen onLogin={() => setIsLoggedIn(true)} />
       )}
-      <StatusBar style="light" />
+      <StatusBar style="inverted" backgroundColor="orange" />
     </ThemeProvider>
   );
 }
