@@ -8,7 +8,8 @@ module.exports = {
       card: "#999999",
       text: "#FFFFFF",
       border: "#fdfe33",
-      notification: "#33fefe"
+      notification: "#33fefe",
+      customCard: "#4CAF50"
     },
     fontFamily: {
       vazir: ["Vazir-Regular", "sans-serif"]

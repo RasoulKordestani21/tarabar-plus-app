@@ -1,10 +1,11 @@
 import CustomButton from "@/components/CustomButton";
+import CustomCard from "@/components/CustomCard";
 import { ThemedText } from "@/components/ThemedText";
 import { CustomTheme } from "@/themes/customTheme";
 import React, { useEffect, useState } from "react";
 import { View, Image, Pressable, Animated, Text } from "react-native";
 import { Redirect, router } from "expo-router";
-import tw from "twrnc";
+import tw from "@/libs/twrnc";
 
 export default function LoginScreen({ onLoginDriver, onLoginOwner }) {
   const [showButtons, setShowButtons] = useState(false);
@@ -44,20 +45,23 @@ export default function LoginScreen({ onLoginDriver, onLoginOwner }) {
             source={require("@/assets/images/tarabarplusicon.png")}
             // style={tw`w-36 h-36`}
           />
-          <View
-            style={tw`w-full bg-[#4CAF50] p-4 rounded-lg items-center mb-5`}
-          >
-            <Text style={tw`text-white text-center mb-2`}>
-              به اپلیکیشن ۰۹۳۸۸۰۰۳۳۱۲۳۴۵۶۷۸۰
-            </Text>
-            <Text style={tw`text-white text-center mb-2`}>salam</Text>
-            <ThemedText style={tw`text-white text-right text-sm`}>
-              ۰۹۳۸۸۰۰۳۳۱۲۳۴۵۶۷۸ در این اپلیکیشن شما می‌توانید به عوان راننده یا
-              معرف بار ثبت‌نام نمایید .{"\n"} ۱- اگر به دنبال بار هستید
-              می‌توانید به عنوان راننده وارد شوید.{"\n"} ۲- اگر صاحب بار و یا
-              معرف بار هستید به عنوان معرف بار وارد شوید.
-            </ThemedText>
-          </View>
+          <CustomCard
+            header={
+              <Text style={tw`text-text text-center mb-2 font-vazir text-base`}>
+                به اپلیکیشن <Text style={tw`text-secondary`}>ترابر پلاس </Text>
+                خوش آمدید .
+              </Text>
+            }
+            content={
+              <Text style={tw`text-text text-right text-sm font-vazir`}>
+                در این اپلیکیشن شما می‌توانید به عوان راننده یا معرف بار ثبت‌نام
+                نمایید .{"\n"} ۱- اگر به دنبال بار هستید می‌توانید به عنوان
+                راننده وارد شوید.
+                {"\n"} ۲- اگر صاحب بار و یا معرف بار هستید به عنوان معرف بار
+                وارد شوید.
+              </Text>
+            }
+          />
 
           <View style={tw`w-full items-center`}>
             <CustomButton
@@ -65,14 +69,11 @@ export default function LoginScreen({ onLoginDriver, onLoginOwner }) {
               handlePress={() => router.push("/sign-in")}
               containerStyles="w-full mt-7"
             />
-            <Pressable
-              style={tw`bg-[#4CAF50] py-4 rounded-lg w-full`}
-              onPress={onLoginOwner}
-            >
-              <ThemedText style={tw`text-white text-center text-lg`}>
-                ورود به عنوان صاحب بار
-              </ThemedText>
-            </Pressable>
+            <CustomButton
+              title="ورود به عنوان صاحب بار "
+              handlePress={() => router.push("/sign-in")}
+              containerStyles="w-full mt-7"
+            />
           </View>
         </View>
       )}
