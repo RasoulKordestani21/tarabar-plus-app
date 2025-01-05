@@ -1,13 +1,21 @@
 import { ActivityIndicator, Text, TouchableOpacity } from "react-native";
 import tw from "@/libs/twrnc";
 
+type Props = {
+  title: string;
+  handlePress: () => void;
+  containerStyles: string;
+  textStyles?: string | undefined;
+  isLoading?: boolean;
+};
+
 const CustomButton = ({
   title,
   handlePress,
   containerStyles,
   textStyles,
   isLoading
-}) => {
+}: Props) => {
   return (
     <TouchableOpacity
       onPress={handlePress}
@@ -17,7 +25,7 @@ const CustomButton = ({
       }`}
       disabled={isLoading}
     >
-      <Text style={tw`text-text  font-vazir text-base ${textStyles}`}>
+      <Text style={tw`text-text  font-vazir text-base ${textStyles || ""}`}>
         {title}
       </Text>
 

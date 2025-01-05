@@ -4,16 +4,17 @@ import {
   ThemeProvider
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Slot } from "expo-router";
+import { Slot, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
-import LoginScreen from "./login";
-import CustomHeader from "@/components/CustomHeader";
 
+import CustomHeader from "@/components/CustomHeader";
+import OnBoardingScreen from ".";
+import GlobalProvider from "@/context/GlobalProvider";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -42,16 +43,22 @@ export default function RootLayout() {
     <ThemeProvider
       // theme={customTheme}
       // value={CustomTheme}
-      value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+      // value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+      value={DefaultTheme}
     >
-      {isLoggedIn ? (
-        <>
-          <CustomHeader />
-          <Slot />
-        </>
-      ) : (
-        <LoginScreen onLogin={() => setIsLoggedIn(true)} />
-      )}
+      <GlobalProvider>
+        <Stack>
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+
+          {/* <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="search/[query]"
+            options={{ headerShown: false }}
+          /> */}
+        </Stack>
+      </GlobalProvider>
       <StatusBar style="inverted" backgroundColor="orange" />
     </ThemeProvider>
   );
