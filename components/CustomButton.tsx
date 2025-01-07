@@ -7,6 +7,7 @@ type Props = {
   containerStyles: string;
   textStyles?: string | undefined;
   isLoading?: boolean;
+  disabled?: boolean;
 };
 
 const CustomButton = ({
@@ -14,16 +15,17 @@ const CustomButton = ({
   handlePress,
   containerStyles,
   textStyles,
-  isLoading
+  isLoading,
+  disabled
 }: Props) => {
   return (
     <TouchableOpacity
       onPress={handlePress}
       activeOpacity={0.7}
       style={tw`bg-customCard rounded-xl min-h-[62px] flex flex-row justify-center items-center ${containerStyles} ${
-        isLoading ? "opacity-50" : ""
+        disabled || isLoading ? "bg-card" : ""
       }`}
-      disabled={isLoading}
+      disabled={isLoading || disabled}
     >
       <Text style={tw`text-text  font-vazir text-base ${textStyles || ""}`}>
         {title}

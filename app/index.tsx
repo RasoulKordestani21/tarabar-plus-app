@@ -2,9 +2,10 @@ import CustomButton from "@/components/CustomButton";
 import CustomCard from "@/components/CustomCard";
 import { ThemedText } from "@/components/ThemedText";
 import { CustomTheme } from "@/themes/customTheme";
+
 import React, { useEffect, useState } from "react";
-import { View, Image, Pressable, Animated, Text } from "react-native";
-import { Redirect, router } from "expo-router";
+import { View, Image, Pressable, Animated, Text, Alert } from "react-native";
+import { router } from "expo-router";
 
 import { useGlobalContext } from "@/context/GlobalProvider";
 
@@ -12,9 +13,20 @@ import tw from "@/libs/twrnc";
 
 export default function OnBoardingScreen({}) {
   const [showButtons, setShowButtons] = useState(false);
-  const { role, setRole } = useGlobalContext();
+  const { role, setRole, isLogged, token, setToken } = useGlobalContext();
   const fadeAnim = useState(new Animated.Value(0))[0];
 
+  useEffect(() => {
+    // console.log(isLogged, token);
+    // Alert.alert(
+    //   "notification",
+    //   `token is :${token} \n isLogged is:${isLogged}`
+    // );
+
+    if (isLogged) {
+      router.replace("/account");
+    }
+  }, [isLogged]);
   useEffect(() => {
     Animated.sequence([
       Animated.timing(fadeAnim, {
@@ -31,8 +43,8 @@ export default function OnBoardingScreen({}) {
   }, [fadeAnim]);
 
   const handleDriverSetter = () => {
+    router.push("/otp-sender");
     setRole("driver");
-    router.replace("/otp-sender");
   };
   return (
     <View

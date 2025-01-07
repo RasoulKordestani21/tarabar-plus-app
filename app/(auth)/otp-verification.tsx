@@ -1,75 +1,87 @@
 import { useState } from "react";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
+import { Alert, View, Image, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, ScrollView, Dimensions, Alert, Image } from "react-native";
-
-// import { images } from "../../constants";
-// import { CustomButton, FormField } from "../../components";
-// import { getCurrentUser, signIn } from "../../lib/appwrite";
-import { useGlobalContext } from "../../context/GlobalProvider";
-import CustomCard from "@/components/CustomCard";
 import tw from "@/libs/twrnc";
+import FormField from "@/components/FormField";
 import CustomButton from "@/components/CustomButton";
 import OTPTimer from "@/components/OtpTimer";
-import FormField from "@/components/FormField";
-import { Platform } from "react-native";
+import { verifyOtp, generateOtp } from "@/api/services/otpServices";
+import { useGlobalContext } from "@/context/GlobalProvider";
 
-const OtpSender = () => {
-  const { setUser, setIsLogged } = useGlobalContext();
+const OtpVerifier = () => {
+  const { setLoading, phoneNumber, role, setToken, setIsLogged } =
+    useGlobalContext();
+  const [form, setForm] = useState({ otp: "" });
   const [focused, setFocused] = useState(false);
-  const [form, setForm] = useState({
-    mobileNum: ""
-  });
 
-  const submit = async () => {
-    router.replace("/");
+  const handleVerification = async () => {
+    if (!form.otp.trim()) {
+      return Alert.alert("Error", "Please enter the OTP.");
+    }
 
-    // if (form.email === "" || form.password === "") {
-    //   Alert.alert("Error", "Please fill in all fields");
-    // }
+    setLoading(true);
+    try {
+      const response = await verifyOtp({ phoneNumber, otp: form.otp });
+      console.log("Verification Response:", response); // Debugging log
 
-    // setSubmitting(true);
+      if (response?.token) {
+        setToken(response.token); // Save the token in global context
+        setIsLogged(true); // Update logged-in status
+        router.replace("/account"); // Navigate to the account screen
+      } else {
+        Alert.alert("Error", "Failed to retrieve token from the server.");
+      }
+    } catch (error: any) {
+      console.error("Error in handleVerification:", error.message); // Debugging log
+      Alert.alert("Error", error.message || "Failed to verify OTP.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // try {
-    //   await signIn(form.email, form.password);
-    //   const result = await getCurrentUser();
-    //   setUser(result);
-    //   setIsLogged(true);
-
-    //   Alert.alert("Success", "User signed in successfully");
-    //   router.replace("/home");
-    // } catch (error) {
-    //   Alert.alert("Error", error.message);
-    // } finally {
-    //   setSubmitting(false);
-    // }
+  const handleResend = async () => {
+    setLoading(true);
+    try {
+      const response = await generateOtp({ phoneNumber, role });
+      Alert.alert("Success", response.message || "OTP resent successfully.");
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to resend OTP.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <View
-      style={tw`bg-primary flex-1 justify-center items-center justify-evenly px-5 py-15`}
+    <SafeAreaView
+      style={tw`bg-primary flex-1 justify-center items-center px-5`}
     >
-      <Image
-        source={require("@/assets/images/otp-verification-illustration.png")}
-      />
-      <View style={tw` w-full`}>
+      {!focused && (
+        <Image
+          source={require("@/assets/images/otp-verification-illustration.png")}
+          style={tw`mb-5`}
+        />
+      )}
+      <View style={tw`w-full`}>
         <FormField
-          title="کد تایید ارسال شده "
-          placeholder="کد پیامک شده را وارد نمایید ."
-          value={form.mobileNum}
-          handleChangeText={(e: string) => setForm({ mobileNum: e })}
+          title="کد تایید ارسال شده"
+          placeholder="کد پیامک شده را وارد نمایید."
+          value={form.otp}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          handleChangeText={(e: string) => setForm({ ...form, otp: e })}
           otherStyles="mt-7"
           keyboardType={Platform.OS === "ios" ? "name-phone-pad" : "number-pad"}
         />
-        <OTPTimer onResend={() => null} duration={120} />
+        <OTPTimer onResend={handleResend} duration={120} />
       </View>
       <CustomButton
-        title="تایید کد ارسال شده "
-        handlePress={() => router.push("/otp-verification")}
+        title="تایید کد ارسال شده"
+        handlePress={handleVerification}
         containerStyles="w-full mt-7"
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
-export default OtpSender;
+export default OtpVerifier;
