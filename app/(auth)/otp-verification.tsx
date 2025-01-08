@@ -28,7 +28,7 @@ const OtpVerifier = () => {
       if (response?.token) {
         setToken(response.token); // Save the token in global context
         setIsLogged(true); // Update logged-in status
-        router.replace("/account"); // Navigate to the account screen
+        router.replace("/home"); // Navigate to the account screen
       } else {
         Alert.alert("Error", "Failed to retrieve token from the server.");
       }

@@ -49,6 +49,8 @@ export default function RootLayout() {
       <GlobalProvider>
         <Stack>
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          {/* <Stack.Screen name="home" options={{ headerShown: false }} /> */}
           <Stack.Screen name="index" options={{ headerShown: false }} />
 
           {/* <Stack.Screen name="(auth)" options={{ headerShown: false }} />
@@ -59,7 +61,7 @@ export default function RootLayout() {
           /> */}
         </Stack>
       </GlobalProvider>
-      <StatusBar style="inverted" backgroundColor="orange" />
+      <StatusBar style="dark"  />
     </ThemeProvider>
   );
 }

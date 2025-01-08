@@ -8,14 +8,15 @@ import CustomHeader from "@/components/CustomHeader";
 
 export default function HomeScreen() {
   return (
-    <View>
-      <Text>salam</Text>
+    <View style={styles.titleContainer}>
+      <Text>home</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   titleContainer: {
+    backgroundColor: "red",
     flexDirection: "row",
     alignItems: "center",
     gap: 8

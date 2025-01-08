@@ -22,9 +22,9 @@ export default function OnBoardingScreen({}) {
     //   "notification",
     //   `token is :${token} \n isLogged is:${isLogged}`
     // );
-
+    // setToken("");
     if (isLogged) {
-      router.replace("/account");
+      router.replace("/home");
     }
   }, [isLogged]);
   useEffect(() => {
