@@ -50,7 +50,7 @@ export default function RootLayout() {
         <Stack>
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          {/* <Stack.Screen name="home" options={{ headerShown: false }} /> */}
+          {/* <Stack.Screen name="(menu)" options={{ headerShown: false }} /> */}
           <Stack.Screen name="index" options={{ headerShown: false }} />
 
           {/* <Stack.Screen name="(auth)" options={{ headerShown: false }} />
@@ -61,7 +61,7 @@ export default function RootLayout() {
           /> */}
         </Stack>
       </GlobalProvider>
-      <StatusBar style="dark"  />
+      <StatusBar style="dark" />
     </ThemeProvider>
   );
 }

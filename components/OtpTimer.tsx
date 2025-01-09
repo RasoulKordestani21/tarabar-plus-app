@@ -47,7 +47,7 @@ const OTPTimer: React.FC<OTPTimerProps> = ({ duration, onResend }) => {
             style={tw`bg-blue-500 px-4 py-2 rounded-md`}
             onPress={handleResend}
           >
-            <Text style={tw`text-white font-bold text-left w-full`}>
+            <Text style={tw`text-text font-bold text-left w-full`}>
               ارسال مجدد
             </Text>
           </TouchableOpacity>

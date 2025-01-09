@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { Animated, Image, Pressable, Text, View } from "react-native";
 import { Tabs } from "expo-router";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import tw from "@/libs/twrnc"; // Tailwind setup in your project
+import tw from "@/libs/twrnc";
 
 const tabsData = [
   {
@@ -27,6 +27,69 @@ const tabsData = [
   }
 ];
 
+type TabBarLabelProps = {
+  focused: boolean;
+  title: string;
+  iconName: string;
+  scaleAnim: Animated.Value;
+};
+// separate component for label
+const TabBarLabel = React.memo(
+  ({ focused, title, iconName, scaleAnim }: TabBarLabelProps) => {
+    useEffect(() => {
+      Animated.timing(scaleAnim, {
+        toValue: focused ? 1 : 0,
+        duration: 100,
+        useNativeDriver: true
+      }).start();
+    }, [focused, scaleAnim]);
+    return (
+      <Animated.View
+        style={[
+          tw`mx-3 p-2 items-center flex-row justify-center mb-5`,
+          {
+            backgroundColor: scaleAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: ["transparent", "#ffffff"]
+            }),
+            borderRadius: 8,
+            transform: [
+              {
+                scale: scaleAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1, 1.1]
+                })
+              }
+            ]
+          }
+        ]}
+      >
+        {focused && (
+          <Animated.Text
+            style={[
+              tw`font-vazir font-bold text-[11px]`,
+              {
+                color: scaleAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ["#ffffff", "#003366"]
+                }),
+                paddingHorizontal: 8
+              }
+            ]}
+          >
+            {title}
+          </Animated.Text>
+        )}
+        <IconSymbol
+          size={28}
+          name={iconName as any}
+          color={focused ? "#003366" : "#ffffff"}
+        />
+      </Animated.View>
+    );
+  }
+);
+
 export default function TabLayout() {
   return (
     <Tabs
@@ -37,11 +100,10 @@ export default function TabLayout() {
         tabBarInactiveTintColor: "rgba(0, 0, 0, 0)",
         headerShown: true,
         headerStyle: tw`bg-background`,
-        // headerTintColor: "white",
+
         headerTitle: () => (
           <Image
             source={require("@/assets/images/tarabarplusicon.png")}
-            // style={tw`h-20 w-20`}
             resizeMode="contain"
           />
         ),
@@ -64,62 +126,17 @@ export default function TabLayout() {
           options={{
             title: tab.title,
             tabBarLabel: ({ focused }) => {
-              // Set up animation
               const scaleAnim = useRef(
                 new Animated.Value(focused ? 1 : 0)
               ).current;
 
-              useEffect(() => {
-                Animated.timing(scaleAnim, {
-                  toValue: focused ? 1 : 0,
-                  duration: 200, // Animation duration in ms
-                  useNativeDriver: true // Better performance
-                }).start();
-              }, [focused]);
-
               return (
-                <Animated.View
-                  style={[
-                    tw`mx-3 p-2 items-center flex-row justify-center mb-5`,
-                    {
-                      backgroundColor: scaleAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ["transparent", "#ffffff"]
-                      }),
-                      borderRadius: 8,
-                      transform: [
-                        {
-                          scale: scaleAnim.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [1, 1.1]
-                          })
-                        }
-                      ]
-                    }
-                  ]}
-                >
-                  {focused && (
-                    <Animated.Text
-                      style={[
-                        tw`font-vazir font-bold text-[11px]`,
-                        {
-                          color: scaleAnim.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: ["#ffffff", "#003366"]
-                          }),
-                          paddingHorizontal: 8
-                        }
-                      ]}
-                    >
-                      {tab.title}
-                    </Animated.Text>
-                  )}
-                  <IconSymbol
-                    size={28}
-                    name={tab.iconName as any}
-                    color={focused ? "#003366" : "#ffffff"}
-                  />
-                </Animated.View>
+                <TabBarLabel
+                  focused={focused}
+                  title={tab.title}
+                  iconName={tab.iconName}
+                  scaleAnim={scaleAnim}
+                />
               );
             }
           }}
