@@ -3,29 +3,7 @@ import { Animated, Image, Pressable, Text, View } from "react-native";
 import { Tabs } from "expo-router";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import tw from "@/libs/twrnc";
-
-const tabsData = [
-  {
-    name: "account",
-    title: "کاربر",
-    iconName: "person.crop.circle"
-  },
-  {
-    name: "inquiry",
-    title: "استعلام",
-    iconName: "doc.plaintext.fill"
-  },
-  {
-    name: "tools",
-    title: "ابزار",
-    iconName: "wrench.fill"
-  },
-  {
-    name: "home",
-    title: "خانه",
-    iconName: "house.fill"
-  }
-];
+import { tabBoxes } from "@/constants/BoxesList";
 
 type TabBarLabelProps = {
   focused: boolean;
@@ -67,7 +45,7 @@ const TabBarLabel = React.memo(
         {focused && (
           <Animated.Text
             style={[
-              tw`font-vazir font-bold text-[11px]`,
+              tw`font-vazir-bold  text-[11px]`,
               {
                 color: scaleAnim.interpolate({
                   inputRange: [0, 1],
@@ -119,7 +97,7 @@ export default function TabLayout() {
         )
       })}
     >
-      {tabsData.map(tab => (
+      {tabBoxes.map(tab => (
         <Tabs.Screen
           key={tab.name}
           name={tab.name}

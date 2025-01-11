@@ -16,11 +16,15 @@ const CustomCard = ({
 }: Props) => {
   return (
     <View
-      style={tw`w-full bg-customCard p-4 rounded-lg items-center  ${customStyle}`}
+      style={tw`w-full bg-customCard p-4 rounded-lg items-center  ${
+        customStyle ?? ""
+      }`}
     >
       {header}
       <View style={tw`w-full h-[1px] bg-text mb-5 mt-3`}></View>
-      <View style={tw`w-full items-center ${cardContentStyle}`}>{content}</View>
+      <View style={tw`w-full items-center ${cardContentStyle ?? ""}`}>
+        {content}
+      </View>
     </View>
   );
 };

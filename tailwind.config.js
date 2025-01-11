@@ -10,6 +10,9 @@ module.exports = {
       border: "#fdfe33",
       notification: "#33fefe",
       customCard: "#4CAF50",
+      green: {
+        50: "#81C784"
+      },
       silver: "#c0c0c0",
       sky: "#94a3b8",
       transparent: "transparent",
@@ -41,7 +44,8 @@ module.exports = {
       }
     },
     fontFamily: {
-      vazir: ["Vazir-Regular", "sans-serif"]
+      vazir: ["Vazir-Regular", "sans-serif"],
+      "vazir-bold": ["Vazir-Bold", "sans-serif"]
     },
     screens: {
       sm: "380px",
