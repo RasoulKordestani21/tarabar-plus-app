@@ -1,12 +1,20 @@
 import React from "react";
-import { Redirect, Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { FontAwesome } from "@expo/vector-icons"; // Import the FontAwesome icon library
+import tw from "@/libs/twrnc";
+import { Text, View, TouchableOpacity } from "react-native";
 
-import { useGlobalContext } from "../../context/GlobalProvider";
+// Header component
+const Header = ({ title }: { title: string }) => {
+  return (
+    <View style={tw`bg-background p-4`}>
+      <Text style={tw`font-vazir text-white text-xl text-right`}>{title}</Text>
+    </View>
+  );
+};
 
 const MenuLayout = () => {
-  // const { loading, isLogged } = useGlobalContext();
-
   return (
     <>
       <Stack>
@@ -16,16 +24,30 @@ const MenuLayout = () => {
             headerShown: false
           }}
         />
-        {/* <Stack.Screen
-          name="otp-verification"
+
+        <Stack.Screen
+          name="estimate-fee"
           options={{
-            headerShown: false
+            title: "محاسبه کرایه", // Title of the screen
+            headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
+            headerTintColor: "white", // Set header text color to white
+            headerTitle: () => <Header title="محاسبه کرایه" /> // Use the custom Header component
+            // headerRight: () => (
+            //   <TouchableOpacity
+            //     style={tw``} // margin-right for positioning the arrow
+            //     onPress={() => {
+            //       router.back();
+            //     }}
+            //   >
+            //     <FontAwesome name="arrow-right" size={20} color="white" />
+            //   </TouchableOpacity>
+            // ),
+            // headerLeft: () => null // Hide the default left icon if not needed
           }}
-        /> */}
+        />
       </Stack>
 
-      {/* <Loader isLoading={loading} /> */}
-      <StatusBar backgroundColor="#161622" style="light" />
+      <StatusBar style="auto" />
     </>
   );
 };

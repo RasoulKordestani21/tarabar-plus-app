@@ -93,7 +93,7 @@ const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }) => {
                 {
                   text: "رفتن به تنظیمات",
                   onPress: () => {
-                    Linking.openSettings(settingsURL);
+                    Linking.openSettings();
                   }
                 },
                 {
@@ -161,8 +161,8 @@ const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }) => {
         }
         setShowCustomPermissionModal(false);
       } else {
-        setLocationPermission("denied");
-        setBackgroundLocationPermission("denied");
+        setLocationPermission(Location.PermissionStatus.DENIED);
+        setBackgroundLocationPermission(Location.PermissionStatus.DENIED);
         setShowCustomPermissionModal(false);
         Alert.alert(
           "عدم دسترسی به موقعیت مکانی",
@@ -245,19 +245,19 @@ const LocationModal: React.FC<LocationModalProps> = ({ visible, onClose }) => {
               اجازه دسترسی به موقعیت مکانی
             </Text>
             <Pressable
-              style={tw`bg-gray-100 p-3 rounded-md mb-2`}
+              style={tw` p-3 rounded-md mb-2`}
               onPress={() => handlePermissionChoice("foreground")}
             >
               <Text style={tw`text-center`}>هنگام استفاده از برنامه</Text>
             </Pressable>
             <Pressable
-              style={tw`bg-gray-100 p-3 rounded-md mb-2`}
+              style={tw` p-3 rounded-md mb-2`}
               onPress={() => handlePermissionChoice("background")}
             >
               <Text style={tw`text-center`}>فقط این بار</Text>
             </Pressable>
             <Pressable
-              style={tw`bg-gray-100 p-3 rounded-md`}
+              style={tw` p-3 rounded-md`}
               onPress={() => handlePermissionChoice("deny")}
             >
               <Text style={tw`text-center`}>عدم دسترسی</Text>

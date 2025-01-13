@@ -1,29 +1,22 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Modal // Import Modal from react-native
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import React, { useState } from "react";
 
 import { FontAwesome } from "@expo/vector-icons";
 import tw from "@/libs/twrnc";
-import EstimateFareDrawer from "@/components/EstimateFareDrawer";
+import EstimateFareDrawer from "@/app/(menu)/estimate-fee";
+import { router } from "expo-router";
 
 export default function ToolsScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
-
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
 
   return (
     <ScrollView style={tw`flex-1 p-4`}>
       <View style={tw`flex-wrap flex-row justify-between`}>
         <TouchableOpacity
-          style={tw`bg-green-50 rounded-lg mb-5 w-full`}
-          onPress={toggleModal}
+        style={tw`bg-yellow-200 rounded-lg mb-5 w-full`}
+          onPress={() => {
+            router.push("/estimate-fee");
+          }}
         >
           <View style={tw`flex-row items-center p-4`}>
             <FontAwesome
@@ -51,12 +44,12 @@ export default function ToolsScreen() {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={tw`bg-green-50 rounded-lg mb-5 w-full`}>
+        <TouchableOpacity style={tw`bg-yellow-200 rounded-lg mb-5 w-full`}>
           <View style={tw`flex-row items-center p-4`}>
             <FontAwesome
               name="caret-left"
               size={28}
-              style={tw`text-white mr-2 rotate-180`}
+              style={tw`text-white mr-2 `}
             />
             <View style={tw`flex-1 mr-4 ml-2`}>
               <Text
@@ -74,16 +67,6 @@ export default function ToolsScreen() {
           </View>
         </TouchableOpacity>
       </View>
-
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        onRequestClose={toggleModal}
-      >
-        <View style={tw`flex-1`}>
-          <EstimateFareDrawer onClose={toggleModal} />
-        </View>
-      </Modal>
     </ScrollView>
   );
 }
