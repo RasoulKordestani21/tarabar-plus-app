@@ -32,7 +32,7 @@ interface SearchableInputProps {
   disableSearch?: boolean;
 }
 
-const SearchableInput: React.FC<SearchableInputProps> = ({
+const DropdownInput: React.FC<SearchableInputProps> = ({
   options,
   placeholder = "Search...",
   onSelect,
@@ -154,7 +154,7 @@ const SearchableInput: React.FC<SearchableInputProps> = ({
             style={tw`flex-1 absolute top-0 left-0 w-full h-full bg-transparent z-0`}
           >
             <View
-              style={tw`flex-1 absolute top-0 left-0 w-full h-full bg-black-500  z-0`}
+              style={tw`flex-1 absolute top-0 left-0 w-full h-full bg-black-50  z-0`}
             ></View>
           </TouchableWithoutFeedback>
 
@@ -226,7 +226,7 @@ const SearchableInput: React.FC<SearchableInputProps> = ({
   );
 };
 
-export default SearchableInput;
+export default DropdownInput;
 
 const styles = StyleSheet.create({
   label: {

@@ -5,16 +5,26 @@ import { router } from "expo-router";
 import BoxButton from "@/components/BoxButton";
 import LocationModal from "@/components/LocationModal";
 import { homeBoxes } from "@/constants/BoxesList";
+import DefineOriginDestination from "@/components/DefineOriginDestination";
 
 export default function HomeScreen() {
-  const [modalVisible, setModalVisible] = useState(false);
+  const [enableLocationModal, setEnableLocationModal] = useState(false);
+  const [originDestinationModal, setOriginDestinationModal] = useState(false);
 
-  const handleCargoByLocationPress = () => {
-    setModalVisible(true);
+  const handleEnableLocationModal = () => {
+    setEnableLocationModal(true);
   };
 
-  const closeModal = () => {
-    setModalVisible(false);
+  const closeEnableLocationModal = () => {
+    setEnableLocationModal(false);
+  };
+
+  const handleOriginDestinationModal = () => {
+    setOriginDestinationModal(true);
+  };
+
+  const closeOriginDestinationModal = () => {
+    setOriginDestinationModal(false);
   };
 
   return (
@@ -29,7 +39,9 @@ export default function HomeScreen() {
             route={box.route}
             onPress={() => {
               if (box.route === "/find-cargo-by-location") {
-                handleCargoByLocationPress();
+                handleEnableLocationModal();
+              } else if (box.id === 1) {
+                handleOriginDestinationModal();
               } else {
                 router.push(box.route);
               }
@@ -37,7 +49,14 @@ export default function HomeScreen() {
           />
         ))}
       </View>
-      <LocationModal visible={modalVisible} onClose={closeModal} />
+      <LocationModal
+        visible={enableLocationModal}
+        onClose={closeEnableLocationModal}
+      />
+      <DefineOriginDestination
+        visible={originDestinationModal}
+        onClose={closeOriginDestinationModal}
+      />
     </ScrollView>
   );
 }

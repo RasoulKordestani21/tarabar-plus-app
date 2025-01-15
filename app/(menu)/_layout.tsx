@@ -32,17 +32,43 @@ const MenuLayout = () => {
             headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
             headerTintColor: "white", // Set header text color to white
             headerTitle: () => <Header title="محاسبه کرایه" /> // Use the custom Header component
-            // headerRight: () => (
-            //   <TouchableOpacity
-            //     style={tw``} // margin-right for positioning the arrow
-            //     onPress={() => {
-            //       router.back();
-            //     }}
-            //   >
-            //     <FontAwesome name="arrow-right" size={20} color="white" />
-            //   </TouchableOpacity>
-            // ),
-            // headerLeft: () => null // Hide the default left icon if not needed
+          }}
+        />
+
+        <Stack.Screen
+          name="account-setting"
+          options={{
+            title: "تنظیمات حساب کاربری", // Title of the screen
+            headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
+            headerTintColor: "white", // Set header text color to white
+            headerTitle: () => <Header title="تنظیمات حساب کاربری" /> // Use the custom Header component
+          }}
+        />
+        <Stack.Screen
+          name="wallet-plans"
+          options={{
+            title: "مدریرت کیف پول و اشتراک", // Title of the screen
+            headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
+            headerTintColor: "white", // Set header text color to white
+            headerTitle: () => <Header title="مدیریت کیف پول و اشتراک" /> // Use the custom Header component
+          }}
+        />
+        <Stack.Screen
+          name="about-us"
+          options={{
+            title: "درباره ترابرپلاس  ", // Title of the screen
+            headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
+            headerTintColor: "white", // Set header text color to white
+            headerTitle: () => <Header title="ِِِدرباره ترابر پلاس" /> // Use the custom Header component
+          }}
+        />
+        <Stack.Screen
+          name="support-faq"
+          options={{
+            title: "پشتیبانی", // Title of the screen
+            headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
+            headerTintColor: "white", // Set header text color to white
+            headerTitle: () => <Header title="پشتیبانی" /> // Use the custom Header component
           }}
         />
       </Stack>

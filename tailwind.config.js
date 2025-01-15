@@ -14,7 +14,7 @@ module.exports = {
       success: "#16a34a",
       danger: "#dc2626",
       black: {
-        50: "#f9fafb",
+        50: "rgba(0, 0, 0, 0.5)", // Add custom black/50 with rgba value
         100: "#f3f4f6",
         200: "#e5e7eb",
         300: "#d1d5db",

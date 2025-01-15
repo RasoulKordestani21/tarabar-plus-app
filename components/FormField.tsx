@@ -11,7 +11,7 @@ import tw from "@/libs/twrnc";
 
 type Props = TextInputProps & {
   title: string;
-  otherStyles: string;
+  otherStyles?: string;
   handleChangeText: (param: string) => void;
   color?: string;
 };
@@ -31,9 +31,9 @@ const FormField = ({
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={tw`flex-1 `} //Important: Wrap everything in this view
+      style={tw`flex mb-5 `} //Important: Wrap everything in this view
     >
-      <View style={tw`w-full  ${otherStyles}`}>
+      <View style={tw`w-full  ${otherStyles ?? ""}`}>
         <Text
           style={tw`text-sm text-right font-vazir mb-2  text-${
             color ?? "text"

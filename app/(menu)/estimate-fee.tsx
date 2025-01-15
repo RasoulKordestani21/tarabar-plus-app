@@ -11,6 +11,7 @@ import DropdownInput from "@/components/DropdownInput";
 import tw from "@/libs/twrnc";
 import FormField from "@/components/FormField";
 import FeeRangeDrawer from "@/components/RangeDrawer";
+import CustomButton from "@/components/CustomButton";
 
 interface Option {
   label: string;
@@ -154,17 +155,11 @@ const EstimateFareDrawer: React.FC<Props> = ({ onClose }) => {
         currency={"تومان"}
         // Replace with your image
       />
-
-      <Pressable
-        style={tw`w-full bg-background rounded-lg px-3 py-4 items-center mt-20 shadow-sm`}
-        onPress={() => {
-          setFeeRangeOpened(true);
-        }}
-      >
-        <Text style={tw`text-white font-vazir-bold text-center`}>
-          تخمین کرایه
-        </Text>
-      </Pressable>
+      <CustomButton
+        title="ورود به عنوان صاحب بار "
+        handlePress={() => null}
+        containerStyles="w-full  bg-background"
+      />
     </ScrollView>
   );
 };
