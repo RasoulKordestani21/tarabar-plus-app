@@ -1,4 +1,5 @@
 import apiClient from "@/api/apiClient";
+import { Alert } from "react-native";
 
 type Props = {
   phoneNumber: string;
@@ -26,4 +27,27 @@ export const updateUser = async (id: string, userData: Props) => {
 export const deleteUser = async (id: string) => {
   const response = await apiClient.delete(`/users/${id}`);
   return response.data;
+};
+
+export const updateVerificationData = async (
+  phoneNumber: string,
+  form: { nationalId: string; truckNavigationId: string; licensePlate: string }
+) => {
+  try {
+    const response = await apiClient.post(`/api/auth/update-verification`, {
+      phoneNumber,
+      nationalId: form.nationalId,
+      truckNavigationId: form.truckNavigationId,
+      licensePlate: form.licensePlate
+    });
+
+    return response.data; // This will contain the server response
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    console.error("Error updating verification data:", axiosError.message);
+    const errorMessage =
+      axiosError.response?.data?.message || axiosError.message;
+    Alert.alert("Error", errorMessage); // Show error alert
+    throw new Error(errorMessage);
+  }
 };

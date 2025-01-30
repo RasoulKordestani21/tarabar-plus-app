@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, Button, TouchableOpacity } from "react-native";
 import tw from "@/libs/twrnc";
+import CustomButton from "./CustomButton";
 
 interface OTPTimerProps {
   duration: number; // Time in seconds for the OTP expiration
@@ -39,22 +40,20 @@ const OTPTimer: React.FC<OTPTimerProps> = ({ duration, onResend }) => {
   return (
     <View style={tw`flex  items-start my-5 `}>
       {isExpired ? (
-        <View style={tw`flex items-center`}>
-          <Text style={tw`text-red text-lg font-bold mb-3 text-right`}>
+        <View style={tw`flex items-center bg-orange-300 p-3 rounded-5`}>
+          <Text style={tw`text-red-500 text-md  mb-3 text-right font-vazir`}>
             کد منقضی شده است .
           </Text>
-          <TouchableOpacity
-            style={tw`bg-blue-500 px-4 py-2 rounded-md`}
-            onPress={handleResend}
-          >
-            <Text style={tw`text-text font-bold text-left w-full`}>
-              ارسال مجدد
-            </Text>
-          </TouchableOpacity>
+          <CustomButton
+            title="ارسال مجدد"
+            handlePress={handleResend}
+            containerStyles="align-left  bg-primary"
+            textStyles="text-sm px-3"
+          />
         </View>
       ) : (
         <Text
-          style={tw`items-start text-text font-vazir text-left bg-customCard text-sm  p-2 rounded-2`}
+          style={tw`items-start text-text font-vazir text-left bg-black-50 text-sm  p-2 rounded-2`}
         >
           زمان باقیمانده : {formatTime(timeLeft)}
         </Text>

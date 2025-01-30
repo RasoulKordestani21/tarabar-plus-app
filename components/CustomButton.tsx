@@ -1,9 +1,9 @@
-import { ActivityIndicator, Text, TouchableOpacity } from "react-native";
+import { ActivityIndicator, GestureResponderEvent, Text, TouchableOpacity } from "react-native";
 import tw from "@/libs/twrnc";
 
 type Props = {
   title: string;
-  handlePress: () => void;
+  handlePress: (event: GestureResponderEvent, param?: number) => void; // Accept the event parameter
   containerStyles: string;
   textStyles?: string | undefined;
   isLoading?: boolean;
@@ -22,7 +22,7 @@ const CustomButton = ({
     <TouchableOpacity
       onPress={handlePress}
       activeOpacity={0.7}
-      style={tw`bg-customCard rounded-xl min-h-[62px] flex flex-row justify-center items-center ${containerStyles} ${
+      style={tw`bg-customCard rounded-xl py-3 flex flex-row justify-center items-center ${containerStyles} ${
         disabled || isLoading ? "bg-card" : ""
       }`}
       disabled={isLoading || disabled}

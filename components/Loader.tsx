@@ -1,3 +1,4 @@
+import tw from "@/libs/twrnc";
 import { View, ActivityIndicator, Dimensions, Platform } from "react-native";
 
 type Props = {
@@ -11,11 +12,13 @@ const Loader = ({ isLoading }: Props) => {
   if (!isLoading) return null;
 
   return (
-    <View className="absolute flex justify-center items-center w-full bg-primary/60 z-10">
+    <View
+      style={tw`absolute  w-full h-full bg-black-50 flex justify-center items-center z-50`}
+    >
       <ActivityIndicator
-        animating={isLoading}
+        animating={true}
         color="#fff"
-        size={osName === "ios" ? "large" : 50}
+        size={Platform.OS === "ios" ? "large" : 50}
       />
     </View>
   );

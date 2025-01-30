@@ -1,83 +1,70 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
-import { View, Image, Alert } from "react-native";
+import { View, Image, Platform } from "react-native";
 
 import { useGlobalContext } from "@/context/GlobalProvider";
 import tw from "@/libs/twrnc";
 import CustomButton from "@/components/CustomButton";
 import FormField from "@/components/FormField";
-import { Platform } from "react-native";
-
 import { generateOtp } from "@/api/services/otpServices";
+import { useToast } from "@/context/ToastContext";
+import Loader from "@/components/Loader"; // Import the Loader component
 
 const OtpSender = () => {
-  const { role, setLoading, phoneNumber, setPhoneNumber } = useGlobalContext();
-  const [focused, setFocused] = useState(false);
-  const [validation, setValidation] = useState({
-    validPhoneNumber: true
-  });
-  useEffect(() => {
-    console.log(role);
-  }, []);
-
-  useEffect(() => {
-    if (/^09\d{9}$/.test(phoneNumber)) {
-      setValidation({ ...validation, validPhoneNumber: false });
-    } else {
-      setValidation({ ...validation, validPhoneNumber: true });
-    }
-  }, [phoneNumber]);
+  const { showToast } = useToast();
+  const { role, setLoading, phoneNumber, setPhoneNumber, loading } =
+    useGlobalContext();
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const handleOtpSender = async () => {
-    setLoading(true);
+    setLoading(true); // Trigger loader
     try {
-      console.log(phoneNumber, role, " is phone number and role");
-      const response = await generateOtp({ phoneNumber, role });
-      Alert.alert("Success", response.message);
-      // Optionally navigate to OTP verification screen
-      router.push("/otp-verification");
+      await generateOtp({ phoneNumber, role });
+      await showToast(`کد به شماره ${phoneNumber} ارسال گردید`, "success");
+      router.replace("/otp-verification");
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      await showToast(error.message, "error");
     } finally {
-      setLoading(false);
+      setLoading(false); // Stop loader
     }
   };
 
   return (
-    <View
-      style={tw`bg-primary flex-1 justify-center items-center justify-evenly px-5 py-15`}
-    >
-      {!focused && (
+    <>
+      {/* Display loader when loading */}
+      <Loader isLoading={loading} />
+      <View
+        style={tw`bg-background flex-1 justify-center items-center justify-evenly px-5 py-15`}
+      >
         <Image
           source={require("@/assets/images/otp-illustration.png")}
-          // style={tw`w-[100] max-h-[]`}
+          style={tw`w-[200px] h-[200px]`}
         />
-      )}
 
-      <FormField
-        title="شماره موبایل"
-        placeholder="شماره موبایل خودرا وارد کدنید   "
-        value={phoneNumber}
-        handleChangeText={(e: string) => {
-          setPhoneNumber(e);
-        }}
-        onFocus={() => {
-          setFocused(true);
-        }}
-        onBlur={() => {
-          setFocused(false);
-        }}
-        otherStyles="mt-7"
-        keyboardType={Platform.OS === "ios" ? "name-phone-pad" : "number-pad"}
-      />
+        <FormField
+          title="شماره موبایل"
+          placeholder="شماره موبایل خود را وارد کنید"
+          // value={phoneNumber}
+          handleChangeText={(e: string) => setPhoneNumber(e)}
+          pattern={{
+            type: /^09(0[0-5]|1[0-9]|2[0-2]|3[0-9]|9[0-9])\d{7}$/,
+            message: "شماره همراه باید ۱۱ رقمی و با 09 شروع شود"
+          }}
+          maxLength={11}
+          onValidationChange={(isValid: boolean) => setIsFormValid(isValid)} // Handle validation
+          otherStyles="mt-7"
+          keyboardType={Platform.OS === "ios" ? "name-phone-pad" : "number-pad"}
+          // defaultValue={phoneNumber}
+        />
 
-      <CustomButton
-        title="دریافت پیامک"
-        handlePress={handleOtpSender}
-        containerStyles="w-full mt-7"
-        disabled={validation.validPhoneNumber}
-      />
-    </View>
+        <CustomButton
+          title="دریافت پیامک"
+          handlePress={handleOtpSender}
+          containerStyles="w-full mt-7"
+          disabled={!isFormValid} // Disable based on validation
+        />
+      </View>
+    </>
   );
 };
 

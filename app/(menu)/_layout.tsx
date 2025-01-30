@@ -1,9 +1,9 @@
 import React from "react";
 import { router, Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import { FontAwesome } from "@expo/vector-icons"; // Import the FontAwesome icon library
 import tw from "@/libs/twrnc";
 import { Text, View, TouchableOpacity } from "react-native";
+import { useGlobalContext } from "@/context/GlobalProvider";
 
 // Header component
 const Header = ({ title }: { title: string }) => {
@@ -59,7 +59,7 @@ const MenuLayout = () => {
             title: "درباره ترابرپلاس  ", // Title of the screen
             headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
             headerTintColor: "white", // Set header text color to white
-            headerTitle: () => <Header title="ِِِدرباره ترابر پلاس" /> // Use the custom Header component
+            headerTitle: () => <Header title="درباره ترابر پلاس" /> // Use the custom Header component
           }}
         />
         <Stack.Screen
@@ -71,9 +71,36 @@ const MenuLayout = () => {
             headerTitle: () => <Header title="پشتیبانی" /> // Use the custom Header component
           }}
         />
-      </Stack>
 
-      <StatusBar style="auto" />
+        <Stack.Screen
+          name="show-cargoes"
+          options={{
+            title: "مشاهده بارها", // Title of the screen
+            headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
+            headerTintColor: "white", // Set header text color to white
+            headerTitle: () => <Header title="مشاهده بارها" /> // Use the custom Header component
+          }}
+        />
+        <Stack.Screen
+          name="create-cargo"
+          options={{
+            title: "افزودن بار", // Title of the screen
+            headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
+            headerTintColor: "white", // Set header text color to white
+            headerTitle: () => <Header title="افزودن بار" /> // Use the custom Header component
+          }}
+        />
+
+        <Stack.Screen
+          name="cargo-history"
+          options={{
+            title: "تاریخچه بارها", // Title of the screen
+            headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
+            headerTintColor: "white", // Set header text color to white
+            headerTitle: () => <Header title="تاریخچه بارها" /> // Use the custom Header component
+          }}
+        />
+      </Stack>
     </>
   );
 };

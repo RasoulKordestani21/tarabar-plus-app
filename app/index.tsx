@@ -1,10 +1,8 @@
 import CustomButton from "@/components/CustomButton";
 import CustomCard from "@/components/CustomCard";
-import { ThemedText } from "@/components/ThemedText";
-import { CustomTheme } from "@/themes/customTheme";
 
 import React, { useEffect, useState } from "react";
-import { View, Image, Pressable, Animated, Text, Alert } from "react-native";
+import { View, Image, Animated, Text, Alert } from "react-native";
 import { router } from "expo-router";
 
 import { useGlobalContext } from "@/context/GlobalProvider";
@@ -13,20 +11,20 @@ import tw from "@/libs/twrnc";
 
 export default function OnBoardingScreen({}) {
   const [showButtons, setShowButtons] = useState(false);
-  const { role, setRole, isLogged, token, setToken } = useGlobalContext();
+  const { role, setRole, isLogged, token, setToken, setPhoneNumber } =
+    useGlobalContext();
   const fadeAnim = useState(new Animated.Value(0))[0];
 
   useEffect(() => {
-    // console.log(isLogged, token);
-    // Alert.alert(
-    //   "notification",
-    //   `token is :${token} \n isLogged is:${isLogged}`
-    // );
-    // setToken("");
+    // setToken();
+    // setRole();
+    // setPhoneNumber();
     if (isLogged) {
+      console.log("loggedin");
       router.replace("/home");
     }
   }, [isLogged]);
+
   useEffect(() => {
     Animated.sequence([
       Animated.timing(fadeAnim, {
@@ -42,10 +40,11 @@ export default function OnBoardingScreen({}) {
     ]).start(() => setShowButtons(true));
   }, [fadeAnim]);
 
-  const handleDriverSetter = () => {
-    router.push("/otp-sender");
-    setRole("driver");
+  const handleRoleSetter = (role: string) => {
+    setRole(role);
+    router.replace("/otp-sender");
   };
+
   return (
     <View
       style={tw`flex-1 justify-center items-center px-5 py-15 bg-[#003366]`}
@@ -86,13 +85,17 @@ export default function OnBoardingScreen({}) {
           <View style={tw`w-full items-center`}>
             <CustomButton
               title="ورود به عنوان راننده "
-              handlePress={handleDriverSetter}
-              containerStyles="w-full mt-7"
+              handlePress={() => {
+                handleRoleSetter("1");
+              }}
+              containerStyles="w-full mt-7 bg-secondary"
             />
             <CustomButton
               title="ورود به عنوان صاحب بار "
-              handlePress={() => null}
-              containerStyles="w-full mt-7"
+              handlePress={() => {
+                handleRoleSetter("2");
+              }}
+              containerStyles="w-full mt-7 bg-secondary"
             />
           </View>
         </View>

@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+// GlobalProvider.js
+import React, { createContext, useContext, useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
 
-// Create the Global Context
 const GlobalContext = createContext();
 
 // Custom Hook to Use Global Context
@@ -20,17 +20,18 @@ const GlobalProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setTokenState] = useState("");
 
-  // Load token and login state from SecureStore on app initialization
   useEffect(() => {
     const loadState = async () => {
       try {
         setLoading(true);
         const storedToken = await SecureStore.getItemAsync("token");
         const storedRole = await SecureStore.getItemAsync("role");
+        const storedPhoneNumber = await SecureStore.getItemAsync("phoneNumber");
         if (storedToken) {
           setTokenState(storedToken);
           setIsLoggedState(true);
           if (storedRole) setRole(storedRole);
+          if (storedPhoneNumber) setPhoneNumber(storedPhoneNumber);
         } else {
           setIsLoggedState(false);
         }
@@ -44,7 +45,6 @@ const GlobalProvider = ({ children }) => {
     loadState();
   }, []);
 
-  // Securely set or remove token
   const setToken = async newToken => {
     try {
       if (newToken) {
@@ -61,7 +61,6 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
-  // Securely set or remove role
   const setRoleSecure = async newRole => {
     try {
       if (newRole) {
@@ -76,15 +75,29 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
+  const setPhoneNumberSecure = async newPhoneNumber => {
+    try {
+      if (newPhoneNumber) {
+        await SecureStore.setItemAsync("phoneNumber", newPhoneNumber);
+        setPhoneNumber(newPhoneNumber);
+      } else {
+        await SecureStore.deleteItemAsync("phoneNumber");
+        setPhoneNumber("");
+      }
+    } catch (error) {
+      console.error("Error saving phone number to SecureStore:", error);
+    }
+  };
+
   return (
     <GlobalContext.Provider
       value={{
         isLogged,
-        setIsLogged: setIsLoggedState, // Only update the state, not SecureStore
+        setIsLogged: setIsLoggedState,
         phoneNumber,
-        setPhoneNumber,
+        setPhoneNumber: setPhoneNumberSecure,
         role,
-        setRole: setRoleSecure, // Update SecureStore when setting role
+        setRole: setRoleSecure,
         loading,
         setLoading,
         token,

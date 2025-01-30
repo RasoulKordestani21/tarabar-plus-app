@@ -1,4 +1,10 @@
-import React, { useRef, useState, useCallback, useMemo } from "react";
+import React, {
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+  useEffect
+} from "react";
 import {
   FlatList,
   StyleSheet,
@@ -27,6 +33,7 @@ interface SearchableInputProps {
   containerStyle?: string;
   textStyle?: string;
   title?: string;
+  defaultValue?: string; // New defaultValue prop
   listContainerStyle?: string;
   iconName?: "search" | "dot-circle-o" | "location-arrow" | "caret-down";
   disableSearch?: boolean;
@@ -39,13 +46,18 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
   containerStyle,
   textStyle,
   title,
+  defaultValue = "", // Default value for the input
   iconName,
   disableSearch = false
 }) => {
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState(defaultValue); // Use defaultValue
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const inputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    setSearchText(defaultValue); // Update input when defaultValue changes
+  }, []);
 
   const handleOnSelect = (label: string, value: string) => {
     setSearchText(label); // Update the input with selected value
@@ -78,7 +90,7 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
 
   const Item = ({ item }: { item: Option }) => (
     <Pressable
-      style={tw`mb-1  rounded-md p-3 bg-white`}
+      style={tw`mb-1 rounded-md p-3 bg-white`}
       onPress={() => handleOnSelect(item.label, item.value)}
     >
       <Text style={[styles.label, tw`text-background font-vazir`]}>
@@ -109,7 +121,7 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
       <Pressable
         onPress={handleOpenModal}
         style={[
-          tw`rounded  px-3 flex-row justify-between items-center border-2`,
+          tw`rounded px-3 flex-row justify-between items-center border-2`,
           focusStyles
         ]}
       >
@@ -161,7 +173,7 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
           <View style={tw`p-5 bg-text rounded-lg min-w-[250px] w-11/12 z-50`}>
             <View
               style={[
-                tw`rounded  px-3 flex-row justify-between items-center border-2 mb-3`,
+                tw`rounded px-3 flex-row justify-between items-center border-2 mb-3`,
                 focusStyles
               ]}
             >
@@ -205,7 +217,7 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
             </View>
             {filteredOptions.length ? (
               <FlatList
-                style={tw` max-h-[80%] w-full rounded-xl bg-text`}
+                style={tw`max-h-[80%] w-full rounded-xl bg-text`}
                 data={filteredOptions}
                 keyExtractor={item => item.value}
                 renderItem={({ item }) => <Item item={item} />}
@@ -214,7 +226,7 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
               />
             ) : (
               <Text
-                style={tw` h-10 w-full rounded-xl bg-white text-center text-secodary font-vazir  pt-2`}
+                style={tw`h-10 w-full rounded-xl bg-white text-center text-secodary font-vazir pt-2`}
               >
                 موردی یافت نشد.
               </Text>

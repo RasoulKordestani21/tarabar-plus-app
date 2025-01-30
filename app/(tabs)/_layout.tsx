@@ -4,6 +4,8 @@ import { Tabs } from "expo-router";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import tw from "@/libs/twrnc";
 import { tabBoxes } from "@/constants/BoxesList";
+import { useGlobalContext } from "@/context/GlobalProvider";
+import { FontAwesome } from "@expo/vector-icons";
 
 type TabBarLabelProps = {
   focused: boolean;
@@ -24,12 +26,13 @@ const TabBarLabel = React.memo(
     return (
       <Animated.View
         style={[
-          tw`mx-3 p-2 items-center flex-row justify-center mb-5`,
+          tw`mx-3 p-2 items-center flex-row justify-center mb-4`,
           {
             backgroundColor: scaleAnim.interpolate({
               inputRange: [0, 1],
               outputRange: ["transparent", "#ffffff"]
             }),
+            // width:"105%",
             borderRadius: 8,
             transform: [
               {
@@ -59,7 +62,7 @@ const TabBarLabel = React.memo(
           </Animated.Text>
         )}
         <IconSymbol
-          size={28}
+          size={20}
           name={iconName as any}
           color={focused ? "#003366" : "#ffffff"}
         />
@@ -69,35 +72,44 @@ const TabBarLabel = React.memo(
 );
 
 export default function TabLayout() {
+  const { role } = useGlobalContext();
+  console.log(tabBoxes(role).length);
   return (
     <Tabs
       screenOptions={({ route }: { route: { name: string } }) => ({
-        tabBarStyle: tw`bg-background rounded-5 mx-2 mb-2 h-[85px]`,
-        tabBarItemStyle: tw`flex-row items-center justify-center`,
+        tabBarStyle: tw`bg-background rounded-5 mx-2  h-[60px]`,
+        tabBarItemStyle: tw` flex-row min-w-1/3  items-center justify-center`,
         tabBarActiveTintColor: "rgba(0, 0, 0, 0)",
         tabBarInactiveTintColor: "rgba(0, 0, 0, 0)",
+
         headerShown: true,
-        headerStyle: tw`bg-background`,
+        headerStyle: tw`bg-background `,
 
         headerTitle: () => (
-          <Image
-            source={require("@/assets/images/tarabarplusicon.png")}
-            resizeMode="contain"
-          />
+          <View>
+            {/* <FontAwesome name="contact-support" size={33} color="#fff" /> */}
+            <Image
+              source={require("@/assets/images/tarabarplusicon.png")}
+              resizeMode="contain"
+              style={tw` py-2 w-24`}
+            />
+          </View>
         ),
         headerTitleAlign: "center",
         headerShadowVisible: false,
         tabBarButton: props => (
           <Pressable
             onPress={props.onPress}
-            style={({ pressed }) => [tw`flex-1 justify-center items-center`]}
+            style={({ pressed }) => [
+              tw`flex-1 justify-center items-center w-[100px]`
+            ]}
           >
             {props.children}
           </Pressable>
         )
       })}
     >
-      {tabBoxes.map(tab => (
+      {tabBoxes(role).map(tab => (
         <Tabs.Screen
           key={tab.name}
           name={tab.name}

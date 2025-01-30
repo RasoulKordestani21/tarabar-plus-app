@@ -1,6 +1,7 @@
-import apiClient from "@/api/apiClient";
 import { Alert } from "react-native";
 import { AxiosError } from "axios"; // Import AxiosError type
+import apiClient from "@/api/apiClient";
+import { useToast } from "@/context/ToastContext"; // Uncomment if you're using toast for error handling
 
 type Props = {
   phoneNumber: string;
@@ -13,45 +14,54 @@ type VerifyProps = {
 };
 
 export const generateOtp = async ({ phoneNumber, role }: Props) => {
+  // const { showToast } = useToast();
   console.log(phoneNumber, role);
   try {
-    const response = await apiClient.get("/generate-otp", {
+    const response = await apiClient.get("api/auth/generate-otp", {
       params: { phoneNumber, role }
     });
     return response.data; // { message, otp }
   } catch (error) {
     const axiosError = error as AxiosError;
-    Alert.alert(
-      "Error",
-      JSON.stringify(axiosError.response?.data || axiosError.message)
-    );
-    // console.log(error);
-    throw new Error(
-      axiosError.message || "Error generating OTP. Please try again."
-    );
+    console.log("Error generating OTP:", axiosError.message);
+    console.log("Error generating OTP:", axiosError?.response?.data);
+
+    // If the backend sends a custom error message, show it
+    const errorMessage =
+      axiosError.response?.data?.errorCode || axiosError.message;
+
+    // Show the error message (uncomment the next line if you're using toast)
+    // await showToast(errorMessage, "error");
+
+    throw new Error(errorMessage);
   }
 };
 
 export const verifyOtp = async ({ phoneNumber, otp }: VerifyProps) => {
   console.log(`Verifying OTP for phoneNumber: ${phoneNumber} with OTP: ${otp}`);
   try {
-    const response = await apiClient.get("/verify-otp", {
+    const response = await apiClient.get("api/auth/verify-otp", {
       params: { phoneNumber, otp } // Send as query parameters
     });
-    console.log("Response from server:", response.data); // Debugging log
+    // console.log("Response from server:", response.data); // Debugging log
     return response.data; // Return the data property
   } catch (error: any) {
     const axiosError = error as AxiosError;
     console.error(
       "Error during OTP verification:",
       axiosError.response?.data || error.message
-    ); // Debugging log
-    Alert.alert(
-      "Error",
-      JSON.stringify(axiosError.response?.data || axiosError.message)
     );
-    throw new Error(
-      axiosError.message || "Error verifying OTP. Please try again."
-    );
+
+    // If the backend sends a custom error message, show it
+    const errorMessage =
+      axiosError.response?.data?.message || axiosError.message;
+
+    // Show the error message (uncomment the next line if you're using toast)
+    // await showToast(errorMessage, "error");
+
+    // Alert.alert("Error", errorMessage); // Show detailed error in the alert
+    throw new Error(errorMessage || "Error verifying OTP. Please try again.");
   }
 };
+
+// In your service file
