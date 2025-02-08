@@ -62,6 +62,7 @@ export default function OnBoardingScreen({}) {
     router.replace("/otp-sender");
   };
 
+
   return (
     <View
       style={tw`flex-1 justify-center items-center px-5 py-15 bg-[#003366]`}
