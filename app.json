@@ -13,6 +13,10 @@
       "supportsTablet": true
     },
     "android": {
+      "buildToolsVersion": "33.0.0",
+      "compileSdkVersion": 33,
+      "targetSdkVersion": 33,
+      "kotlinVersion": "1.9.25",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
