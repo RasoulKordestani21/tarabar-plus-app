@@ -6,7 +6,10 @@
     "production": {},
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "env": {
+          "NODE_ENV": "development"
+        }
       }
     },
     "preview2": {
@@ -15,7 +18,6 @@
       }
     },
     "preview3": {
-      
       "developmentClient": true
     },
     "preview4": {
