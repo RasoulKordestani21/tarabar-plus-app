@@ -1,5 +1,13 @@
 {
+  "cli": {
+    "appVersionSource": "remote"
+  },
   "build": {
+    "production": {
+      "cli": {
+        "appVersionSource": "remote"
+      }
+    },
     "preview": {
       "android": {
         "buildType": "apk"
@@ -15,7 +23,6 @@
     },
     "preview4": {
       "distribution": "internal"
-    },
-    "production": {}
+    }
   }
 }
