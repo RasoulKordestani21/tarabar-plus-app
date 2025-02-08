@@ -19,7 +19,7 @@ export default function HomeScreen() {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [coordination, setCoordination] = useState();
 
-  const { role, loading, setLoading } = useGlobalContext();
+  const { role, loading, setLoading, token } = useGlobalContext();
 
   useFocusEffect(
     React.useCallback(() => {

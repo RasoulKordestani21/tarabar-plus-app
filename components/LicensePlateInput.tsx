@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
-  Image
+  Image,
+  Platform
 } from "react-native";
 import tw from "@/libs/twrnc";
 import { Ionicons } from "@expo/vector-icons";
@@ -75,7 +76,9 @@ const LicensePlateInput = ({
             onChangeText={text => handleInputChange("part1", text)}
             placeholder="_ _"
             maxLength={2}
-            keyboardType="numeric"
+            keyboardType={
+              Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
+            }
           />
 
           <TextInput
@@ -90,7 +93,9 @@ const LicensePlateInput = ({
             onChangeText={text => handleInputChange("part2", text)}
             placeholder="_ _ _"
             maxLength={3}
-            keyboardType="numeric"
+            keyboardType={
+              Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
+            }
           />
 
           <View style={tw`relative`}>
@@ -100,7 +105,9 @@ const LicensePlateInput = ({
               onChangeText={text => handleInputChange("part3", text)}
               placeholder="_ _"
               maxLength={2}
-              keyboardType="numeric"
+              keyboardType={
+                Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
+              }
             />
             <Text
               style={tw`absolute top-0 left-5 text-xs text-background font-vazir`}

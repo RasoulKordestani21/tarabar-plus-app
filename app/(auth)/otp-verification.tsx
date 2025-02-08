@@ -21,18 +21,23 @@ const OtpVerifier = () => {
     role,
     setToken,
     setIsLogged,
-    setPhoneNumber
+    setPhoneNumber,
+    deviceId,
+    deviceName
   } = useGlobalContext(); // Get setPhoneNumber from the context
   const [form, setForm] = useState({ otp: "" });
   const [focused, setFocused] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
 
   const handleVerification = async () => {
-
-
     setLoading(true);
     try {
-      const response = await verifyOtp({ phoneNumber, otp: form.otp });
+      const response = await verifyOtp({
+        phoneNumber,
+        otp: form.otp,
+        deviceId,
+        deviceName
+      });
       console.log("Verification Response:", response); // Debugging log
 
       if (response?.token) {

@@ -1,6 +1,6 @@
-// GlobalProvider.js
 import React, { createContext, useContext, useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
+import * as Device from "expo-device"; // Import expo-device
 
 const GlobalContext = createContext();
 
@@ -19,19 +19,28 @@ const GlobalProvider = ({ children }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(true);
   const [token, setTokenState] = useState("");
+  const [deviceId, setDeviceId] = useState(""); // Add state for deviceId
+  const [deviceName, setDeviceName] = useState(""); // Add state for deviceName
 
   useEffect(() => {
     const loadState = async () => {
       try {
         setLoading(true);
+
+        // Load data from SecureStore
         const storedToken = await SecureStore.getItemAsync("token");
         const storedRole = await SecureStore.getItemAsync("role");
         const storedPhoneNumber = await SecureStore.getItemAsync("phoneNumber");
+        const storedDeviceId = await SecureStore.getItemAsync("deviceId");
+        const storedDeviceName = await SecureStore.getItemAsync("deviceName");
+
         if (storedToken) {
           setTokenState(storedToken);
           setIsLoggedState(true);
           if (storedRole) setRole(storedRole);
           if (storedPhoneNumber) setPhoneNumber(storedPhoneNumber);
+          if (storedDeviceId) setDeviceId(storedDeviceId);
+          if (storedDeviceName) setDeviceName(storedDeviceName);
         } else {
           setIsLoggedState(false);
         }
@@ -44,6 +53,23 @@ const GlobalProvider = ({ children }) => {
 
     loadState();
   }, []);
+
+  // Function to get and store device information
+  const setDeviceInfo = async () => {
+    try {
+      const uniqueDeviceId = (await Device.osBuildId) || Device.installationId; // Get unique device ID
+      const deviceModelName = Device.modelName; // Get device name
+
+      setDeviceId(uniqueDeviceId);
+      setDeviceName(deviceModelName);
+
+      // Save to SecureStore for persistence
+      await SecureStore.setItemAsync("deviceId", uniqueDeviceId);
+      await SecureStore.setItemAsync("deviceName", deviceModelName);
+    } catch (error) {
+      console.error("Error getting device information:", error);
+    }
+  };
 
   const setToken = async newToken => {
     try {
@@ -101,7 +127,10 @@ const GlobalProvider = ({ children }) => {
         loading,
         setLoading,
         token,
-        setToken
+        setToken,
+        deviceId,
+        deviceName,
+        setDeviceInfo // Expose the function to set device info
       }}
     >
       {children}

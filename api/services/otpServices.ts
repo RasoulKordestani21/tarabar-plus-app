@@ -1,3 +1,4 @@
+import { deviceName } from "./../../node_modules/expo-device/src/Device";
 import { Alert } from "react-native";
 import { AxiosError } from "axios"; // Import AxiosError type
 import apiClient from "@/api/apiClient";
@@ -11,6 +12,8 @@ type Props = {
 type VerifyProps = {
   phoneNumber: string;
   otp: string;
+  deviceId: string;
+  deviceName: string;
 };
 
 export const generateOtp = async ({ phoneNumber, role }: Props) => {
@@ -37,11 +40,16 @@ export const generateOtp = async ({ phoneNumber, role }: Props) => {
   }
 };
 
-export const verifyOtp = async ({ phoneNumber, otp }: VerifyProps) => {
+export const verifyOtp = async ({
+  phoneNumber,
+  otp,
+  deviceId,
+  deviceName
+}: VerifyProps) => {
   console.log(`Verifying OTP for phoneNumber: ${phoneNumber} with OTP: ${otp}`);
   try {
     const response = await apiClient.get("api/auth/verify-otp", {
-      params: { phoneNumber, otp } // Send as query parameters
+      params: { phoneNumber, otp, deviceId, deviceName } // Send as query parameters
     });
     // console.log("Response from server:", response.data); // Debugging log
     return response.data; // Return the data property

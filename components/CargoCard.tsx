@@ -17,6 +17,7 @@ interface LoadDetails {
   description: string;
   price: string;
   distance: string;
+  ownerPhone: string;
   onRemove: () => void; // Function to handle remove
   onEdit: () => void; // Function to handle edit
 }
@@ -32,6 +33,7 @@ const CargoCard: React.FC<LoadDetails> = ({
   description,
   distance,
   price,
+  ownerPhone,
   onRemove,
   onEdit
 }) => {
@@ -71,6 +73,9 @@ const CargoCard: React.FC<LoadDetails> = ({
         </Text>
         <Text style={tw`text-background text-xl text-center mt-2 font-vazir`}>
           کرایه: {price}
+        </Text>
+        <Text style={tw`text-background text-xl text-center mt-2 font-vazir`}>
+          شماره صاحب بار: {ownerPhone}
         </Text>
       </View>
 

@@ -6,23 +6,40 @@ import { View, Image, Animated, Text, Alert } from "react-native";
 import { router } from "expo-router";
 
 import { useGlobalContext } from "@/context/GlobalProvider";
-
 import tw from "@/libs/twrnc";
 
 export default function OnBoardingScreen({}) {
   const [showButtons, setShowButtons] = useState(false);
-  const { role, setRole, isLogged, token, setToken, setPhoneNumber } =
-    useGlobalContext();
+  const {
+    role,
+    setRole,
+    isLogged,
+    token,
+    deviceId,
+    deviceName,
+    setDeviceInfo,
+    setToken,
+    setPhoneNumber
+  } = useGlobalContext();
   const fadeAnim = useState(new Animated.Value(0))[0];
 
   useEffect(() => {
-    // setToken();
-    // setRole();
-    // setPhoneNumber();
-    if (isLogged) {
-      console.log("loggedin");
-      router.replace("/home");
+    // Set device info on mount if not already set
+    console.log(deviceId, deviceName, " is deviceId and deviceName ");
+    if (!deviceId || !deviceName) {
+      setDeviceInfo();
     }
+  }, [deviceId, setDeviceInfo]);
+
+  useEffect(() => {
+    setToken();
+    setRole();
+    setPhoneNumber();
+    console.log(token);
+    // if (isLogged && token) {
+    //   console.log("loggedin");
+    //   router.replace("/home");
+    // }
   }, [isLogged]);
 
   useEffect(() => {

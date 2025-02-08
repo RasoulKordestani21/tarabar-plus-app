@@ -100,6 +100,15 @@ const MenuLayout = () => {
             headerTitle: () => <Header title="تاریخچه بارها" /> // Use the custom Header component
           }}
         />
+        <Stack.Screen
+          name="driver-smart-card-inquiry"
+          options={{
+            title: "استعلام کارت هوشمند راننده", // Title of the screen
+            headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
+            headerTintColor: "white", // Set header text color to white
+            headerTitle: () => <Header title="استعلام کارت هوشمند راننده" /> // Use the custom Header component
+          }}
+        />
       </Stack>
     </>
   );

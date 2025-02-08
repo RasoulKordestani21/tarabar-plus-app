@@ -28,13 +28,13 @@ export default function ToolsScreen() {
       }
     },
     {
-      title: "استعلام کارت هوشمند",
+      title: "استعلام هوشمند راننده",
       description:
         "در این بخش شما می‌توانید وضعیت و اعتبار کارت هوشمند خود را بررسی کرده و اطلاعات لازم را مشاهده کنید.",
       bgColor: "bg-green-400",
       iconName: "id-card",
       onPress: () => {
-        console.log("Smart card inquiry pressed");
+        router.push("/driver-smart-card-inquiry");
       }
     },
     {

@@ -1,17 +1,21 @@
-import React, { useState } from "react";
+// screens/EstimateFareDrawer.tsx
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   Platform,
   Pressable,
   ScrollView,
-  SafeAreaView
+  SafeAreaView,
+  Alert
 } from "react-native";
 import DropdownInput from "@/components/DropdownInput";
 import tw from "@/libs/twrnc";
 import FormField from "@/components/FormField";
 import FeeRangeDrawer from "@/components/RangeDrawer";
 import CustomButton from "@/components/CustomButton";
+import { getAllCities } from "@/api/services/cargoServices";
+import { estimateCommissionAndFare } from "@/api/services/toolsServices"; // Importing the new service
 
 interface Option {
   label: string;
@@ -86,8 +90,55 @@ const EstimateFareDrawer: React.FC<Props> = ({ onClose }) => {
   });
   const [feeRangeOpened, setFeeRangeOpened] = useState(false);
 
+  const [cities, setCities] = useState<any[]>([]);
+  const [estimatedFare, setEstimatedFare] = useState<number | null>(null);
+  const [estimatedCommission, setEstimatedCommission] = useState<number | null>(
+    null
+  );
+
   const handleCloseDrawer = () => {
     setFeeRangeOpened(false);
+  };
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const result = await getAllCities();
+        setCities(result);
+      } catch (error) {
+        console.error("Failed to fetch cities:", error);
+      }
+    };
+
+    fetchCities();
+  }, []);
+
+  const handleEstimateFare = async () => {
+    if (
+      !form.origin ||
+      !form.destination ||
+      !form.truckType ||
+      !form.cargoType
+    ) {
+      Alert.alert("Please fill all the fields before estimating the fare.");
+      return;
+    }
+
+    try {
+      const response = await estimateCommissionAndFare(
+        form.origin,
+        form.destination,
+        form.cargoType,
+        form.truckType,
+        form.insurancePercentage || "0"
+      );
+      setEstimatedFare(response.estimation.estimatedFare);
+      setEstimatedCommission(response.estimation.estimatedCommission);
+      console.log(response);
+      setFeeRangeOpened(true); // Open the fee range drawer
+    } catch (error) {
+      Alert.alert("Error estimating fare:", error.message);
+    }
   };
 
   return (
@@ -95,7 +146,10 @@ const EstimateFareDrawer: React.FC<Props> = ({ onClose }) => {
       <View style={tw`flex-1`}>
         <DropdownInput
           title="مبدا"
-          options={fakeData}
+          options={cities.map(city => ({
+            label: city.title,
+            value: city.id
+          }))}
           placeholder="یکی از گزینه های زیر را انتخاب کنید."
           onSelect={value => setForm({ ...form, origin: value })}
           textStyle="text-right"
@@ -105,7 +159,10 @@ const EstimateFareDrawer: React.FC<Props> = ({ onClose }) => {
 
         <DropdownInput
           title="مقصد"
-          options={fakeData}
+          options={cities.map(city => ({
+            label: city.title,
+            value: city.id
+          }))}
           placeholder="یکی از گزینه های زیر را انتخاب کنید."
           onSelect={value => setForm({ ...form, destination: value })}
           textStyle="text-right"
@@ -142,22 +199,28 @@ const EstimateFareDrawer: React.FC<Props> = ({ onClose }) => {
           handleChangeText={(e: string) => {
             setForm({ ...form, insurancePercentage: e });
           }}
+          pattern={{
+            type: /^([0-9]|[1-9][0-9]|100)$/,
+            message: "عدد باید بین صفر تا صد باشد."
+          }}
+          maxLength={3}
           otherStyles="mb-7"
           keyboardType={Platform.OS === "ios" ? "name-phone-pad" : "number-pad"}
           color="background"
         />
       </View>
+
       <FeeRangeDrawer
         isVisible={feeRangeOpened}
         onClose={handleCloseDrawer}
-        minFee={10000000}
-        maxFee={20000000}
+        minFee={Number(estimatedFare) || 0}
+        maxFee={estimatedFare ? Number(estimatedFare) * 2 : 0}
         currency={"تومان"}
-        // Replace with your image
       />
+
       <CustomButton
-        title="ورود به عنوان صاحب بار "
-        handlePress={() => null}
+        title="تخمین کرایه"
+        handlePress={handleEstimateFare} // Trigger estimate fare
         containerStyles="w-full  bg-background"
       />
     </ScrollView>

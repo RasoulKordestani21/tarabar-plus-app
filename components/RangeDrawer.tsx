@@ -32,6 +32,7 @@ const FeeRangeDrawer: React.FC<FeeRangeDrawerProps> = ({
   const formatNumber = (num: number) => {
     return num.toLocaleString("fa");
   };
+  console.log(minFee, maxFee);
   return (
     <Modal
       visible={isVisible}
@@ -66,10 +67,7 @@ const FeeRangeDrawer: React.FC<FeeRangeDrawerProps> = ({
             <View style={tw`px-4`}>
               <Text style={tw`text-background text-sm font-vazir text-center`}>
                 مطابق محاسبات انجام شده نرخ کرایه تخمین زده شده
-                <Text style={tw`text-green-500 `}>
-                  {" "}
-                  {formatNumber(minFee)}{" "}
-                </Text>
+                <Text style={tw`text-green-500 `}>{formatNumber(minFee)}</Text>
                 <Text style={tw`text-background`}> تومان تا </Text>
                 <Text style={tw`text-red-500`}> {formatNumber(maxFee)} </Text>
                 <Text style={tw`text-background`}> تومان است. </Text>

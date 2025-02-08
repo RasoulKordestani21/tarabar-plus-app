@@ -1,4 +1,3 @@
-// screens/AccountScreen.tsx
 import React, { useState } from "react";
 import { View, Text, ScrollView, Alert, Platform } from "react-native";
 import tw from "@/libs/twrnc"; // Ensure you configure tailwind-rn or use a similar library
@@ -8,7 +7,7 @@ import LicensePlateInput from "@/components/LicensePlateInput";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { verifyDriverSmartCard } from "@/api/services/toolsServices"; // Import verify-driver-smart-card service
 
-const AccountScreen = () => {
+const DriverSmartCardInquiry = () => {
   const { phoneNumber } = useGlobalContext(); // Assuming phone number is fetched from global context
   // Assuming userId is passed from a previous route or via context
   const [form, setForm] = useState({
@@ -106,4 +105,4 @@ const AccountScreen = () => {
   );
 };
 
-export default AccountScreen;
+export default DriverSmartCardInquiry;

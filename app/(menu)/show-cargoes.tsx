@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import tw from "@/libs/twrnc";
-import { useLocalSearchParams } from "expo-router"; // Import the useSearchParams hook
+import { router, useLocalSearchParams } from "expo-router"; // Import the useSearchParams hook
 import {
   getCargoesByLocation,
   getCargoesByOriginDestination
@@ -47,6 +47,9 @@ export default function ShowCargoes() {
         console.log(parseFloat(latitude), parseFloat(longitude));
         setCargoes(filteredCargoes);
       } catch (err) {
+        // if (err.response.status === 401) {
+        //   router.replace("/otp-sender");
+        // }
         setError("Failed to fetch cargoes");
         console.error(err);
       } finally {
@@ -86,6 +89,7 @@ export default function ShowCargoes() {
                 cargoTypes.find(ele => Number(ele.value) === cargo.cargoTypeId)
                   ?.label
               }
+              ownerPhone={cargo?.ownerPhone || "N/A"}
               date={cargo?.updatedAt || "N/A"}
               description={cargo.description || "No description provided."}
               price={cargo.carriageFee || "N/A"}

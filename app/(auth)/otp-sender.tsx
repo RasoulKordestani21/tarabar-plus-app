@@ -15,7 +15,9 @@ const OtpSender = () => {
   const { role, setLoading, phoneNumber, setPhoneNumber, loading } =
     useGlobalContext();
   const [isFormValid, setIsFormValid] = useState(false);
-
+  useEffect(() => {
+    setLoading(false);
+  }, []);
   const handleOtpSender = async () => {
     setLoading(true); // Trigger loader
     try {

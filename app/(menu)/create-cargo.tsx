@@ -7,8 +7,11 @@ import DropdownInput from "@/components/DropdownInput";
 import { cargoTypes, truckTypes } from "@/constants/BoxesList";
 import FormField from "@/components/FormField";
 import CustomButton from "@/components/CustomButton";
+import { useGlobalContext } from "@/context/GlobalProvider";
 
 const CreateCargo = () => {
+  const { phoneNumber } = useGlobalContext();
+
   const [cities, setCities] = useState<any[]>([]);
   const [form, setForm] = useState({
     origin: "",
@@ -40,7 +43,8 @@ const CreateCargo = () => {
         truckTypeId: Number(form.truckType),
         cargoTypeId: Number(form.cargoType),
         carriageFee: form.fee,
-        description: form.description // Include description
+        description: form.description,
+        ownerPhone: phoneNumber
       };
 
       const result = await addCargo(cargoData);

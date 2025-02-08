@@ -1,11 +1,19 @@
 import React, { useRef, useEffect } from "react";
-import { Animated, Image, Pressable, Text, View } from "react-native";
-import { Tabs } from "expo-router";
+import {
+  Animated,
+  Image,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
+import { router, Tabs } from "expo-router";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import tw from "@/libs/twrnc";
 import { tabBoxes } from "@/constants/BoxesList";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { FontAwesome } from "@expo/vector-icons";
+import CustomButton from "@/components/CustomButton";
 
 type TabBarLabelProps = {
   focused: boolean;
@@ -72,7 +80,7 @@ const TabBarLabel = React.memo(
 );
 
 export default function TabLayout() {
-  const { role } = useGlobalContext();
+  const { role, setToken, setPhoneNumber, setRole } = useGlobalContext();
   console.log(tabBoxes(role).length);
   return (
     <Tabs
@@ -86,8 +94,18 @@ export default function TabLayout() {
         headerStyle: tw`bg-background `,
 
         headerTitle: () => (
-          <View>
-            {/* <FontAwesome name="contact-support" size={33} color="#fff" /> */}
+          <View style={tw`flex-row items-center justify-center  min-w-full`}>
+            <TouchableOpacity
+              style={tw`absolute left-2`}
+              onPress={() => {
+                setToken();
+                setPhoneNumber();
+                setRole();
+                router.push("/");
+              }}
+            >
+              <FontAwesome name="sign-out" size={24} color="#fff" />
+            </TouchableOpacity>
             <Image
               source={require("@/assets/images/tarabarplusicon.png")}
               resizeMode="contain"

@@ -49,9 +49,10 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="(menu)" options={{ headerShown: false }} />
             <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="error" options={{ headerShown: false }} />
           </Stack>
         </ToastProvider>
-        <StatusBar style="light"  />
+        <StatusBar style="light" />
       </ThemeProvider>
     </GlobalProvider>
   );
