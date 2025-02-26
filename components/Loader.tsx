@@ -13,7 +13,7 @@ const Loader = ({ isLoading }: Props) => {
 
   return (
     <View
-      style={tw`absolute  w-full h-full bg-black-50 flex justify-center items-center z-50`}
+      style={tw`absolute  w-full h-full bg-[#000] opacity-95 flex justify-center items-center z-100`}
     >
       <ActivityIndicator
         animating={true}

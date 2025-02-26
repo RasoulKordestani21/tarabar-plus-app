@@ -5,9 +5,9 @@ import { router, useFocusEffect } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 
 import BoxButton from "@/components/BoxButton";
-import LocationModal from "@/components/LocationModal";
+import LocationModal from "@/components/findLocationByGPS/LocationModal";
 import { homeBoxes } from "@/constants/BoxesList";
-import DefineOriginDestination from "@/components/DefineOriginDestination";
+import DefineOriginDestination from "@/components/findLocationByOriginAndDestination/DefineOriginDestination";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import DrawerModal from "@/components/DrawerModal";
 import Loader from "@/components/Loader";

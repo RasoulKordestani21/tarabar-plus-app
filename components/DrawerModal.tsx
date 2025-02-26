@@ -6,7 +6,7 @@ import * as Location from "expo-location"; // Import Location for checking locat
 import { router } from "expo-router"; // To navigate to the show-cargoes page
 import { useGlobalContext } from "@/context/GlobalProvider";
 import Loader from "./Loader";
-import LocationSelection from "./LocationSelection";
+import LocationSelection from "./findLocationByOriginAndDestination/LocationSelection";
 
 type DrawerModalProps = {
   visible: boolean;

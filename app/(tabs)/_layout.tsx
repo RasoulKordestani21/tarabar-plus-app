@@ -80,17 +80,20 @@ const TabBarLabel = React.memo(
 );
 
 export default function TabLayout() {
-  const { role, setToken, setPhoneNumber, setRole } = useGlobalContext();
+  const { role, setToken, setPhoneNumber, setRole, loading } =
+    useGlobalContext();
   console.log(tabBoxes(role).length);
   return (
     <Tabs
       screenOptions={({ route }: { route: { name: string } }) => ({
-        tabBarStyle: tw`bg-background rounded-5 mx-2  h-[60px]`,
+        tabBarStyle: tw`bg-background rounded-5 mx-2  h-[60px] ${
+          loading ? "hidden" : "flex"
+        }`,
         tabBarItemStyle: tw` flex-row min-w-1/3  items-center justify-center`,
         tabBarActiveTintColor: "rgba(0, 0, 0, 0)",
         tabBarInactiveTintColor: "rgba(0, 0, 0, 0)",
 
-        headerShown: true,
+        headerShown: !loading,
         headerStyle: tw`bg-background `,
 
         headerTitle: () => (

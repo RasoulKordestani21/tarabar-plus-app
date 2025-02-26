@@ -22,7 +22,7 @@ const BoxButton: React.FC<BoxButtonProps> = ({
     <TouchableOpacity
       key={id}
       onPress={onPress}
-      style={tw`w-[48%] mb-4  bg-customCard rounded-lg items-center p-4`}
+      style={tw`w-[48%] mb-4  bg-background rounded-lg items-center p-4`}
     >
       <Image source={source} style={tw`h-20 w-20`} resizeMode="contain" />
       <View style={tw`w-full h-[1px] bg-text mb-5 mt-3`}></View>

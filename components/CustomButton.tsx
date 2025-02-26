@@ -1,9 +1,14 @@
-import { ActivityIndicator, GestureResponderEvent, Text, TouchableOpacity } from "react-native";
+import {
+  ActivityIndicator,
+  GestureResponderEvent,
+  Text,
+  TouchableOpacity
+} from "react-native";
 import tw from "@/libs/twrnc";
 
 type Props = {
   title: string;
-  handlePress: (event: GestureResponderEvent, param?: number) => void; // Accept the event parameter
+  handlePress?: (event: GestureResponderEvent, param?: number) => void; // Accept the event parameter
   containerStyles: string;
   textStyles?: string | undefined;
   isLoading?: boolean;

@@ -44,7 +44,7 @@ export default function RootLayout() {
         value={DefaultTheme}
       >
         <ToastProvider>
-          <Stack>
+          <Stack >
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="(menu)" options={{ headerShown: false }} />

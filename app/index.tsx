@@ -32,14 +32,14 @@ export default function OnBoardingScreen({}) {
   }, [deviceId, setDeviceInfo]);
 
   useEffect(() => {
-    setToken();
-    setRole();
-    setPhoneNumber();
-    console.log(token);
-    // if (isLogged && token) {
-    //   console.log("loggedin");
-    //   router.replace("/home");
-    // }
+    // setToken();
+    // setRole();
+    // setPhoneNumber();
+    // console.log(token);
+    if (isLogged && token) {
+      console.log("loggedin");
+      router.replace("/home");
+    }
   }, [isLogged]);
 
   useEffect(() => {
@@ -61,7 +61,6 @@ export default function OnBoardingScreen({}) {
     setRole(role);
     router.replace("/otp-sender");
   };
-
 
   return (
     <View

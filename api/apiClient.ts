@@ -3,8 +3,9 @@ import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
 
 const apiClient = axios.create({
-  baseURL: "https://tarabar-plus.com",
-  // "http://192.168.1.103:3000", // Replace with your backend URL
+  baseURL:
+    // "https://tarabar-plus.com",
+    "http://192.168.1.103:3000", // Replace with your backend URL
   headers: {
     "Content-Type": "application/json"
   }
