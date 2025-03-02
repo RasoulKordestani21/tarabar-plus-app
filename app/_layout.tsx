@@ -10,6 +10,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 
 import GlobalProvider, { useGlobalContext } from "@/context/GlobalProvider";
 import { ToastProvider } from "@/context/ToastContext"; // Import the ToastProvider
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -24,6 +25,8 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const queryClient = new QueryClient();
 
   useEffect(() => {
     if (fontsLoaded) {
@@ -43,16 +46,18 @@ export default function RootLayout() {
         // value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         value={DefaultTheme}
       >
-        <ToastProvider>
-          <Stack >
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="(menu)" options={{ headerShown: false }} />
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="error" options={{ headerShown: false }} />
-          </Stack>
-        </ToastProvider>
-        <StatusBar style="light" />
+        <QueryClientProvider client={queryClient}>
+          <ToastProvider>
+            <Stack>
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="(menu)" options={{ headerShown: false }} />
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="error" options={{ headerShown: false }} />
+            </Stack>
+          </ToastProvider>
+          <StatusBar style="light" />
+        </QueryClientProvider>
       </ThemeProvider>
     </GlobalProvider>
   );

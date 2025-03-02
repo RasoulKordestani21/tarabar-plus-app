@@ -9,9 +9,9 @@ import {
   SafeAreaView,
   Alert
 } from "react-native";
-import DropdownInput from "@/components/DropdownInput";
+import DropdownInput from "@/components/Input/DropdownInput";
 import tw from "@/libs/twrnc";
-import FormField from "@/components/FormField";
+import FormField from "@/components/Input/FormField";
 import FeeRangeDrawer from "@/components/RangeDrawer";
 import CustomButton from "@/components/CustomButton";
 import { getAllCities } from "@/api/services/cargoServices";

@@ -5,7 +5,7 @@ import { View, Image, Platform } from "react-native";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import tw from "@/libs/twrnc";
 import CustomButton from "@/components/CustomButton";
-import FormField from "@/components/FormField";
+import FormField from "@/components/Input/FormField";
 import { generateOtp } from "@/api/services/otpServices";
 import { useToast } from "@/context/ToastContext";
 import Loader from "@/components/Loader"; // Import the Loader component

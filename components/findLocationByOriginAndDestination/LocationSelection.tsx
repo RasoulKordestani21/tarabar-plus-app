@@ -14,7 +14,7 @@ import LocationSelectType from "./shared/LocationSelectType";
 import CustomChipList from "./shared/CustomChipList";
 import CustomButton from "../CustomButton";
 import { City, FetchedCities, LocationSelectionProps } from "./types/types";
-import FormField from "../FormField";
+import FormField from "../Input/FormField";
 
 const LocationSelection: React.FC<LocationSelectionProps> = ({
   visible,

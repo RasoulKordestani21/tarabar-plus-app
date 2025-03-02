@@ -39,13 +39,15 @@
       "typedRoutes": true
     },
     "extra": {
+      "DEVELOP_URL": "http://192.168.1.103:3000",
+      "PRODUCTION_URL": "https://tarabar-plus.com",
       "router": {
         "origin": false
       },
       "eas": {
         "projectId": "d8b8f99b-a6de-4b4d-ac31-d7808fa6c8b7"
-      }
-      ,"supportsRTL": true,
+      },
+      "supportsRTL": true,
       "forcesRTL": true
     }
   }

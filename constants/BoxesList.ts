@@ -1,5 +1,6 @@
 import { Route } from "expo-router";
 import { useGlobalContext } from "@/context/GlobalProvider";
+import { Platform } from "react-native";
 
 const homeBoxes = (role: string) => {
   if (role === "1") {
@@ -124,4 +125,44 @@ const cargoTypes = [
   { label: "اثاثیه منزل", value: "19" }
 ];
 
-export { homeBoxes, tabBoxes, truckTypes, cargoTypes };
+const accountSettingTextInput = [
+  {
+    title: "کد ملی",
+    name: "nationalId",
+    maxLength: 10,
+    pattern: {
+      type: /^\d{10}$/,
+      message: "کد ملی 10 رقمی می‌باشد . "
+    },
+    keyboardType: Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
+  },
+  {
+    title: "نام کاربری",
+    name: "userName",
+    maxLength: 30,
+    minLength: 4,
+    keyboardType: "default"
+  },
+  {
+    title: "شماره هوشمند راننده",
+    name: "driverSmartNumber",
+    maxLength: 8,
+    pattern: {
+      type: /^\d{8}$/,
+      message: "هوشمند راننده 8 رقمی می‌باشد . "
+    },
+    keyboardType: Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
+  },
+  {
+    title: "شماره هوشمند خودرو",
+    name: "truckSmartNumber",
+    maxLength: 9,
+    pattern: {
+      type: /^\d{9}$/,
+      message: "هوشمند خودرو 9 رقمی می‌باشد . "
+    },
+    keyboardType: Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
+  }
+];
+
+export { homeBoxes, tabBoxes, truckTypes, cargoTypes, accountSettingTextInput };

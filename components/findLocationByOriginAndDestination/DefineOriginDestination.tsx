@@ -166,7 +166,7 @@ const DefineOriginDestination: React.FC<DefineOriginDestinationProps> = ({
             />
           </View>
           {/* Find Cargo Button */}
-          <View style={tw`flex-row justify-between justify-self-end`}>
+          <View style={tw`flex-row justify-between `}>
             <CustomButton
               title="یافتن بار"
               handlePress={handleFindCargo}

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Alert, View, Image, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "@/libs/twrnc";
-import FormField from "@/components/FormField";
+import FormField from "@/components/Input/FormField";
 import CustomButton from "@/components/CustomButton";
 import OTPTimer from "@/components/OtpTimer";
 import { verifyOtp, generateOtp } from "@/api/services/otpServices";

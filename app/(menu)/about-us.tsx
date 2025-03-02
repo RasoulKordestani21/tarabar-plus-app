@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import tw from "@/libs/twrnc"; // Ensure you configure tailwind-rn or use a similar library
-import FormField from "@/components/FormField";
-import DropdownInput from "@/components/DropdownInput";
+import FormField from "@/components/Input/FormField";
+import DropdownInput from "@/components/Input/DropdownInput";
 import CustomButton from "@/components/CustomButton";
 import { router } from "expo-router";
 import { Image } from "react-native";

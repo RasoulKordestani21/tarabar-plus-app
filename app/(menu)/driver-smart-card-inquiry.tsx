@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, Alert, Platform } from "react-native";
 import tw from "@/libs/twrnc"; // Ensure you configure tailwind-rn or use a similar library
-import FormField from "@/components/FormField";
+import FormField from "@/components/Input/FormField";
 import CustomButton from "@/components/CustomButton";
 import LicensePlateInput from "@/components/LicensePlateInput";
 import { useGlobalContext } from "@/context/GlobalProvider";

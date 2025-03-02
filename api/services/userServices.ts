@@ -1,4 +1,5 @@
 import apiClient from "@/api/apiClient";
+import { AxiosError } from "axios";
 import { Alert } from "react-native";
 
 type Props = {
@@ -6,8 +7,10 @@ type Props = {
 };
 
 // GET a single user
-export const getUser = async (id: string) => {
-  const response = await apiClient.get(`/users/${id}`);
+export const getUser = async (phoneNumber: string) => {
+  const response = await apiClient.get(`/api/auth/user`, {
+    params: { phoneNumber }
+  });
   return response.data;
 };
 
@@ -31,14 +34,20 @@ export const deleteUser = async (id: string) => {
 
 export const updateVerificationData = async (
   phoneNumber: string,
-  form: { nationalId: string; truckNavigationId: string; licensePlate: string }
+  form: {
+    userName: string;
+    driverSmartNumber: string;
+    truckSmartNumber: string;
+    nationalId: string;
+    truckNavigationId: string;
+    licensePlate: string;
+    nationalCard: string;
+  }
 ) => {
   try {
     const response = await apiClient.post(`/api/auth/update-verification`, {
       phoneNumber,
-      nationalId: form.nationalId,
-      truckNavigationId: form.truckNavigationId,
-      licensePlate: form.licensePlate
+      ...form
     });
 
     return response.data; // This will contain the server response

@@ -20,6 +20,7 @@ import {
 } from "react-native";
 import tw from "@/libs/twrnc";
 import { FontAwesome } from "@expo/vector-icons";
+import { useFormikContext } from "formik";
 
 interface Option {
   label: string;
@@ -29,7 +30,7 @@ interface Option {
 interface SearchableInputProps {
   options: Option[];
   placeholder?: string;
-  onSelect: (value: string) => void;
+  onSelect?: (value: string) => void;
   containerStyle?: string;
   textStyle?: string;
   title?: string;
@@ -37,21 +38,29 @@ interface SearchableInputProps {
   listContainerStyle?: string;
   iconName?: "search" | "dot-circle-o" | "location-arrow" | "caret-down";
   disableSearch?: boolean;
+  name?: string;
+  formikError?: string;
 }
 
 const DropdownInput: React.FC<SearchableInputProps> = ({
   options,
-  placeholder = "Search...",
+  placeholder = "",
   onSelect,
   containerStyle,
   textStyle,
   title,
   defaultValue = "", // Default value for the input
   iconName,
-  disableSearch = false
+  disableSearch = false,
+  name,
+  formikError
 }) => {
   const [searchText, setSearchText] = useState(defaultValue); // Use defaultValue
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [error, setError] = useState();
+
+  const { setFieldValue, setFieldTouched, errors, touched } =
+    useFormikContext();
 
   const inputRef = useRef<TextInput>(null);
 
@@ -61,7 +70,12 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
 
   const handleOnSelect = (label: string, value: string) => {
     setSearchText(label); // Update the input with selected value
-    onSelect(value); // Notify parent component
+    console.log(value);
+    if (name) {
+      setFieldValue(name, value);
+    } else {
+      onSelect(value); // Notify parent component
+    }
     setIsModalVisible(false); // Close modal
     Keyboard.dismiss(); // Dismiss keyboard
   };
@@ -100,16 +114,24 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
   );
 
   const focusStyles = useMemo(() => {
-    if (isModalVisible) {
-      return tw`border-secondary`;
-    } else {
-      if (searchText) {
-        return tw`border-success`;
+    if (name) {
+      if (formikError) {
+        return tw`border-red-500`;
       } else {
         return tw`border-background`;
       }
+    } else {
+      if (isModalVisible) {
+        return tw`border-secondary`;
+      } else {
+        if (searchText) {
+          return tw`border-success`;
+        } else {
+          return tw`border-background`;
+        }
+      }
     }
-  }, [isModalVisible, searchText]);
+  }, [isModalVisible, searchText, formikError]);
 
   return (
     <View style={[tw`${containerStyle ?? ""}`]}>
@@ -127,7 +149,16 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
       >
         <View style={tw`flex-row items-center flex-1`}>
           {searchText ? (
-            <Pressable onPress={() => setSearchText("")} style={tw`mr-1`}>
+            <Pressable
+              onPress={() => {
+                if (name) {
+                  setFieldTouched(name, true);
+                  setFieldValue(name, null);
+                }
+                setSearchText("");
+              }}
+              style={tw`mr-1`}
+            >
               <FontAwesome name={"close"} size={24} color="#888" />
             </Pressable>
           ) : (
@@ -151,18 +182,22 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
           style={disableSearch ? tw`ml-1` : ""}
         />
       </Pressable>
-
+      {formikError && (
+        <Text style={tw`text-xs text-red-500 mt-1 font-vazir text-right `}>
+          {formikError}
+        </Text>
+      )}
       <Modal
         visible={isModalVisible}
         transparent={true}
         animationType="fade"
-        onRequestClose={handleCloseModal}
+        // onRequestClose={handleCloseModal}
       >
         <SafeAreaView
           style={tw`flex-1 items-center justify-center bg-black/60`}
         >
           <TouchableWithoutFeedback
-            onPress={handleCloseModal}
+            // onPress={handleCloseModal}
             style={tw`flex-1 absolute top-0 left-0 w-full h-full bg-transparent z-0`}
           >
             <View
@@ -178,7 +213,15 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
               ]}
             >
               {searchText ? (
-                <Pressable onPress={() => setSearchText("")}>
+                <Pressable
+                  onPress={() => {
+                    if (name) {
+                      setFieldTouched(name, true);
+                      setFieldValue(name, null);
+                    }
+                    setSearchText("");
+                  }}
+                >
                   <FontAwesome name={"close"} size={18} color="#888" />
                 </Pressable>
               ) : (

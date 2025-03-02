@@ -8,6 +8,7 @@ import {
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import Icons from "@/constants/Icons";
 import tw from "@/libs/twrnc";
+import CustomButton from "../CustomButton";
 
 type Props = TextInputProps & {
   title: string;
@@ -24,6 +25,10 @@ type Props = TextInputProps & {
   errorMessage?: string;
   isMultiline?: boolean;
   defaultValue?: string;
+  formikError?: any;
+  isUsingFormik?: boolean;
+  isSelect?: boolean;
+  handlePress?: () => void;
 };
 
 const FormField = ({
@@ -44,6 +49,10 @@ const FormField = ({
   errorMessage,
   isMultiline,
   defaultValue,
+  formikError,
+  isUsingFormik,
+  isSelect,
+  handlePress,
   ...props
 }: Props) => {
   const [error, setError] = useState<string | null>(null);
@@ -96,6 +105,10 @@ const FormField = ({
     return () => clearTimeout(timeout);
   }, [defaultValue]);
 
+  useEffect(() => {
+    setError(formikError);
+  }, [formikError]);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -122,24 +135,36 @@ const FormField = ({
             }
           )}
         >
-          <TextInput
-            multiline={isMultiline}
-            style={tw`flex-1 font-vazir text-sm text-right text-${
-              color ?? "text"
-            }`}
-            onChangeText={text => {
-              handleChangeText(text);
-              validateInput(text);
-            }}
-            selectionColor="#FFAA00"
-            keyboardType={keyboardType}
-            maxLength={maxLength}
-            {...props}
-          />
+          {isSelect ? (
+            <CustomButton
+              title="ذخیره تغییرات"
+              handlePress={handlePress} // Call the handleSaveChanges function here
+              containerStyles=" mt-7 bg-background mb-5 "
+            />
+          ) : (
+            <TextInput
+              multiline={isMultiline}
+              style={tw`flex-1 font-vazir text-sm text-right text-${
+                color ?? "text"
+              }`}
+              onChangeText={text => {
+                handleChangeText(text);
+                console.log(formikError);
+                if (!isUsingFormik) {
+                  validateInput(text);
+                }
+              }}
+              defaultValue={defaultValue}
+              selectionColor="#FFAA00"
+              keyboardType={keyboardType}
+              maxLength={maxLength}
+              {...props}
+            />
+          )}
         </View>
 
         {error && (
-          <Text style={tw`text-xs text-red-500 mt-1 font-vazir text-right`}>
+          <Text style={tw`text-xs text-red-500 mt-1 font-vazir text-right `}>
             {error}
           </Text>
         )}

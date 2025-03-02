@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { View, ScrollView, Platform, KeyboardAvoidingView } from "react-native";
 import tw from "@/libs/twrnc";
-import DropdownInput from "@/components/DropdownInput";
+import DropdownInput from "@/components/Input/DropdownInput";
 import { cargoTypes, truckTypes } from "@/constants/BoxesList";
-import FormField from "@/components/FormField";
+import FormField from "@/components/Input/FormField";
 import CustomButton from "@/components/CustomButton";
 import { editCargo, getAllCities } from "@/api/services/cargoServices";
 

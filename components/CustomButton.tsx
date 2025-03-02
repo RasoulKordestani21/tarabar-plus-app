@@ -5,6 +5,8 @@ import {
   TouchableOpacity
 } from "react-native";
 import tw from "@/libs/twrnc";
+import { FontAwesome } from "@expo/vector-icons";
+import { IconProps } from "@expo/vector-icons/build/createIconSet";
 
 type Props = {
   title: string;
@@ -13,6 +15,7 @@ type Props = {
   textStyles?: string | undefined;
   isLoading?: boolean;
   disabled?: boolean;
+  iconName?: "upload";
 };
 
 const CustomButton = ({
@@ -21,7 +24,8 @@ const CustomButton = ({
   containerStyles,
   textStyles,
   isLoading,
-  disabled
+  disabled,
+  iconName
 }: Props) => {
   return (
     <TouchableOpacity
@@ -32,6 +36,12 @@ const CustomButton = ({
       }`}
       disabled={isLoading || disabled}
     >
+      {iconName && (
+        <FontAwesome
+          name={iconName}
+          style={tw`text-white mx-3 ${textStyles || ""}`}
+        />
+      )}
       <Text style={tw`text-text  font-vazir text-base ${textStyles || ""}`}>
         {title}
       </Text>
