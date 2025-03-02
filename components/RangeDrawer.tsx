@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import tw from "@/libs/twrnc";
 import { FontAwesome } from "@expo/vector-icons";
+import CustomButton from "./CustomButton";
 
 interface FeeRangeDrawerProps {
   isVisible?: boolean;
@@ -37,10 +38,10 @@ const FeeRangeDrawer: React.FC<FeeRangeDrawerProps> = ({
     <Modal
       visible={isVisible}
       transparent={true}
-      animationType="slide"
+      animationType="fade"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={tw`flex-1 justify-end bg-black/60`}>
+      <SafeAreaView style={tw`flex-1 justify-center bg-black-50`}>
         <TouchableWithoutFeedback
           onPress={onClose}
           style={tw`flex-1 absolute top-0 left-0 w-full h-full bg-transparent z-0`}
@@ -50,12 +51,12 @@ const FeeRangeDrawer: React.FC<FeeRangeDrawerProps> = ({
           ></View>
         </TouchableWithoutFeedback>
 
-        <View style={tw`bg-text rounded-t-3xl  p-4 z-50  h-[90%]`}>
+        <View style={tw`bg-text rounded-3xl  p-4 z-50 items-center    m-3`}>
           <TouchableOpacity
             onPress={onClose}
             style={tw`absolute top-2 left-2 z-10`}
           >
-            <FontAwesome name={"close"} size={24} color="#888" />
+            <FontAwesome name={"close"} size={30} color="#888" />
           </TouchableOpacity>
           <View style={tw`items-center`}>
             <Image
@@ -99,6 +100,12 @@ const FeeRangeDrawer: React.FC<FeeRangeDrawerProps> = ({
               </View>
             </View>
           </View>
+          <CustomButton
+            title="بازگشت"
+            handlePress={onClose}
+            textStyles="text-background "
+            containerStyles="bg-white  border-2 border-background w-full mt-7  mb-5"
+          />
         </View>
       </SafeAreaView>
     </Modal>

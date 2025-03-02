@@ -16,59 +16,20 @@ import FeeRangeDrawer from "@/components/RangeDrawer";
 import CustomButton from "@/components/CustomButton";
 import { getAllCities } from "@/api/services/cargoServices";
 import { estimateCommissionAndFare } from "@/api/services/toolsServices"; // Importing the new service
+import { Formik } from "formik";
+import { cargoTypes, truckTypes } from "@/constants/BoxesList";
+import {
+  driverConfirmationInitialValues,
+  estimateFeeAndCommisionInitialValues,
+  estimateFeeAndCommisionSchema
+} from "@/constants/FormikValidation";
+import { useQuery } from "@tanstack/react-query";
+import Loader from "@/components/Loader";
 
 interface Option {
   label: string;
   value: string;
 }
-
-const fakeData: Option[] = [
-  { label: "تهران", value: "tehran" },
-  { label: "مشهد", value: "mashhad" },
-  { label: "اصفهان", value: "esfahan" },
-  { label: "تبریز", value: "tabriz" },
-  { label: "آستانه اشرفیه / گیلان", value: "astaneh-ashrafieh" },
-  { label: "تربت جام / خراسان رضوی", value: "torbat-jam" },
-  { label: "تربت ی", value: "sfjdk" }
-];
-
-const trucks = [
-  { label: "ده چرخ", value: "1" },
-  { label: "شش چرخ", value: "2" },
-  { label: "تخت", value: "3" },
-  { label: "یخچالی", value: "4" },
-  { label: "تانکر", value: "5" },
-  { label: "کفی", value: "6" },
-  { label: "کمپرسی", value: "7" },
-  { label: "لبه دار", value: "8" },
-  { label: "بغل بازشو", value: "9" },
-  { label: "مسقف", value: "10" },
-  { label: "حمل خودرو", value: "11" },
-  { label: "چادری", value: "12" },
-  { label: "وانت", value: "13" },
-  { label: "تریلی معمولی", value: "14" }
-];
-const cargoType = [
-  { label: "پالت", value: "1" },
-  { label: "کارتن", value: "2" },
-  { label: "بشکه", value: "3" },
-  { label: "جامبو بگ", value: "4" },
-  { label: "رول", value: "5" },
-  { label: "گونی", value: "6" },
-  { label: "کیسه", value: "7" },
-  { label: "تانکر", value: "8" },
-  { label: "مایعات فله", value: "9" },
-  { label: "گاز فله", value: "10" },
-  { label: "محموله حجیم", value: "11" },
-  { label: "محموله ترافیکی", value: "12" },
-  { label: "دستگاه", value: "13" },
-  { label: "لوله", value: "14" },
-  { label: "میلگرد", value: "15" },
-  { label: "خودرو", value: "16" },
-  { label: "دام", value: "17" },
-  { label: "مصالح ساختمانی", value: "18" },
-  { label: "اثاثیه منزل", value: "19" }
-];
 
 interface Props {
   onClose: () => void;
@@ -90,7 +51,6 @@ const EstimateFareDrawer: React.FC<Props> = ({ onClose }) => {
   });
   const [feeRangeOpened, setFeeRangeOpened] = useState(false);
 
-  const [cities, setCities] = useState<any[]>([]);
   const [estimatedFare, setEstimatedFare] = useState<number | null>(null);
   const [estimatedCommission, setEstimatedCommission] = useState<number | null>(
     null
@@ -100,37 +60,19 @@ const EstimateFareDrawer: React.FC<Props> = ({ onClose }) => {
     setFeeRangeOpened(false);
   };
 
-  useEffect(() => {
-    const fetchCities = async () => {
-      try {
-        const result = await getAllCities();
-        setCities(result);
-      } catch (error) {
-        console.error("Failed to fetch cities:", error);
-      }
-    };
+  const { data, isLoading } = useQuery({
+    queryKey: ["listOfCities"],
+    queryFn: () => getAllCities()
+  });
 
-    fetchCities();
-  }, []);
-
-  const handleEstimateFare = async () => {
-    if (
-      !form.origin ||
-      !form.destination ||
-      !form.truckType ||
-      !form.cargoType
-    ) {
-      Alert.alert("Please fill all the fields before estimating the fare.");
-      return;
-    }
-
+  const handleEstimateFare = async values => {
     try {
       const response = await estimateCommissionAndFare(
-        form.origin,
-        form.destination,
-        form.cargoType,
-        form.truckType,
-        form.insurancePercentage || "0"
+        values.origin,
+        values.destination,
+        values.cargoType,
+        values.truckType,
+        values.insurancePercentage || "0"
       );
       setEstimatedFare(response.estimation.estimatedFare);
       setEstimatedCommission(response.estimation.estimatedCommission);
@@ -141,89 +83,109 @@ const EstimateFareDrawer: React.FC<Props> = ({ onClose }) => {
     }
   };
 
+  const handleSubmit = values => {
+    console.log(values);
+    handleEstimateFare(values);
+  };
+
   return (
-    <ScrollView contentContainerStyle={tw`  p-5 pb-8`}>
-      <View style={tw`flex-1`}>
-        <DropdownInput
-          title="مبدا"
-          options={cities.map(city => ({
-            label: city.title,
-            value: city.id
-          }))}
-          placeholder="یکی از گزینه های زیر را انتخاب کنید."
-          onSelect={value => setForm({ ...form, origin: value })}
-          textStyle="text-right"
-          containerStyle="mb-6"
-          iconName={"dot-circle-o"}
-        />
+    <>
+      {isLoading ? (
+        <Loader isLoading={isLoading} />
+      ) : (
+        <ScrollView contentContainerStyle={tw`  p-5 pb-8`}>
+          <Formik
+            initialValues={estimateFeeAndCommisionInitialValues()}
+            validationSchema={estimateFeeAndCommisionSchema}
+            onSubmit={handleSubmit}
+          >
+            {({ handleChange, handleSubmit, values, errors }) => (
+              <View style={tw`flex-row flex-wrap  justify-between `}>
+                <View style={tw`w-[48%] `}>
+                  <DropdownInput
+                    title="مقصد"
+                    options={data.map(city => ({
+                      label: `${city.title}`,
+                      value: city.id
+                    }))}
+                    name="destination"
+                    formikError={errors.destination}
+                    textStyle="text-right"
+                    containerStyle="mt-3 w-full"
+                    iconName={"dot-circle-o"}
+                  />
+                </View>
+                <View style={tw`w-[48%] `}>
+                  <DropdownInput
+                    title="مبدا"
+                    options={data.map(city => ({
+                      label: city.title,
+                      value: city.id
+                    }))}
+                    name="origin"
+                    formikError={errors.origin}
+                    textStyle="text-right"
+                    containerStyle="mt-3 w-full"
+                    iconName={"dot-circle-o"}
+                  />
+                </View>
 
-        <DropdownInput
-          title="مقصد"
-          options={cities.map(city => ({
-            label: city.title,
-            value: city.id
-          }))}
-          placeholder="یکی از گزینه های زیر را انتخاب کنید."
-          onSelect={value => setForm({ ...form, destination: value })}
-          textStyle="text-right"
-          containerStyle="mb-6"
-          iconName={"location-arrow"}
-        />
+                <View style={tw`w-[48%] `}>
+                  <DropdownInput
+                    title="نوع کشنده"
+                    options={truckTypes}
+                    name={"truckType"}
+                    formikError={errors.truckType}
+                    textStyle="text-right"
+                    containerStyle="mt-3 w-full"
+                    iconName="caret-down"
+                  />
+                </View>
+                <View style={tw`w-[48%] `}>
+                  <DropdownInput
+                    title="نوع بار"
+                    options={cargoTypes}
+                    name={"cargoType"}
+                    formikError={errors.cargoType}
+                    textStyle="text-right"
+                    containerStyle="mt-3 w-full"
+                    iconName="caret-down"
+                    disableSearch={true} // Disable search for select-like behavior
+                  />
+                </View>
+                <View style={tw`w-full  mt-5`}>
+                  <FormField
+                    title={"درصد بیمه"}
+                    handleChangeText={handleChange("insurancePercentage")}
+                    value={values.insurancePercentage}
+                    formikError={errors.insurancePercentage}
+                    isUsingFormik={true}
+                    otherStyles="mb-1 w-full"
+                    keyboardType={
+                      Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
+                    }
+                    color="background"
+                  />
+                </View>
 
-        <DropdownInput
-          title="نوع کشنده"
-          options={trucks}
-          placeholder="انتخاب نوع کشنده"
-          onSelect={value => setForm({ ...form, truckType: value })}
-          textStyle="text-right"
-          containerStyle="mb-6"
-          iconName="caret-down"
-          disableSearch={true} // Disable search for select-like behavior
-        />
-
-        <DropdownInput
-          title="نوع بار"
-          options={cargoType}
-          placeholder="انتخاب نوع بار"
-          onSelect={value => setForm({ ...form, cargoType: value })}
-          textStyle="text-right"
-          containerStyle="mb-6"
-          iconName="caret-down"
-          disableSearch={true} // Disable search for select-like behavior
-        />
-
-        <FormField
-          title="درصد بیمه"
-          placeholder="شماره موبایل خودرا وارد کدنید"
-          value={form.insurancePercentage}
-          handleChangeText={(e: string) => {
-            setForm({ ...form, insurancePercentage: e });
-          }}
-          pattern={{
-            type: /^([0-9]|[1-9][0-9]|100)$/,
-            message: "عدد باید بین صفر تا صد باشد."
-          }}
-          maxLength={3}
-          otherStyles="mb-7"
-          keyboardType={Platform.OS === "ios" ? "name-phone-pad" : "number-pad"}
-          color="background"
-        />
-      </View>
-
-      <FeeRangeDrawer
-        isVisible={feeRangeOpened}
-        onClose={handleCloseDrawer}
-        minFee={Number(estimatedFare) || 0}
-        maxFee={estimatedFare ? Number(estimatedFare) * 2 : 0}
-        currency={"تومان"}
-      />
-
-      <CustomButton
-        title="تخمین کرایه"
-        handlePress={handleEstimateFare} // Trigger estimate fare
-        containerStyles="w-full  bg-background"
-      />
-    </ScrollView>
+                <CustomButton
+                  title="تخمین کرایه"
+                  handlePress={handleSubmit} // Trigger estimate fare
+                  containerStyles="w-full  bg-background"
+                />
+              </View>
+            )}
+          </Formik>
+          <FeeRangeDrawer
+            isVisible={feeRangeOpened}
+            onClose={handleCloseDrawer}
+            minFee={Number(estimatedFare) || 0}
+            maxFee={estimatedFare ? Number(estimatedFare) * 2 : 0}
+            currency={"تومان"}
+          />
+        </ScrollView>
+      )}
+    </>
   );
 };
 

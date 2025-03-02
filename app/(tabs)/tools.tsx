@@ -36,17 +36,18 @@ export default function ToolsScreen() {
       onPress: () => {
         router.push("/driver-smart-card-inquiry");
       }
-    },
-    {
-      title: "استعلام کارت هوشمند راننده",
-      description:
-        "در این بخش شما می‌توانید مشخصات کارت هوشمند راننده را جستجو کرده و اطلاعات مورد نیاز را بررسی کنید.",
-      bgColor: "bg-green-400",
-      iconName: "user-circle",
-      onPress: () => {
-        console.log("Driver smart card inquiry pressed");
-      }
     }
+    // ,
+    // {
+    //   title: "استعلام کارت هوشمند راننده",
+    //   description:
+    //     "در این بخش شما می‌توانید مشخصات کارت هوشمند راننده را جستجو کرده و اطلاعات مورد نیاز را بررسی کنید.",
+    //   bgColor: "bg-green-400",
+    //   iconName: "user-circle",
+    //   onPress: () => {
+    //     console.log("Driver smart card inquiry pressed");
+    //   }
+    // }
   ];
 
   // Reusable ToolBox component

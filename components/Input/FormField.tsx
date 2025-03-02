@@ -149,7 +149,7 @@ const FormField = ({
               }`}
               onChangeText={text => {
                 handleChangeText(text);
-                console.log(formikError);
+                console.log(formikError, value);
                 if (!isUsingFormik) {
                   validateInput(text);
                 }

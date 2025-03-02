@@ -30,7 +30,7 @@ interface Option {
 interface SearchableInputProps {
   options: Option[];
   placeholder?: string;
-  onSelect?: (value: string) => void;
+  onSelect: (value: string) => void;
   containerStyle?: string;
   textStyle?: string;
   title?: string;

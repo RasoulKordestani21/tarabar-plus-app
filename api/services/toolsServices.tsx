@@ -43,16 +43,10 @@ export const verifyTruckSmartCard = async (
 };
 
 // Verify driver smart card (driver verification)
-export const verifyDriverSmartCard = async (
-  nationalId: string,
-  smartCardNumber: string
-) => {
+export const verifyDriverSmartCard = async form => {
   try {
     const response = await apiClient.get("/tools/verify-driver-smart-card", {
-      params: {
-        nationalId,
-        smartCardNumber
-      }
+      params: form
     });
     return response.data; // Return the response data (verification result)
   } catch (error) {
