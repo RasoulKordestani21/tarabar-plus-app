@@ -10,7 +10,7 @@ import { IconProps } from "@expo/vector-icons/build/createIconSet";
 
 type Props = {
   title: string;
-  handlePress?: (event: GestureResponderEvent, param?: number) => void; // Accept the event parameter
+  handlePress?: (event: GestureResponderEvent, param?: number) => void ; // Accept the event parameter
   containerStyles: string;
   textStyles?: string | undefined;
   isLoading?: boolean;

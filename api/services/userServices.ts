@@ -7,9 +7,9 @@ type Props = {
 };
 
 // GET a single user
-export const getUser = async (phoneNumber: string) => {
+export const getUser = async (phoneNumber: string, role: string) => {
   const response = await apiClient.get(`/api/auth/user`, {
-    params: { phoneNumber }
+    params: { phoneNumber, role }
   });
   return response.data;
 };
@@ -33,6 +33,7 @@ export const deleteUser = async (id: string) => {
 };
 
 export const updateVerificationData = async (
+  role: string,
   phoneNumber: string,
   form: {
     userName: string;
@@ -45,7 +46,9 @@ export const updateVerificationData = async (
   }
 ) => {
   try {
+    console.log(role, phoneNumber);
     const response = await apiClient.post(`/api/auth/update-verification`, {
+      role,
       phoneNumber,
       ...form
     });

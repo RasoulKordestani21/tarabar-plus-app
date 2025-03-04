@@ -80,13 +80,13 @@ const TabBarLabel = React.memo(
 );
 
 export default function TabLayout() {
-  const { role, setToken, setPhoneNumber, setRole, loading } =
+  const { role, setToken, setPhoneNumber, setRole ,setIsLogged, loading } =
     useGlobalContext();
   console.log(tabBoxes(role).length);
   return (
     <Tabs
       screenOptions={({ route }: { route: { name: string } }) => ({
-        tabBarStyle: tw`bg-background rounded-5 mx-2  h-[60px] ${
+        tabBarStyle: tw`bg-background rounded-5 mx-2 my-3  h-[60px] ${
           loading ? "hidden" : "flex"
         }`,
         tabBarItemStyle: tw` flex-row min-w-1/3  items-center justify-center`,
@@ -104,7 +104,8 @@ export default function TabLayout() {
                 setToken();
                 setPhoneNumber();
                 setRole();
-                router.push("/");
+                setIsLogged(false);
+                router.replace("/");
               }}
             >
               <FontAwesome name="sign-out" size={24} color="#fff" />

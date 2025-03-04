@@ -11,20 +11,16 @@ import { AppUrl } from "@/constants/UrlConstants";
 const Fileinput = ({
   name,
   formikError,
-  defaultValue
+  defaultValue,
+  label
 }: {
   name: string;
   formikError: string;
   defaultValue?: string;
+  label?: string;
 }) => {
   const { phoneNumber, setLoading } = useGlobalContext();
-  const {
-    setFieldValue,
-    setFieldTouched,
-    setFieldError,
-    errors,
-    getFieldProps
-  } = useFormikContext(); // Get Formik context
+  const { setFieldValue, setFieldTouched, setFieldError } = useFormikContext(); // Get Formik context
 
   const [imageModal, setImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
@@ -67,7 +63,7 @@ const Fileinput = ({
   return (
     <View style={tw`flex-col w-[49%]`}>
       <Text style={tw`text-background text-right font-vazir`}>
-        تصویر کارت ملی
+        {label ?? " ----"}
       </Text>
 
       <CustomButton
@@ -102,9 +98,7 @@ const Fileinput = ({
           >
             <Image
               source={{
-                uri:
-                  imageUrl ||
-                  `http://192.168.1.103:3000/uploads/1740296281276.jpg`
+                uri: imageUrl || ``
               }}
               style={{ width: 200, height: 200 }}
             />

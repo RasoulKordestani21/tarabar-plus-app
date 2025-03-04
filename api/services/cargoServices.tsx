@@ -1,4 +1,5 @@
 import apiClient from "@/api/apiClient"; // Import the apiClient
+import { CargoSubmitProps } from "@/app/(menu)/types";
 
 // Fetch all cities
 export const getAllCities = async () => {
@@ -12,13 +13,7 @@ export const getAllCities = async () => {
 };
 
 // Add a new cargo
-export const addCargo = async (cargoData: {
-  originProvinceId: number;
-  originCityId: number;
-  destinationProvinceId: number;
-  destinationCityId: number;
-  someAdditionalData: string;
-}) => {
+export const addCargo = async (cargoData: CargoSubmitProps) => {
   try {
     const response = await apiClient.post("/cargo", cargoData); // Use apiClient.post
     return response.data; // Return the data from the response
@@ -65,6 +60,18 @@ export const deleteCargo = async cargoId => {
 export const getAllCargoes = async () => {
   try {
     const response = await apiClient.get("/cargo"); // Use the appropriate endpoint to fetch all cargoes
+    return response.data; // Return the data from the response
+  } catch (error) {
+    console.error("Error fetching cargoes:", error);
+    throw error;
+  }
+};
+
+export const getUserHistoryCargoes = async (ownerPhone: string) => {
+  try {
+    const response = await apiClient.get("/cargo/history", {
+      params: { ownerPhone }
+    }); // Use the appropriate endpoint to fetch all cargoes
     return response.data; // Return the data from the response
   } catch (error) {
     console.error("Error fetching cargoes:", error);

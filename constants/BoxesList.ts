@@ -2,79 +2,87 @@ import { Route } from "expo-router";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { Platform } from "react-native";
 
-const homeBoxes = (role: string) => {
-  if (role === "1") {
-    return [
-      {
-        id: 1,
-        source: require("@/assets/images/find-cargo-by-location-icon.png"),
-        text: "باریابی",
-        route: "/find-cargo-by-location"
-      },
+const driverHomeBoxes = [
+  {
+    id: 1,
+    source: require("@/assets/images/find-cargo-by-location-icon.png"),
+    text: "باریابی",
+    route: "/find-cargo-by-location"
+  },
 
-      {
-        id: 2,
-        source: require("@/assets/images/account-icon.png"),
-        text: "حساب کاربری",
-        route: "/account"
-      },
-      {
-        id: 3,
-        source: require("@/assets/images/tools-icon.png"),
-        text: "ابزار",
-        route: "/tools"
-      }
-    ];
-  } else {
-    return [
-      {
-        id: 7,
-        source: require("@/assets/images/add-cargo-icon.png"),
-        text: "ایجاد بار جدید",
-        route: "/create-cargo"
-      },
-      {
-        id: 8,
-        source: require("@/assets/images/add-cargo-icon.png"),
-        text: "تاریخچه بارها",
-        route: "/cargo-history"
-      }
-    ];
+  {
+    id: 2,
+    source: require("@/assets/images/account-icon.png"),
+    text: "حساب کاربری",
+    route: "/driver-account"
+  },
+  {
+    id: 3,
+    source: require("@/assets/images/tools-icon.png"),
+    text: "ابزار",
+    route: "/driver-tools"
   }
-};
+];
+
+const cargoOwnerHomeBoxes = [
+  {
+    id: 1,
+    source: require("@/assets/images/add-cargo-icon.png"),
+    text: "ایجاد بار جدید",
+    route: "/create-cargo"
+  },
+  {
+    id: 2,
+    source: require("@/assets/images/add-cargo-icon.png"),
+    text: "تاریخچه بارها",
+    route: "/cargo-history"
+  },
+  {
+    id: 3,
+    source: require("@/assets/images/account-icon.png"),
+    text: "حساب کاربری",
+    route: "/cargo-owner-account"
+  },
+  {
+    id: 4,
+    source: require("@/assets/images/tools-icon.png"),
+    text: "ابزار",
+    route: "/cargo-owner-tools"
+  }
+];
 
 const tabBoxes = (role: string) => {
   const role1Tabs = [
     {
-      name: "tools",
+      name: "driver-tools",
       title: "ابزار",
       iconName: "wrench.fill"
     },
     {
-      name: "account",
+      name: "driver-account",
       title: "کاربر",
       iconName: "person.crop.circle"
     },
 
     {
-      name: "home",
+      name: "driver-home",
       title: "خانه",
       iconName: "house.fill"
     }
   ];
   const role2Tabs = [
     {
-      name: "account",
-      title: "کاربر",
-      iconName: "person.crop.circle"
-    },
-    {
-      name: "tools",
+      name: "cargo-owner-tools",
       title: "ابزار",
       iconName: "wrench.fill"
     },
     {
-      name: "home",
+      name: "cargo-owner-account",
+      title: "کاربر",
+      iconName: "person.crop.circle"
+    },
+    {
+      name: "cargo-owner-home",
       title: "خانه",
       iconName: "house.fill"
     }
@@ -125,7 +133,7 @@ const cargoTypes = [
   { label: "اثاثیه منزل", value: "19" }
 ];
 
-const accountSettingTextInput = [
+const driverAccountSettingTextInput = [
   {
     title: "کد ملی",
     name: "nationalId",
@@ -165,4 +173,32 @@ const accountSettingTextInput = [
   }
 ];
 
-export { homeBoxes, tabBoxes, truckTypes, cargoTypes, accountSettingTextInput };
+const cargoOwnerAccountSettingTextInput = [
+  {
+    title: "کد ملی",
+    name: "nationalId",
+    maxLength: 10,
+    pattern: {
+      type: /^\d{10}$/,
+      message: "کد ملی 10 رقمی می‌باشد . "
+    },
+    keyboardType: Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
+  },
+  {
+    title: "نام کاربری",
+    name: "userName",
+    maxLength: 30,
+    minLength: 4,
+    keyboardType: "default"
+  }
+];
+
+export {
+  driverHomeBoxes,
+  cargoOwnerHomeBoxes,
+  tabBoxes,
+  truckTypes,
+  cargoTypes,
+  driverAccountSettingTextInput,
+  cargoOwnerAccountSettingTextInput
+};

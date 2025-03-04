@@ -14,6 +14,7 @@ type VerifyProps = {
   otp: string;
   deviceId: string;
   deviceName: string;
+  role: String;
 };
 
 export const generateOtp = async ({ phoneNumber, role }: Props) => {
@@ -44,12 +45,15 @@ export const verifyOtp = async ({
   phoneNumber,
   otp,
   deviceId,
-  deviceName
+  deviceName,
+  role
 }: VerifyProps) => {
-  console.log(`Verifying OTP for phoneNumber: ${phoneNumber} with OTP: ${otp}`);
+  console.log(
+    `Verifying OTP for phoneNumber: ${phoneNumber} with OTP: ${otp} ${role}`
+  );
   try {
     const response = await apiClient.get("api/auth/verify-otp", {
-      params: { phoneNumber, otp, deviceId, deviceName } // Send as query parameters
+      params: { phoneNumber, otp, deviceId, deviceName, role } // Send as query parameters
     });
     // console.log("Response from server:", response.data); // Debugging log
     return response.data; // Return the data property

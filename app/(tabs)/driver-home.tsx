@@ -6,7 +6,7 @@ import { FontAwesome } from "@expo/vector-icons";
 
 import BoxButton from "@/components/BoxButton";
 import LocationModal from "@/components/findLocationByGPS/LocationModal";
-import { driverHomeBoxes, homeBoxes } from "@/constants/BoxesList";
+import { driverHomeBoxes } from "@/constants/BoxesList";
 import DefineOriginDestination from "@/components/findLocationByOriginAndDestination/DefineOriginDestination";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import DrawerModal from "@/components/DrawerModal";

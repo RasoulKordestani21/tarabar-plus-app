@@ -6,7 +6,7 @@ import { FontAwesome } from "@expo/vector-icons";
 
 import BoxButton from "@/components/BoxButton";
 import LocationModal from "@/components/findLocationByGPS/LocationModal";
-import { driverHomeBoxes, homeBoxes } from "@/constants/BoxesList";
+import { cargoOwnerHomeBoxes } from "@/constants/BoxesList";
 import DefineOriginDestination from "@/components/findLocationByOriginAndDestination/DefineOriginDestination";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import DrawerModal from "@/components/DrawerModal";
@@ -14,55 +14,7 @@ import Loader from "@/components/Loader";
 import { Image } from "react-native";
 
 export default function HomeScreen() {
-  const [enableLocationModal, setEnableLocationModal] = useState(false);
-  const [originDestinationModal, setOriginDestinationModal] = useState(false);
-  const [drawerVisible, setDrawerVisible] = useState(false);
-  const [coordination, setCoordination] = useState();
-
   const { role, loading, setLoading, token } = useGlobalContext();
-
-  useFocusEffect(
-    React.useCallback(() => {
-      // Reset the state when returning to the screen
-      setEnableLocationModal(false);
-      setOriginDestinationModal(false);
-      setDrawerVisible(false);
-      setLoading(false);
-    }, [])
-  );
-
-  const handleEnableLocationModal = () => {
-    setEnableLocationModal(true);
-  };
-
-  const closeEnableLocationModal = () => {
-    setEnableLocationModal(false);
-  };
-
-  const handleOriginDestinationModal = () => {
-    setOriginDestinationModal(true);
-  };
-
-  const closeOriginDestinationModal = () => {
-    setOriginDestinationModal(false);
-  };
-
-  const handleOpenDrawer = () => {
-    setDrawerVisible(true);
-  };
-
-  const closeDrawer = () => {
-    setDrawerVisible(false);
-  };
-
-  const handleOptionSelect = (option: string) => {
-    closeDrawer();
-    if (option === "location") {
-      handleEnableLocationModal();
-    } else if (option === "originDestination") {
-      handleOriginDestinationModal();
-    }
-  };
 
   return (
     <>
@@ -72,7 +24,7 @@ export default function HomeScreen() {
       <View style={tw`flex-1 relative `}>
         <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-4 `}>
           <View style={tw`flex-wrap flex-row-reverse justify-between `}>
-            {driverHomeBoxes.map(box => (
+            {cargoOwnerHomeBoxes.map(box => (
               <BoxButton
                 key={box.id}
                 id={box.id}
@@ -80,33 +32,11 @@ export default function HomeScreen() {
                 text={box.text}
                 route={box.route}
                 onPress={() => {
-                  if (box.route === "/find-cargo-by-location") {
-                    handleOpenDrawer();
-                  } else {
-                    router.push(box.route);
-                  }
+                  router.push(box.route);
                 }}
               />
             ))}
           </View>
-
-          <LocationModal
-            visible={enableLocationModal}
-            onClose={closeEnableLocationModal}
-            setCoordination={setCoordination}
-          />
-
-          <DefineOriginDestination
-            visible={originDestinationModal}
-            onClose={closeOriginDestinationModal}
-          />
-
-          <DrawerModal
-            visible={drawerVisible}
-            onClose={closeDrawer}
-            onOptionSelect={handleOptionSelect}
-            openLocationModal={handleEnableLocationModal}
-          />
         </ScrollView>
 
         {/* Floating Circle Button for Support/FAQ */}

@@ -20,7 +20,7 @@ import {
 } from "react-native";
 import tw from "@/libs/twrnc";
 import { FontAwesome } from "@expo/vector-icons";
-import { useFormikContext } from "formik";
+import { FormikErrors, useFormikContext } from "formik";
 
 interface Option {
   label: string;
@@ -30,7 +30,7 @@ interface Option {
 interface SearchableInputProps {
   options: Option[];
   placeholder?: string;
-  onSelect: (value: string) => void;
+  onSelect?: (value: string) => void;
   containerStyle?: string;
   textStyle?: string;
   title?: string;
@@ -39,7 +39,12 @@ interface SearchableInputProps {
   iconName?: "search" | "dot-circle-o" | "location-arrow" | "caret-down";
   disableSearch?: boolean;
   name?: string;
-  formikError?: string;
+  formikError?:
+    | string
+    | FormikErrors<any>
+    | string[]
+    | FormikErrors<any>[]
+    | undefined;
 }
 
 const DropdownInput: React.FC<SearchableInputProps> = ({
@@ -66,6 +71,12 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
 
   useEffect(() => {
     setSearchText(defaultValue); // Update input when defaultValue changes
+    if (name) {
+      setFieldValue(
+        name,
+        Number(options.find(ele => ele.label === defaultValue)?.value)
+      );
+    }
   }, []);
 
   const handleOnSelect = (label: string, value: string) => {
@@ -74,7 +85,9 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
     if (name) {
       setFieldValue(name, value);
     } else {
-      onSelect(value); // Notify parent component
+      if (onSelect) {
+        onSelect(value);
+      } // Notify parent component
     }
     setIsModalVisible(false); // Close modal
     Keyboard.dismiss(); // Dismiss keyboard
@@ -184,7 +197,7 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
       </Pressable>
       {formikError && (
         <Text style={tw`text-xs text-red-500 mt-1 font-vazir text-right `}>
-          {formikError}
+          {typeof formikError === "string" ? formikError : ""}
         </Text>
       )}
       <Modal

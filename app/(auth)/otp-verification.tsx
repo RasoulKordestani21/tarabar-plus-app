@@ -36,7 +36,8 @@ const OtpVerifier = () => {
         phoneNumber,
         otp: form.otp,
         deviceId,
-        deviceName
+        deviceName,
+        role
       });
       console.log("Verification Response:", response); // Debugging log
 
@@ -44,7 +45,11 @@ const OtpVerifier = () => {
         setToken(response.token); // Save the token in global context
         setIsLogged(true); // Update logged-in status
         setPhoneNumber(phoneNumber); // Set the phone number in the context securely
-        router.replace("/home"); // Navigate to the account screen
+        if (role === "1") {
+          router.replace("/driver-home");
+        } else {
+          router.replace("/cargo-owner-home");
+        } // Navigate to the account screen
       } else {
         // Alert.alert("Error", "Failed to retrieve token from the server.");
         await showToast("Failed to retrieve token from the server.");

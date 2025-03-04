@@ -15,6 +15,8 @@ const Header = ({ title }: { title: string }) => {
 };
 
 const MenuLayout = () => {
+  const { role } = useGlobalContext();
+  console.log(role, " role");
   return (
     <>
       <Stack>
@@ -35,8 +37,27 @@ const MenuLayout = () => {
           }}
         />
 
-        <Stack.Screen
+        {/* <Stack.Screen
           name="account-setting"
+          options={{
+            title: "تنظیمات حساب کاربری", // Title of the screen
+            headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
+            headerTintColor: "white", // Set header text color to white
+            headerTitle: () => <Header title="تنظیمات حساب کاربری" /> // Use the custom Header component
+          }}
+        /> */}
+
+        <Stack.Screen
+          name="cargo-owner-account-setting"
+          options={{
+            title: "تنظیمات حساب کاربری", // Title of the screen
+            headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
+            headerTintColor: "white", // Set header text color to white
+            headerTitle: () => <Header title="تنظیمات حساب کاربری" /> // Use the custom Header component
+          }}
+        />
+        <Stack.Screen
+          name="driver-account-setting"
           options={{
             title: "تنظیمات حساب کاربری", // Title of the screen
             headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header

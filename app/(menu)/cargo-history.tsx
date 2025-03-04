@@ -11,52 +11,56 @@ import {
 } from "react-native";
 import CargoCard from "@/components/CargoCard";
 import CargoForm from "@/components/CargoForm";
-import { deleteCargo, getAllCargoes } from "@/api/services/cargoServices";
+import {
+  deleteCargo,
+  getAllCargoes,
+  getUserHistoryCargoes
+} from "@/api/services/cargoServices";
 import { cargoTypes, truckTypes } from "@/constants/BoxesList";
+import { useQuery } from "@tanstack/react-query";
+import {
+  CargoInitialEditProps,
+  CargoStatesEditProps,
+  CargoSubmitProps,
+  CargoValuesProps
+} from "./types";
+import { useGlobalContext } from "@/context/GlobalProvider";
 
 const CargoHistory = () => {
-  const [cargoes, setCargoes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [editingCargo, setEditingCargo] = useState(null); // Current cargo being edited
+  const { phoneNumber, role } = useGlobalContext();
+
+  const [editingCargo, setEditingCargo] =
+    useState<CargoInitialEditProps | null>(null); // Current cargo being edited
   const [isModalVisible, setModalVisible] = useState(false);
 
-  useEffect(() => {
-    const fetchCargoes = async () => {
-      try {
-        const data = await getAllCargoes();
-        setCargoes(data);
-      } catch (err) {
-        setError("Failed to fetch cargo history.");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCargoes();
-  }, []);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["wholeCargoes"],
+    queryFn: () => getUserHistoryCargoes(phoneNumber)
+  });
 
   // Handle Edit
-  const handleEdit = cargo => {
+  const handleEdit = (cargo: CargoStatesEditProps) => {
     setEditingCargo({
       id: cargo?._id,
       origin: cargo?.origin || "",
       destination: cargo?.destination || "",
       truckType:
-        truckTypes.find(ele => Number(ele.value) === cargo.truckTypeId)
+        truckTypes.find(ele => Number(ele.value) === cargo?.truckTypeId)
           ?.label || "",
       cargoType:
-        cargoTypes.find(ele => Number(ele.value) === cargo.cargoTypeId)
+        cargoTypes.find(ele => Number(ele.value) === cargo?.cargoTypeId)
           ?.label || "",
       fee: cargo?.carriageFee || "",
-      description: cargo?.description || ""
+      description: cargo?.description || "",
+      transportType: cargo?.transportType || "",
+      insurancePercentage: cargo?.insurancePercentage || "",
+      cargoWeight: cargo?.cargoWeight || ""
     });
     setModalVisible(true);
   };
 
   // Handle Remove
-  const handleRemove = cargoId => {
+  const handleRemove = (cargoId: number) => {
     Alert.alert(
       "حذف بار",
       `آیا مطمئن هستید که می‌خواهید این بار را حذف کنید؟`,
@@ -86,18 +90,20 @@ const CargoHistory = () => {
     setEditingCargo(null); // Clear editing cargo
   };
 
+  console.log(role);
   // Handle Update
-  const handleUpdate = updatedCargo => {
+  const handleUpdate = (updatedCargo: any) => {
     // Update the cargo list
-    setCargoes(prevCargoes =>
-      prevCargoes.map(cargo =>
-        cargo._id === editingCargo._id ? { ...cargo, ...updatedCargo } : cargo
-      )
-    );
-    handleCloseModal();
+    // setCargoes(prevCargoes =>
+    //   prevCargoes.map(cargo =>
+    //     cargo.id === editingCargo.id ? { ...cargo, ...updatedCargo } : cargo
+    //   )
+    // );
+    // handleCloseModal();
   };
 
-  if (loading) {
+  if (isLoading) {
+    console.log(isLoading);
     return (
       <SafeAreaView style={styles.container}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -108,7 +114,7 @@ const CargoHistory = () => {
   if (error) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>{error}</Text>
+        <Text style={styles.errorText}>{"خطا در دریافت اطلاعات"}</Text>
       </SafeAreaView>
     );
   }
@@ -116,7 +122,7 @@ const CargoHistory = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        {cargoes.map(cargo => (
+        {data?.map(cargo => (
           <CargoCard
             key={cargo._id}
             originCity={cargo?.origin?.title || "N/A"}
@@ -124,6 +130,7 @@ const CargoHistory = () => {
             destinationCity={cargo?.destination?.title || "N/A"}
             destinationProvince={cargo?.destination?.provinceName || "N/A"}
             distance={cargo?.distance || "N/A"}
+            ownerPhone={phoneNumber}
             truckType={
               truckTypes.find(ele => Number(ele.value) === cargo.truckTypeId)
                 ?.label

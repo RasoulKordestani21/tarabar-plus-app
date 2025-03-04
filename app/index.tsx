@@ -36,9 +36,12 @@ export default function OnBoardingScreen({}) {
     // setRole();
     // setPhoneNumber();
     // console.log(token);
-    if (isLogged && token) {
-      console.log("loggedin");
-      router.replace("/home");
+    if (isLogged ) {
+      if (role === "1") {
+        router.replace("/driver-home");
+      } else {
+        router.replace("/cargo-owner-home");
+      }
     }
   }, [isLogged]);
 
