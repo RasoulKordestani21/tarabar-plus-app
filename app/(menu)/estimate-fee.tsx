@@ -150,7 +150,7 @@ const EstimateFareDrawer: React.FC<Props> = ({ onClose }) => {
                     textStyle="text-right"
                     containerStyle="mt-3 w-full"
                     iconName="caret-down"
-                    disableSearch={true} // Disable search for select-like behavior
+                   
                   />
                 </View>
                 <View style={tw`w-full  mt-5`}>

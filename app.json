@@ -19,8 +19,8 @@
       "kotlinVersion": "1.9.25",
       "enableProguardInReleaseBuilds": true,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/tarabarplusicon.png",
+        "backgroundColor": "#003366"
       },
       "package": "com.rs_53.tarabarplusfrontend"
     },
@@ -29,9 +29,9 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": ["expo-router", "expo-secure-store", "expo-localization"],
+    "plugins": ["expo-router", "expo-secure-store"],
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/tarabarplusicon.png",
       "resizeMode": "contain",
       "backgroundColor": "#003366"
     },
@@ -46,9 +46,7 @@
       },
       "eas": {
         "projectId": "d8b8f99b-a6de-4b4d-ac31-d7808fa6c8b7"
-      },
-      "supportsRTL": true,
-      "forcesRTL": true
+      }
     }
   }
 }

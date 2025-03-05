@@ -102,7 +102,7 @@ const WalletAndPlans = () => {
                   textStyle="text-right"
                   containerStyle="mt-5"
                   iconName="caret-down"
-                  disableSearch={true} // Disable search for select-like behavior
+                  // disableSearch={true} // Disable search for select-like behavior
                 />
               </View>
               <CustomButton
