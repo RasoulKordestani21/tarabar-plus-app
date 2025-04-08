@@ -36,7 +36,7 @@ export default function OnBoardingScreen({}) {
     // setRole();
     // setPhoneNumber();
     // console.log(token);
-    if (isLogged ) {
+    if (isLogged) {
       if (role === "1") {
         router.replace("/driver-home");
       } else {
