@@ -76,7 +76,9 @@ const LocationModal: React.FC<LocationModalProps> = ({
         router.push(
           `/show-cargoes?latitude=${currentLocation.coords.latitude}&longitude=${currentLocation.coords.longitude}`
         );
-      } catch (error) {}
+      } catch (error) {
+        Alert.alert("خطا", "در هنگام دریافت موقعیت مکانی خطایی رخ داد");
+      }
     };
 
     checkPermissions();
@@ -95,12 +97,11 @@ const LocationModal: React.FC<LocationModalProps> = ({
         setLocationPermission(status);
 
         if (status === "granted") {
-          let currentLocation = await Location.getCurrentPositionAsync({});
+          let currentLocation = await Location.getCurrentPositionAsync();
           setCoordination(currentLocation);
           onClose();
           console.log(currentLocation);
 
-          // هدایت به صفحه بارهای موجود بر اساس موقعیت مکانی
           router.push(
             `/show-cargoes?latitude=${currentLocation.coords.latitude}&longitude=${currentLocation.coords.longitude}`
           );
@@ -122,7 +123,6 @@ const LocationModal: React.FC<LocationModalProps> = ({
             ]
           );
         }
-        setLoading(false);
       }
     } catch (error) {
       setLoading(false);

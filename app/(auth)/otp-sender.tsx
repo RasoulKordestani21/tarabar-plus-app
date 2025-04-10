@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { router } from "expo-router";
 import { View, Image, Platform } from "react-native";
 
@@ -15,19 +15,36 @@ const OtpSender = () => {
   const { role, setLoading, phoneNumber, setPhoneNumber, loading } =
     useGlobalContext();
   const [isFormValid, setIsFormValid] = useState(false);
+  const [localPhoneNumber, setLocalPhoneNumber] = useState(phoneNumber);
+
   useEffect(() => {
     setLoading(false);
   }, []);
+
+  const handlePhoneNumberChange = useCallback(
+    (value: string) => {
+      setLocalPhoneNumber(value);
+      setPhoneNumber(value);
+    },
+    [setPhoneNumber]
+  );
+
   const handleOtpSender = async () => {
-    setLoading(true); // Trigger loader
+    if (!isFormValid) {
+      await showToast("لطفا شماره موبایل معتبر وارد کنید", "error");
+      return;
+    }
+
+    setLoading(true);
     try {
-      await generateOtp({ phoneNumber, role });
-      await showToast(`کد به شماره ${phoneNumber} ارسال گردید`, "success");
+      await generateOtp({ phoneNumber: localPhoneNumber, role });
+      await showToast(`کد به شماره ${localPhoneNumber} ارسال گردید`, "success");
       router.replace("/otp-verification");
     } catch (error: any) {
-      await showToast(error.message, "error");
+      const errorMessage = error.message || "خطا در ارسال کد تایید";
+      await showToast(errorMessage, "error");
     } finally {
-      setLoading(false); // Stop loader
+      setLoading(false);
     }
   };
 
@@ -46,24 +63,23 @@ const OtpSender = () => {
         <FormField
           title="شماره موبایل"
           placeholder="شماره موبایل خود را وارد کنید"
-          // value={phoneNumber}
-          handleChangeText={(e: string) => setPhoneNumber(e)}
+          value={localPhoneNumber}
+          handleChangeText={handlePhoneNumberChange}
           pattern={{
             type: /^09(0[0-5]|1[0-9]|2[0-2]|3[0-9]|9[0-9])\d{7}$/,
             message: "شماره همراه باید ۱۱ رقمی و با 09 شروع شود"
           }}
           maxLength={11}
-          onValidationChange={(isValid: boolean) => setIsFormValid(isValid)} // Handle validation
+          onValidationChange={setIsFormValid}
           otherStyles="mt-7"
           keyboardType={Platform.OS === "ios" ? "name-phone-pad" : "number-pad"}
-          // defaultValue={phoneNumber}
         />
 
         <CustomButton
           title="دریافت پیامک"
           handlePress={handleOtpSender}
           containerStyles="w-full mt-7"
-          disabled={!isFormValid} // Disable based on validation
+          disabled={!isFormValid || loading}
         />
       </View>
     </>

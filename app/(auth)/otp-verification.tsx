@@ -1,5 +1,5 @@
 // OtpVerifier.js
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Alert, View, Image, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "@/libs/twrnc";
@@ -24,12 +24,18 @@ const OtpVerifier = () => {
     setPhoneNumber,
     deviceId,
     deviceName
-  } = useGlobalContext(); // Get setPhoneNumber from the context
+  } = useGlobalContext();
+
   const [form, setForm] = useState({ otp: "" });
   const [focused, setFocused] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
 
   const handleVerification = async () => {
+    if (!isFormValid) {
+      await showToast("لطفا کد تایید را وارد کنید", "error");
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await verifyOtp({
@@ -39,24 +45,20 @@ const OtpVerifier = () => {
         deviceName,
         role
       });
-      console.log("Verification Response:", response); // Debugging log
 
-      if (response?.token) {
-        setToken(response.token); // Save the token in global context
-        setIsLogged(true); // Update logged-in status
-        setPhoneNumber(phoneNumber); // Set the phone number in the context securely
-        if (role === "1") {
-          router.replace("/driver-home");
-        } else {
-          router.replace("/cargo-owner-home");
-        } // Navigate to the account screen
-      } else {
-        // Alert.alert("Error", "Failed to retrieve token from the server.");
-        await showToast("Failed to retrieve token from the server.");
+      if (!response?.token) {
+        throw new Error("توکن دریافت نشد");
       }
+
+      setToken(response.token);
+      setIsLogged(true);
+      setPhoneNumber(phoneNumber);
+
+      const homeRoute = role === "1" ? "/driver-home" : "/cargo-owner-home";
+      router.replace(homeRoute);
     } catch (error: any) {
-      // console.error("Error in handleVerification:", error.message); // Debugging log
-      await showToast(error.message, "error");
+      const errorMessage = error.message || "خطا در تایید کد";
+      await showToast(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -68,11 +70,16 @@ const OtpVerifier = () => {
       await generateOtp({ phoneNumber, role });
       await showToast(`کد به شماره ${phoneNumber} ارسال گردید`, "success");
     } catch (error: any) {
-      await showToast(error.message, "error");
+      const errorMessage = error.message || "خطا در ارسال مجدد کد";
+      await showToast(errorMessage, "error");
     } finally {
       setLoading(false);
     }
   };
+
+  const handleOtpChange = useCallback((value: string) => {
+    setForm({ otp: value });
+  }, []);
 
   return (
     <>
@@ -92,8 +99,8 @@ const OtpVerifier = () => {
             value={form.otp}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
-            handleChangeText={(e: string) => setForm({ ...form, otp: e })}
-            onValidationChange={(isValid: boolean) => setIsFormValid(isValid)} // Handle validation
+            handleChangeText={handleOtpChange}
+            onValidationChange={setIsFormValid}
             pattern={{
               type: /^\d{4}$/,
               message: "کد چهاررقمی می‌باشد."
@@ -104,14 +111,12 @@ const OtpVerifier = () => {
             }
             maxLength={4}
           />
-          <View style={tw`flex-row items-center justify-between `}>
+          <View style={tw`flex-row items-center justify-between`}>
             <OTPTimer onResend={handleResend} duration={120} />
             <CustomButton
               title="اصلاح شماره تلفن"
-              handlePress={() => {
-                router.replace("/otp-sender");
-              }}
-              containerStyles="align-left  bg-primary"
+              handlePress={() => router.replace("/otp-sender")}
+              containerStyles="align-left bg-primary"
               textStyles="text-sm px-2"
             />
           </View>
@@ -120,7 +125,7 @@ const OtpVerifier = () => {
           title="تایید کد ارسال شده"
           handlePress={handleVerification}
           containerStyles="w-full mt-7"
-          disabled={!isFormValid}
+          disabled={!isFormValid || loading}
         />
       </SafeAreaView>
     </>
