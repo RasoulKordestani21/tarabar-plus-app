@@ -20,7 +20,7 @@ export type CargoSubmitProps = {
   description: String;
   ownerPhone: String;
   transportType: String;
-  insurancePercentage: String;
+
   cargoWeight?: String;
 };
 

@@ -16,7 +16,9 @@ import {
   Keyboard,
   Modal,
   TouchableWithoutFeedback,
-  SafeAreaView
+  SafeAreaView,
+  ActivityIndicator,
+  BackHandler
 } from "react-native";
 import tw from "@/libs/twrnc";
 import { FontAwesome } from "@expo/vector-icons";
@@ -34,7 +36,7 @@ interface SearchableInputProps {
   containerStyle?: string;
   textStyle?: string;
   title?: string;
-  defaultValue?: string; // New defaultValue prop
+  defaultValue?: string;
   listContainerStyle?: string;
   iconName?: "search" | "dot-circle-o" | "location-arrow" | "caret-down";
   disableSearch?: boolean;
@@ -45,6 +47,7 @@ interface SearchableInputProps {
     | string[]
     | FormikErrors<any>[]
     | undefined;
+  isLoading?: boolean;
 }
 
 const DropdownInput: React.FC<SearchableInputProps> = ({
@@ -54,62 +57,98 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
   containerStyle,
   textStyle,
   title,
-  defaultValue = "", // Default value for the input
+  defaultValue = "",
   iconName,
   disableSearch = false,
   name,
-  formikError
+  formikError,
+  isLoading = false
 }) => {
-  const [searchText, setSearchText] = useState(defaultValue); // Use defaultValue
+  const [searchText, setSearchText] = useState(defaultValue);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [error, setError] = useState();
+  const [localError, setLocalError] = useState<string | undefined>(undefined);
+  const [isTouched, setIsTouched] = useState(false);
 
-  const { setFieldValue, setFieldTouched, errors, touched } =
+  const { setFieldValue, setFieldTouched, setFieldError, validateField } =
     useFormikContext();
 
-  const inputRef = useRef<TextInput>(null);
-
   useEffect(() => {
-    setSearchText(defaultValue); // Update input when defaultValue changes
-    if (name) {
-      setFieldValue(
-        name,
-        Number(options.find(ele => ele.label === defaultValue)?.value)
-      );
-    }
-  }, []);
-
-  const handleOnSelect = (label: string, value: string) => {
-    setSearchText(label); // Update the input with selected value
-    console.log(value);
-    if (name) {
-      setFieldValue(name, value);
+    if (formikError) {
+      setLocalError(typeof formikError === "string" ? formikError : "");
     } else {
-      if (onSelect) {
-        onSelect(value);
-      } // Notify parent component
+      setLocalError(undefined);
     }
-    setIsModalVisible(false); // Close modal
-    Keyboard.dismiss(); // Dismiss keyboard
-  };
+  }, [formikError]);
 
   const handleOpenModal = useCallback(() => {
-    setIsModalVisible(true); // Open modal on focus
-  }, []);
+    setIsModalVisible(true);
+    setIsTouched(true);
+    if (name && !searchText) {
+      const initialValue =
+        options.find(ele => ele.label === defaultValue)?.value || "";
+      setFieldValue(name, initialValue);
+    }
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      handleCloseModal
+    );
+    return () => backHandler.remove();
+  }, [name, defaultValue, options, setFieldValue, searchText]);
+
+  const handleOnSelect = async (label: string, value: string) => {
+    setSearchText(label);
+    if (name) {
+      setFieldValue(name, value);
+      setFieldTouched(name, true);
+      setFieldError(name, undefined);
+      setLocalError(undefined);
+
+      if (isTouched) {
+        try {
+          await validateField(name);
+        } catch (error) {
+          // Validation error will be handled by the formikError prop
+        }
+      }
+
+      if (onSelect) {
+        onSelect(value);
+      }
+    } else if (onSelect) {
+      onSelect(value);
+    }
+    setIsModalVisible(false);
+    Keyboard.dismiss();
+  };
 
   const handleCloseModal = useCallback(() => {
     setIsModalVisible(false);
     Keyboard.dismiss();
     if (!searchText.length) {
       setSearchText("");
+      if (name) {
+        setFieldValue(name, "");
+        setFieldError(name, undefined);
+        setLocalError(undefined);
+      }
     }
-  }, [searchText]);
+  }, [searchText, name, setFieldValue, setFieldError]);
+
+  const handleClear = useCallback(() => {
+    if (name) {
+      setFieldTouched(name, true);
+      setFieldValue(name, "");
+      setFieldError(name, undefined);
+      setLocalError(undefined);
+    }
+    setSearchText("");
+  }, [name, setFieldValue, setFieldError, setFieldTouched]);
 
   // Filter options based on search text
   const filteredOptions = useMemo(() => {
     if (!isModalVisible) return [];
     return disableSearch
-      ? options // Show all options if search is disabled
+      ? options
       : options.filter(option =>
           option.label.toLowerCase().includes(searchText.toLowerCase())
         );
@@ -119,6 +158,8 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
     <Pressable
       style={tw`mb-1 rounded-md p-3 bg-white`}
       onPress={() => handleOnSelect(item.label, item.value)}
+      accessibilityRole="button"
+      accessibilityLabel={`Select ${item.label}`}
     >
       <Text style={[styles.label, tw`text-background font-vazir`]}>
         {item.label}
@@ -162,16 +203,7 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
       >
         <View style={tw`flex-row items-center flex-1`}>
           {searchText ? (
-            <Pressable
-              onPress={() => {
-                if (name) {
-                  setFieldTouched(name, true);
-                  setFieldValue(name, null);
-                }
-                setSearchText("");
-              }}
-              style={tw`mr-1`}
-            >
+            <Pressable onPress={handleClear} style={tw`mr-1`}>
               <FontAwesome name={"close"} size={24} color="#888" />
             </Pressable>
           ) : (
@@ -188,30 +220,29 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
             {searchText || placeholder}
           </Text>
         </View>
-        <FontAwesome
-          name={iconName}
-          size={20}
-          color="#888"
-          style={disableSearch ? tw`ml-1` : ""}
-        />
+        {isLoading ? (
+          <ActivityIndicator size="small" color="#888" />
+        ) : (
+          <FontAwesome
+            name={iconName}
+            size={20}
+            color="#888"
+            style={disableSearch ? tw`ml-1` : ""}
+          />
+        )}
       </Pressable>
-      {formikError && (
-        <Text style={tw`text-xs text-red-500 mt-1 font-vazir text-right `}>
-          {typeof formikError === "string" ? formikError : ""}
+      {localError && (
+        <Text style={tw`text-xs text-red-500 mt-1 font-vazir text-right`}>
+          {localError}
         </Text>
       )}
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="fade"
-        // onRequestClose={handleCloseModal}
-      >
+      <Modal visible={isModalVisible} transparent={true} animationType="fade">
         <SafeAreaView
           style={tw`flex-1 items-center justify-center bg-black/60`}
         >
           <TouchableWithoutFeedback
-            // onPress={handleCloseModal}
             style={tw`flex-1 absolute top-0 left-0 w-full h-full bg-transparent z-0`}
+            onPress={handleCloseModal}
           >
             <View
               style={tw`flex-1 absolute top-0 left-0 w-full h-full bg-black-50  z-0`}
@@ -230,7 +261,7 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
                   onPress={() => {
                     if (name) {
                       setFieldTouched(name, true);
-                      setFieldValue(name, null);
+                      setFieldValue(name, "");
                     }
                     setSearchText("");
                   }}
@@ -251,6 +282,7 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
                   onChangeText={text => {
                     setSearchText(text);
                   }}
+                  accessibilityLabel="Search input"
                 />
               ) : (
                 <Text
@@ -271,22 +303,18 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
                 style={disableSearch ? tw`ml-1` : ""}
               />
             </View>
-            {filteredOptions.length ? (
-              <FlatList
-                style={tw`max-h-[80%] w-full rounded-xl bg-text`}
-                data={filteredOptions}
-                keyExtractor={item => item.value}
-                renderItem={({ item }) => <Item item={item} />}
-                nestedScrollEnabled
-                keyboardShouldPersistTaps="handled" // Allow taps to work with open keyboard
-              />
-            ) : (
-              <Text
-                style={tw`h-10 w-full rounded-xl bg-white text-center text-secodary font-vazir pt-2`}
-              >
-                موردی یافت نشد.
-              </Text>
-            )}
+            <FlatList
+              data={filteredOptions}
+              renderItem={({ item }) => <Item item={item} />}
+              keyExtractor={item => item.value}
+              style={tw`max-h-[300px]`}
+              keyboardShouldPersistTaps="handled"
+              ListEmptyComponent={
+                <Text style={tw`text-center text-background font-vazir`}>
+                  No options found
+                </Text>
+              }
+            />
           </View>
         </SafeAreaView>
       </Modal>
@@ -294,10 +322,10 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
   );
 };
 
-export default DropdownInput;
-
 const styles = StyleSheet.create({
   label: {
-    textAlign: "right"
+    fontSize: 16
   }
 });
+
+export default React.memo(DropdownInput);

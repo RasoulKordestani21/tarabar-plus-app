@@ -140,7 +140,7 @@ const createCargoInitialValues = (data: any) => {
     destination: data?.destination?.cityId || "",
     truckType: data?.truckType || "",
     cargoType: data?.cargoType || "",
-    insurancePercentage: data?.insurancePercentage || "",
+    // insurancePercentage: data?.insurancePercentage || "",
     transportType: data?.transportType || "",
     cargoWeight: data?.cargoWeight || "",
     fee: data?.fee || "",
@@ -153,9 +153,9 @@ const createCargoSchema = Yup.object().shape({
   destination: Yup.string().required("مقصد ازامی است "),
   truckType: Yup.string().required(" نوع کشنده الزامی است "),
   cargoType: Yup.string().required(" نوع بار الزامی است "),
-  insurancePercentage: Yup.string()
-    .matches(/^(\d{1,2}|100)$/, "عدد بین ۰ تا ۱۰۰")
-    .required("درصد بیمه الزامی است"),
+  // insurancePercentage: Yup.string()
+  //   .matches(/^(\d{1,2}|100)$/, "عدد بین ۰ تا ۱۰۰")
+  //   .required("درصد بیمه الزامی است"),
   transportType: Yup.string().required("یکی از گزینه ها را انتخاب کنید "),
   cargoWeight: Yup.string()
     .matches(/^(\d{1,2}|100)$/, "عدد بین ۰ تا ۱۰۰")

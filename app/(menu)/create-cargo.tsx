@@ -1,5 +1,11 @@
-import React from "react";
-import { View, ScrollView, Platform, KeyboardAvoidingView } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  ScrollView,
+  Platform,
+  KeyboardAvoidingView,
+  Text
+} from "react-native";
 import tw from "@/libs/twrnc";
 import { getAllCities, addCargo } from "@/api/services/cargoServices";
 
@@ -17,9 +23,11 @@ import {
 import Loader from "@/components/Loader";
 import RadioInput from "@/components/Input/RadioInput";
 import { CargoSubmitProps, CargoValuesProps, FetchedCity } from "./types";
+import { showToast } from "@/utils/toast";
 
 const CreateCargo = () => {
   const { phoneNumber } = useGlobalContext();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["listOfCities"],
@@ -28,6 +36,7 @@ const CreateCargo = () => {
 
   const handleSubmit = async (values: CargoValuesProps) => {
     try {
+      setIsSubmitting(true);
       let cargoData: CargoSubmitProps = {
         originId: Number(values.origin),
         destinationId: Number(values.destination),
@@ -36,8 +45,7 @@ const CreateCargo = () => {
         carriageFee: values.fee,
         description: values.description,
         ownerPhone: phoneNumber,
-        transportType: values.transportType,
-        insurancePercentage: values.insurancePercentage
+        transportType: values.transportType
       };
 
       if (values.transportType === "3") {
@@ -45,12 +53,23 @@ const CreateCargo = () => {
       }
 
       const result = await addCargo(cargoData);
-      console.log("Cargo added successfully:", result);
-      alert("Cargo added successfully!");
-    } catch (error) {
+      if (result) {
+        showToast.success("بار با موفقیت ثبت شد");
+      }
+    } catch (error: any) {
       console.error("Error submitting cargo:", error);
-      alert("Failed to add cargo. Please try again.");
+      showToast.error(
+        error.response?.data?.message || "خطا در ثبت بار. لطفا دوباره تلاش کنید"
+      );
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const formatFee = (value: string) => {
+    if (!value) return "";
+    const number = value.replace(/,/g, "");
+    return number.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
   return (
@@ -67,85 +86,95 @@ const CreateCargo = () => {
           keyboardShouldPersistTaps="handled"
         >
           <Formik
-            initialValues={createCargoInitialValues({})}
+            initialValues={{
+              ...createCargoInitialValues({}),
+              id: "new"
+            }}
             validationSchema={createCargoSchema}
             onSubmit={handleSubmit}
           >
-            {({ handleChange, handleSubmit, values, errors }) => (
+            {({
+              handleChange,
+              handleSubmit,
+              values,
+              errors,
+              setFieldError,
+              setFieldValue
+            }) => (
               <>
-                <View style={tw`flex-row flex-wrap  justify-between`}>
-                  <View style={tw`w-[48%] `}>
+                <View style={tw`flex-row flex-wrap justify-between`}>
+                  <View style={tw`w-[48%]`}>
                     <DropdownInput
                       title="مقصد"
-                      options={data.map((city: FetchedCity) => ({
-                        label: `${city.title}`,
-                        value: city.id
+                      options={data?.map((city: FetchedCity) => ({
+                        label: city.title,
+                        value: city.id.toString()
                       }))}
                       name="destination"
                       formikError={errors.destination}
                       textStyle="text-right"
                       containerStyle="mt-3 w-full"
-                      iconName={"dot-circle-o"}
+                      iconName="dot-circle-o"
+                      onSelect={() => setFieldError("destination", undefined)}
                     />
                   </View>
-                  <View style={tw`w-[48%] `}>
+                  <View style={tw`w-[48%]`}>
                     <DropdownInput
                       title="مبدا"
-                      options={data.map((city: FetchedCity) => ({
+                      options={data?.map((city: FetchedCity) => ({
                         label: city.title,
-                        value: city.id
+                        value: city.id.toString()
                       }))}
                       name="origin"
                       formikError={errors.origin}
                       textStyle="text-right"
                       containerStyle="mt-3 w-full"
-                      iconName={"dot-circle-o"}
+                      iconName="dot-circle-o"
+                      onSelect={() => setFieldError("origin", undefined)}
                     />
                   </View>
 
-                  <View style={tw`w-[48%] `}>
+                  <View style={tw`w-[48%]`}>
                     <DropdownInput
                       title="نوع کشنده"
-                      options={truckTypes}
-                      name={"truckType"}
+                      options={truckTypes.map(type => ({
+                        ...type,
+                        value: type.value.toString()
+                      }))}
+                      name="truckType"
                       formikError={errors.truckType}
                       textStyle="text-right"
                       containerStyle="mt-3 w-full"
                       iconName="caret-down"
+                      disableSearch={true}
+                      onSelect={() => setFieldError("truckType", undefined)}
                     />
                   </View>
-                  <View style={tw`w-[48%] `}>
+                  <View style={tw`w-[48%]`}>
                     <DropdownInput
                       title="نوع بار"
-                      options={cargoTypes}
-                      name={"cargoType"}
+                      options={cargoTypes.map(type => ({
+                        ...type,
+                        value: type.value.toString()
+                      }))}
+                      name="cargoType"
                       formikError={errors.cargoType}
                       textStyle="text-right"
                       containerStyle="mt-3 w-full"
                       iconName="caret-down"
-                      disableSearch={true} // Disable search for select-like behavior
-                    />
-                  </View>
-                  <View style={tw`w-[48%]  mt-5 `}>
-                    <FormField
-                      title={"درصد بیمه"}
-                      handleChangeText={handleChange("insurancePercentage")}
-                      value={values.insurancePercentage}
-                      formikError={errors.insurancePercentage}
-                      isUsingFormik={true}
-                      otherStyles="mb- w-full"
-                      keyboardType={
-                        Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
-                      }
-                      color="background"
+                      disableSearch={true}
+                      onSelect={() => setFieldError("cargoType", undefined)}
                     />
                   </View>
 
-                  <View style={tw`w-[48%] mt-5 `}>
+                  <View style={tw`w-[88%] mt-10`}>
                     <FormField
-                      title={"کرایه (تومان)"}
-                      handleChangeText={handleChange("fee")}
-                      value={values.fee}
+                      title="کرایه (تومان)"
+                      handleChangeText={text => {
+                        const numericValue = text.replace(/,/g, "");
+                        setFieldValue("fee", numericValue);
+                      }}
+                      value={formatFee(values.fee)}
                       formikError={errors.fee}
                       isUsingFormik={true}
                       otherStyles="mb-1 w-full"
@@ -154,6 +183,11 @@ const CreateCargo = () => {
                       }
                       color="background"
                     />
+                    {values.fee && (
+                      <Text style={tw`text-xs text-gray-500  text-right font-vazir`}>
+                        {formatFee(values.fee)} تومان
+                      </Text>
+                    )}
                   </View>
                   {/* {console.log(values)} */}
                   <RadioInput
@@ -202,6 +236,7 @@ const CreateCargo = () => {
                   title="ثبت بار جدید"
                   handlePress={() => handleSubmit()}
                   containerStyles="w-full bg-background"
+                  isLoading={isSubmitting}
                 />
               </>
             )}

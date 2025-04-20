@@ -1,48 +1,77 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
+import { showToast } from "@/utils/toast";
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig?.extra?.API_URL;
 
 const apiClient = axios.create({
-  baseURL:
-    // "https://tarabar-plus.com",
-    "http://192.168.1.103:3000", // Replace with your backend URL
+  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json"
-  }
+  },
+  timeout: 10000 // 10 second timeout
 });
 
 // Add an interceptor to dynamically set the Authorization header
 apiClient.interceptors.request.use(
   async config => {
-    const token = await SecureStore.getItemAsync("token"); // Retrieve the token
-    if (token) {
-      config.headers.Authorization = `${token}`;
+    try {
+      const token = await SecureStore.getItemAsync("token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    } catch (error) {
+      return Promise.reject(error);
     }
-    return config;
   },
   error => Promise.reject(error)
 );
 
-// Add an interceptor to handle 401 errors
+// Add an interceptor to handle errors
 apiClient.interceptors.response.use(
-  response => response, // If response is successful, return it
+  response => response,
   async error => {
-    // Check if the error status is 401
-    const token = await SecureStore.getItemAsync("token");
-    console.log(token, " is token ");
-    if (error.response && error.response.status === 401 && token) {
-      console.log("conditions satisfied");
-      // Perform redirection on 401 Unauthorized
+    try {
+      if (!error.response) {
+        showToast.error("Network error. Please check your internet connection.");
+        return Promise.reject(new Error("Network error"));
+      }
 
-      router.replace("/error");
-      // Optionally handle logging out or token removal here
+      const { status } = error.response;
 
-      // You can also add other logic, like logging out the user, etc.
-
-      return Promise.reject(error); // Reject the error to propagate it
+      switch (status) {
+        case 401: {
+          const token = await SecureStore.getItemAsync("token");
+          if (token) {
+            await SecureStore.deleteItemAsync("token");
+            showToast.info("Session expired. Please login again.");
+            router.replace("/(auth)/otp-sender");
+          }
+          break;
+        }
+        case 403:
+          showToast.error("You don't have permission to perform this action.");
+          break;
+        case 404:
+          showToast.error("Resource not found.");
+          break;
+        case 429:
+          showToast.error("Too many requests. Please try again later.");
+          break;
+        default:
+          if (status >= 500) {
+            showToast.error("Server error. Please try again later.");
+          } else {
+            showToast.error(error.response.data?.message || "An error occurred.");
+          }
+      }
+    } catch (handleError) {
+      console.error("Error in error handler:", handleError);
     }
-
-    return Promise.reject(error); // For other errors, reject and propagate the error
+    return Promise.reject(error);
   }
 );
 

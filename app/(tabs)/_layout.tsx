@@ -111,9 +111,9 @@ export default function TabLayout() {
               <FontAwesome name="sign-out" size={24} color="#fff" />
             </TouchableOpacity>
             <Image
-              source={require("@/assets/images/tarabarplusicon.png")}
+              source={require("@/assets/images/vector.png")}
               resizeMode="contain"
-              style={tw` py-2 w-24`}
+              style={tw` py-2 w-10`}
             />
           </View>
         ),

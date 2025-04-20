@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 const options = [
-  { title: "دربستی", id: "1" },
   { title: "سرویسی", id: "2" },
   { title: "تناژی", id: "3" }
 ];
