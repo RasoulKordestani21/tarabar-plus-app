@@ -2,10 +2,10 @@ import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
 import { showToast } from "@/utils/toast";
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
 
-const API_URL = Constants.expoConfig?.extra?.API_URL;
-
+const API_URL = Constants.expoConfig?.extra?.DEVELOP_URL;
+console.log("API_URL", API_URL);
 const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
@@ -18,9 +18,10 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   async config => {
     try {
+      console.log(API_URL)
       const token = await SecureStore.getItemAsync("token");
       if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        config.headers.Authorization = `${token}`;
       }
       return config;
     } catch (error) {
@@ -36,7 +37,9 @@ apiClient.interceptors.response.use(
   async error => {
     try {
       if (!error.response) {
-        showToast.error("Network error. Please check your internet connection.");
+        showToast.error(
+          "Network error. Please check your internet connection."
+        );
         return Promise.reject(new Error("Network error"));
       }
 
@@ -65,7 +68,9 @@ apiClient.interceptors.response.use(
           if (status >= 500) {
             showToast.error("Server error. Please try again later.");
           } else {
-            showToast.error(error.response.data?.message || "An error occurred.");
+            showToast.error(
+              error.response.data?.message || "An error occurred."
+            );
           }
       }
     } catch (handleError) {
