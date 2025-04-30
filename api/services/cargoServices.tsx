@@ -110,3 +110,48 @@ export const getCargoesByOriginDestination = async params => {
     throw error;
   }
 };
+
+// New function for fetching available cargoes for drivers
+export const getAvailableCargosForDriver = async (
+  latitude: number,
+  longitude: number,
+  radius: number = 50
+) => {
+  try {
+    const response = await apiClient.get(
+      "/api/carrier-cargos-for-drivers/available",
+      {
+        params: {
+          lat: latitude,
+          lng: longitude
+          // radius: radius
+        }
+      }
+    );
+    return response.data.data || []; // Return the available cargos data with fallback to empty array
+  } catch (error) {
+    console.error("Error fetching available cargoes for driver:", error);
+    throw error;
+  }
+};
+
+export const registerDriverToCargo = async (
+  cargoId: string,
+  driverInfo: { driverId: string; vehicle: string }
+) => {
+  try {
+    const response = await apiClient.post(
+      `/api/carrier-cargos-for-drivers/${cargoId}/register`,
+      driverInfo
+    );
+
+    if (response.data && response.data.success) {
+      return response.data.data;
+    }
+
+    throw new Error(response.data?.message || "Failed to register for cargo");
+  } catch (error) {
+    console.error("Error registering for cargo:", error);
+    throw error;
+  }
+};
