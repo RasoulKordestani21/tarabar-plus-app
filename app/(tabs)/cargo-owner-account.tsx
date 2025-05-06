@@ -15,6 +15,7 @@ import { useGlobalContext } from "@/context/GlobalProvider";
 import Loader from "@/components/Loader";
 import { SafeAreaView } from "react-native";
 import { ActivityIndicator } from "react-native";
+import { getCargoOwner } from "@/api/services/cargoOwnerServices";
 
 type MaterialIconNames =
   | "flash-on"
@@ -26,10 +27,15 @@ type MaterialIconNames =
 const AccountScreen = () => {
   const { phoneNumber, role } = useGlobalContext();
   const { data, error, isLoading, isFetched, refetch } = useQuery({
-    queryKey: ["userInformation", phoneNumber],
-    queryFn: () => getUser(phoneNumber, role)
+    queryKey: ["cargoOwnerInformation", phoneNumber],
+    queryFn: () => getCargoOwner({ phoneNumber })
   });
-  console.log(data);
+
+  const formatFee = (value: string) => {
+    if (!value) return "";
+    const number = value.toString().replace(/,/g, "");
+    return number.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
 
   if (isLoading) {
     return (
@@ -55,9 +61,11 @@ const AccountScreen = () => {
           />
 
           <Text
-            style={tw`bg-green-700 text-white font-vazir px-4 py-1 mt-2 rounded-full `}
+            style={tw`${
+              data?.user?.isVerified ? "bg-green-700" : "bg-orange-700"
+            } text-white font-vazir px-4 py-1 mt-2 rounded-full `}
           >
-            احراز هویت شده
+            {data?.user?.isVerified ? "احراز هویت شده" : " احراز هویت نشده"}
           </Text>
           <Text style={tw`text-white text-lg font-vazir-bold mt-2 `}>
             {data?.user?.userName || "----"}
@@ -68,7 +76,9 @@ const AccountScreen = () => {
             <Text style={tw`text-background text-base font-vazir`}>
               موجودی کیف پول
             </Text>
-            <Text style={tw`text-white text-base font-vazir`}>45,888,333</Text>
+            <Text style={tw`text-white text-base font-vazir`}>
+              {formatFee(data?.user?.balance) || 0} تومان
+            </Text>
           </View>
 
           <View style={tw`flex flex-row-reverse justify-between w-full `}>
@@ -105,7 +115,7 @@ const AccountScreen = () => {
             title: "مدریرت کیف پول و اشتراک",
             description: "موجودی کیف پول خود را مدیریت کنید.",
             icon: "account-balance-wallet" as MaterialIconNames,
-            route: "/wallet-plans"
+            route: "/cargo-owner-wallet-plans"
           },
           // {
           //   title: "خرید اشتراک",

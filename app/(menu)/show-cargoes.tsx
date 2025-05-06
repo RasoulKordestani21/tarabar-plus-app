@@ -4,295 +4,182 @@ import {
   Text,
   ScrollView,
   ActivityIndicator,
-  TouchableOpacity
+  TouchableOpacity,
+  RefreshControl
 } from "react-native";
 import tw from "@/libs/twrnc";
 import { router, useLocalSearchParams } from "expo-router";
 import {
   getCargoesByLocation,
-  getCargoesByOriginDestination,
-  getAvailableCargosForDriver,
-  registerDriverToCargo
+  getCargoesByOriginDestination
 } from "@/api/services/cargoServices";
 import CargoCard from "@/components/CargoCard";
-import AnouncementsCargoCard from "@/components/AnouncementsCargoCard";
 import { cargoTypes, truckTypes } from "@/constants/BoxesList";
-import * as Location from "expo-location";
-import { useGlobalContext } from "@/context/GlobalProvider";
+import { FontAwesome } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 
 export default function ShowCargoes() {
-  // Use useLocalSearchParams to get query parameters
   const { latitude, longitude, origin, destination } = useLocalSearchParams();
+  const [filterVisible, setFilterVisible] = useState<boolean>(false);
 
-  const [cargoes, setCargoes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("regular"); // "regular" or "announcements"
-  const [currentLocation, setCurrentLocation] = useState({
-    latitude: latitude ? parseFloat(latitude) : null,
-    longitude: longitude ? parseFloat(longitude) : null
+  // Fetch cargoes based on the query params
+  const fetchCargoes = async () => {
+    let filteredCargoes;
+
+    if (latitude && longitude) {
+      console.log(latitude, longitude);
+      filteredCargoes = await getCargoesByLocation(
+        parseFloat(latitude as string),
+        parseFloat(longitude as string)
+      );
+    } else if (origin && destination) {
+      const params = {
+        originIds: JSON.parse(origin as string)
+          .split(",")
+          .join(","),
+        destinationIds: JSON.parse(destination as string)
+          .split(",")
+          .join(",")
+      };
+      filteredCargoes = await getCargoesByOriginDestination({
+        ...params
+      });
+    } else {
+      throw new Error("No valid filters provided");
+    }
+    // console.log(filteredCargoes?.cargos);
+    return filteredCargoes?.cargos;
+  };
+
+  const {
+    data: cargoes = [],
+    isLoading,
+    isError,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ["cargoes", latitude, longitude, origin, destination],
+    queryFn: fetchCargoes,
+    enabled: Boolean(latitude && longitude) || Boolean(origin && destination),
+    refetchOnWindowFocus: false
   });
 
-  const { phoneNumber } = useGlobalContext();
-  
-  // Function to get current location
-  const getCurrentLocation = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
+  // Handle pull-to-refresh
+  const handlePullRefresh = async () => {
+    await refetch();
+  };
 
-      if (status !== "granted") {
-        setError("Permission to access location was denied");
-        return;
+  // Handle back button
+  const handleBack = () => {
+    router.back();
+  };
+  const formatPrice = (priceStr: string) => {
+    if (priceStr === "توافقی") return priceStr;
+
+    try {
+      // If price is a number, format it with commas
+      const priceNum = parseInt(priceStr.replace(/[^0-9]/g, ""), 10);
+      if (!isNaN(priceNum)) {
+        return priceNum.toLocaleString("fa-IR") + " تومان";
       }
-
-      const location = await Location.getCurrentPositionAsync({});
-      setCurrentLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude
-      });
-
-      return location.coords;
-    } catch (err) {
-      console.error("Error getting location:", err);
-      setError("Could not get your current location");
-      return null;
+      return priceStr;
+    } catch {
+      return priceStr;
     }
   };
-
-  // Fetch regular cargoes based on the query params (location or origin/destination)
-  const fetchRegularCargoes = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      let filteredCargoes;
-      if (latitude && longitude) {
-        // Fetch cargoes based on the location (latitude and longitude)
-        filteredCargoes = await getCargoesByLocation(
-          parseFloat(latitude),
-          parseFloat(longitude)
-        );
-      } else if (origin && destination) {
-        // Fetch cargoes based on the selected origin and destination
-        const params = {
-          originIds: JSON.parse(origin).split(",").join(","),
-          destinationIds: JSON.parse(destination).split(",").join(",")
-        };
-        filteredCargoes = await getCargoesByOriginDestination({
-          ...params
-        });
-      } else {
-        throw new Error("No valid filters provided");
-      }
-
-      setCargoes(filteredCargoes);
-    } catch (err) {
-      setError("Failed to fetch cargoes");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch available cargoes for driver (announcements)
-  const fetchAvailableCargoes = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // If we don't have location, try to get it
-      let coords = currentLocation;
-      if (!coords.latitude || !coords.longitude) {
-        const locationResult = await getCurrentLocation();
-        if (!locationResult) {
-          throw new Error("Could not get location for available cargoes");
-        }
-        coords = locationResult;
-      }
-
-      // Fetch the available cargoes for driver
-      const availableCargoes = await getAvailableCargosForDriver(
-        coords.latitude,
-        coords.longitude,
-        50 // Default radius of 50km
-      );
-
-      setCargoes(availableCargoes);
-    } catch (err) {
-      setError("Failed to fetch available cargoes");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle tab switching
-  const handleTabSwitch = tab => {
-    if (tab === activeTab) return; // Don't refetch if already on this tab
-
-    setActiveTab(tab);
-    if (tab === "regular") {
-      fetchRegularCargoes();
-    } else {
-      fetchAvailableCargoes();
-    }
-  };
-
-  // Handle cargo registration for announcements
-  const handleRegisterCargo = (cargoId) => {
-    try {
-      registerDriverToCargo(cargoId, {
-        driverId: "67c6e7178480c18a66fa1e2b", // This should ideally come from authentication context
-        vehicle: ""
-      });
-      // Could add a success message or update the UI after successful registration
-      alert("درخواست حمل با موفقیت ثبت شد");
-    } catch (error) {
-      console.error("Error registering for cargo:", error);
-      alert("خطا در ثبت درخواست حمل");
-    }
-  };
-
-  // Initial fetch based on params
-  useEffect(() => {
-    if (activeTab === "regular") {
-      fetchRegularCargoes();
-    } else {
-      fetchAvailableCargoes();
-    }
-  }, [latitude, longitude, origin, destination, activeTab]);
-
   return (
-    <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-4`}>
-      <View style={tw`mb-4`}>
-        <Text style={tw`text-xl font-vazir text-center mb-4`}>
-          مشاهده تمامی بارها
-        </Text>
-        <View style={tw`h-[2px] w-full bg-background mb-2`}></View>
-
-        {/* Tab buttons for switching between regular and driver cargoes */}
-        <View style={tw`w-full flex-row justify-between mb-4`}>
-          <TouchableOpacity
-            style={tw`${
-              activeTab === "regular" ? "bg-primary" : "bg-gray-300"
-            } w-[48%] p-2 rounded-md`}
-            onPress={() => handleTabSwitch("regular")}
-          >
-            <Text
-              style={tw`${
-                activeTab === "regular" ? "text-white" : "text-gray-700"
-              } text-center font-vazir`}
-            >
-              عمومی
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={tw`${
-              activeTab === "announcements" ? "bg-primary" : "bg-gray-300"
-            } w-[48%] p-2 rounded-md`}
-            onPress={() => handleTabSwitch("announcements")}
-          >
-            <Text
-              style={tw`${
-                activeTab === "announcements" ? "text-white" : "text-gray-700"
-              } text-center font-vazir`}
-            >
-              اعلام بارها
-            </Text>
-          </TouchableOpacity>
+    <View style={tw`flex-1 bg-gray-100`}>
+      {/* Filter options - shown conditionally */}
+      {filterVisible && (
+        <View style={tw`bg-white p-4 shadow-sm`}>
+          <Text style={tw`text-sm font-vazir mb-2`}>فیلترها</Text>
+          {/* Filter options would go here */}
+          <View style={tw`h-[1px] w-full bg-gray-200 my-2`}></View>
         </View>
+      )}
 
-        {loading && (
-          <View style={tw`py-10`}>
+      <ScrollView
+        style={tw`flex-1`}
+        contentContainerStyle={tw`p-2`}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={handlePullRefresh}
+            tintColor="#003366"
+            colors={["#003366"]}
+          />
+        }
+      >
+        {isLoading && (
+          <View style={tw`flex-1 justify-center items-center py-8`}>
             <ActivityIndicator size="large" color="#003366" />
           </View>
         )}
 
-        {error && (
-          <View style={tw`py-4`}>
-            <Text style={tw`text-red-500 text-center font-vazir`}>{error}</Text>
+        {isError && error && (
+          <View style={tw`bg-red-100 p-4 rounded-lg my-4`}>
+            <Text style={tw`text-red-500 text-center font-vazir`}>
+              {error.message || "Failed to fetch cargoes"}
+            </Text>
           </View>
         )}
 
-        {!loading && !error && cargoes.length === 0 && (
-          <View style={tw`py-10`}>
-            <Text style={tw`text-center text-lg font-vazir text-gray-500`}>
-              {activeTab === "regular"
-                ? "هیچ باری با فیلتر های انتخاب شده یافت نشد"
-                : "هیچ بار در دسترسی یافت نشد"}
+        {!isLoading && cargoes.length === 0 && !isError && (
+          <View style={tw`bg-yellow-100 p-4 rounded-lg my-4`}>
+            <Text style={tw`text-yellow-700 text-center font-vazir`}>
+              هیچ باری یافت نشد. لطفاً معیارهای جستجو را تغییر دهید.
             </Text>
           </View>
         )}
 
         {cargoes.length > 0 && (
           <View>
-            <Text style={tw`text-center mb-2 font-vazir text-gray-600`}>
-              {`${cargoes.length} بار یافت شد`}
+            <Text style={tw`text-gray-700 font-vazir p-2`}>
+              {cargoes.length} بار یافت شد
             </Text>
 
-            {/* Render appropriate card based on active tab */}
             {cargoes.map(cargo => (
-              <View key={cargo._id}>
-                {activeTab === "regular" ? (
-                  // Regular cargo card
-                  <CargoCard
-                    originCity={
-                      cargo?.origin?.title || cargo?.origin?.cityName || "N/A"
-                    }
-                    originProvince={cargo?.origin?.provinceName || "N/A"}
-                    destinationCity={
-                      cargo?.destination?.title ||
-                      cargo?.destination?.cityName ||
-                      "N/A"
-                    }
-                    destinationProvince={
-                      cargo?.destination?.provinceName || "N/A"
-                    }
-                    distance={cargo?.distance || "N/A"}
-                    truckType={
-                      truckTypes.find(
-                        ele => Number(ele.value) === cargo.truckTypeId
-                      )?.label || "N/A"
-                    }
-                    loadType={
-                      cargoTypes.find(
+              <CargoCard
+                key={cargo._id}
+                originCity={cargo?.origin?.title || "نامشخص"}
+                originProvince={cargo?.origin?.provinceName || "نامشخص"}
+                destinationCity={cargo?.destination?.title || "نامشخص"}
+                destinationProvince={
+                  cargo?.destination?.provinceName || "نامشخص"
+                }
+                distance={cargo?.distance ? `${cargo.distance}` : "نامشخص"}
+                truckType={
+                  truckTypes.find(
+                    ele => Number(ele.value) === cargo.truckTypeId
+                  )?.label || "نامشخص"
+                }
+                loadType={
+                  cargo?.customCargoType
+                    ? `${
+                        cargoTypes.find(
+                          ele => Number(ele.value) === cargo.cargoTypeId
+                        )?.label || "نامشخص"
+                      } (${cargo.customCargoType})`
+                    : cargoTypes.find(
                         ele => Number(ele.value) === cargo.cargoTypeId
-                      )?.label ||
-                      cargo.cargoType ||
-                      "N/A"
-                    }
-                    ownerPhone={cargo?.ownerPhone || "N/A"}
-                    date={cargo?.updatedAt || cargo?.readyDate || "N/A"}
-                    description={cargo.description || "No description provided."}
-                    price={cargo.carriageFee || "N/A"}
-                    onRemove={() => {
-                      /* Handle remove action */
-                    }}
-                    onEdit={() => {
-                      /* Handle edit action */
-                    }}
-                  />
-                ) : (
-                  // Announcements cargo card
-                  <AnouncementsCargoCard 
-                    cargo={cargo} 
-                    onRegister={handleRegisterCargo}
-                  />
-                )}
-              </View>
+                      )?.label || "نامشخص"
+                }
+                ownerPhone={cargo?.ownerPhone || "نامشخص"}
+                date={cargo?.updatedAt || new Date().toISOString()}
+                description={cargo.description || "توضیحاتی وجود ندارد."}
+                price={
+                  cargo?.cargoWeight
+                    ? `${cargo.cargoWeight} تن -  هرتن ${formatPrice(
+                        cargo.carriageFee
+                      )}`
+                    : formatPrice(cargo?.carriageFee) || "توافقی"
+                }
+                showActions={false}
+              />
             ))}
           </View>
         )}
-      </View>
-
-      {/* Floating back button */}
-      <TouchableOpacity
-        style={tw`absolute bottom-4 right-4 bg-primary w-12 h-12 rounded-full justify-center items-center shadow-md`}
-        onPress={() => router.back()}
-      >
-        <Text style={tw`text-white font-bold text-xl`}>←</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }

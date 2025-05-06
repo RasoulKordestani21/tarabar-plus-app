@@ -1,16 +1,25 @@
 {
   "expo": {
     "owner": "rs_53",
-    "name": "tarabarplus-frontend",
-    "slug": "tarbarplus-app",
+    "name": "tarabar-plus",
+    "slug": "tarbar-plus",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/tarabarplusicon.png",
-    "scheme": "myapp",
+    "scheme": "tarabar-plus",
+    "platforms": ["ios", "android"],
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rs53.tarabarplusfrontend",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": ["tarabar-plus"]
+          }
+        ]
+      }
     },
     "android": {
       "buildToolsVersion": "33.0.0",
@@ -22,7 +31,20 @@
         "foregroundImage": "./assets/images/tarabarplusicon.png",
         "backgroundColor": "#003366"
       },
-      "package": "com.rs_53.tarabarplusfrontend"
+      "package": "com.rs_53.tarabarplusfrontend",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "tarabar-plus",
+              "host": "payment-verify"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -40,7 +62,7 @@
     },
     "extra": {
       "DEVELOP_URL": "http://192.168.1.104:3000",
-      "PRODUCTION_URL": "https://tarabar-plus.com",
+      "PRODUCTION_URL": "https://tarabar-plus.ir",
       "router": {
         "origin": false
       },

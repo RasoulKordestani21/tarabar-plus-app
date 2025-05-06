@@ -156,12 +156,12 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
 
   const Item = ({ item }: { item: Option }) => (
     <Pressable
-      style={tw`mb-1 rounded-md p-3 bg-white`}
+      style={tw`mb-1 rounded-md p-3 bg-white  `}
       onPress={() => handleOnSelect(item.label, item.value)}
       accessibilityRole="button"
       accessibilityLabel={`Select ${item.label}`}
     >
-      <Text style={[styles.label, tw`text-background font-vazir`]}>
+      <Text style={[styles.label, tw`text-background font-vazir text-right`]}>
         {item.label}
       </Text>
     </Pressable>

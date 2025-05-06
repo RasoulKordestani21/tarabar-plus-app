@@ -1,32 +1,83 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import tw from "@/libs/twrnc";
 import { Route } from "expo-router";
+import {
+  FontAwesome5,
+  MaterialIcons,
+  MaterialCommunityIcons,
+  Ionicons
+} from "@expo/vector-icons";
 
 type BoxButtonProps = {
   id: number;
-  source: any;
+  iconType: "fontAwesome" | "material" | "materialCommunity" | "ionicons";
+  iconName: string;
   text: string;
   route: Route;
   onPress: () => void;
+  bgColor?: string;
+  textColor?: string;
+  iconColor?: string;
+  iconSize?: number;
 };
 
 const BoxButton: React.FC<BoxButtonProps> = ({
   id,
-  source,
+  iconType,
+  iconName,
   text,
   route,
-  onPress
+  onPress,
+  bgColor = "bg-white",
+  textColor = "text-background",
+  iconColor = "#0055AA", // Default Primary color
+  iconSize = 36
 }) => {
+  // Render appropriate icon based on iconType
+  const renderIcon = () => {
+    switch (iconType) {
+      case "fontAwesome":
+        return (
+          <FontAwesome5 name={iconName} size={iconSize} color={iconColor} />
+        );
+      case "material":
+        return (
+          <MaterialIcons name={iconName} size={iconSize} color={iconColor} />
+        );
+      case "materialCommunity":
+        return (
+          <MaterialCommunityIcons
+            name={iconName}
+            size={iconSize}
+            color={iconColor}
+          />
+        );
+      case "ionicons":
+        return <Ionicons name={iconName} size={iconSize} color={iconColor} />;
+      default:
+        return (
+          <FontAwesome5
+            name="question-circle"
+            size={iconSize}
+            color={iconColor}
+          />
+        );
+    }
+  };
+
   return (
     <TouchableOpacity
       key={id}
       onPress={onPress}
-      style={tw`w-[48%] mb-4  bg-white border-2 border-background rounded-lg items-center p-4`}
+      style={tw`w-[48%] mb-4 ${bgColor} border-2 border-background rounded-lg items-center p-2 shadow-sm bg-black-300`}
+      activeOpacity={0.7}
     >
-      <Image source={source} style={tw`h-20 w-20`} resizeMode="contain" />
-      <View style={tw`w-full h-[1px] bg-background mb-5 mt-3`}></View>
-      <Text style={tw`text-center font-vazir text-background`}>{text}</Text>
+      <View style={tw`h-20 w-20 items-center justify-center bg- rounded-full `}>
+        {renderIcon()}
+      </View>
+      {/* <View style={tw`w-full h-[1px] bg-background mb-5 mt-3`}></View> */}
+      <Text style={tw`text-center font-vazir ${textColor}`}>{text}</Text>
     </TouchableOpacity>
   );
 };

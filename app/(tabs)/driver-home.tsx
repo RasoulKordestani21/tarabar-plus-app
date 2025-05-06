@@ -2,65 +2,114 @@ import React, { useEffect, useState } from "react";
 import { View, ScrollView, TouchableOpacity, Text } from "react-native";
 import tw from "@/libs/twrnc";
 import { router, useFocusEffect } from "expo-router";
-import { FontAwesome } from "@expo/vector-icons";
-
 import BoxButton from "@/components/BoxButton";
 import LocationModal from "@/components/findLocationByGPS/LocationModal";
-import { driverHomeBoxes } from "@/constants/BoxesList";
 import DefineOriginDestination from "@/components/findLocationByOriginAndDestination/DefineOriginDestination";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import DrawerModal from "@/components/DrawerModal";
 import Loader from "@/components/Loader";
-import { Image } from "react-native";
+import VerificationModal from "@/components/VerificationModal";
+import { getDriverUser } from "@/api/services/driverServices";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 
-export default function HomeScreen() {
-  const [enableLocationModal, setEnableLocationModal] = useState(false);
-  const [originDestinationModal, setOriginDestinationModal] = useState(false);
+const driverHomeBoxes = [
+  {
+    id: 1,
+    iconType: "materialCommunity",
+    iconName: "map-search",
+    text: "باریابی",
+    route: "/find-cargo-by-location"
+  },
+  {
+    id: 2,
+    iconType: "materialCommunity",
+    iconName: "truck-delivery",
+    text: "سالن اعلام بار",
+    route: "/announcement-cargos"
+  },
+  {
+    id: 3,
+    iconType: "fontAwesome",
+    iconName: "user-alt",
+    text: "حساب کاربری",
+    route: "/driver-account"
+  },
+  {
+    id: 4,
+    iconType: "materialCommunity",
+    iconName: "toolbox",
+    text: "ابزار",
+    route: "/driver-tools"
+  }
+];
+
+export default function DriverHomeScreen() {
+  const [locationModal, setLocationModal] = useState({
+    visible: false,
+    route: "/show-cargoes"
+  });
+  const [originDestinationModalVisible, setOriginDestinationModalVisible] =
+    useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [coordination, setCoordination] = useState();
+  const [verificationModalVisible, setVerificationModalVisible] =
+    useState(false);
 
-  const { role, loading, setLoading, token } = useGlobalContext();
+  const { phoneNumber, setLoading, setUserId, userId } = useGlobalContext();
+
+  const {
+    data: userData,
+    isLoading: loading,
+    refetch
+  } = useQuery({
+    queryKey: ["userInformation", phoneNumber],
+    queryFn: () => getDriverUser({ phoneNumber }),
+    enabled: Boolean(phoneNumber)
+  });
 
   useFocusEffect(
     React.useCallback(() => {
-      // Reset the state when returning to the screen
-      setEnableLocationModal(false);
-      setOriginDestinationModal(false);
+      setLocationModal({ visible: false, route: "/show-cargoes" });
+      setOriginDestinationModalVisible(false);
       setDrawerVisible(false);
       setLoading(false);
     }, [])
   );
 
-  const handleEnableLocationModal = () => {
-    setEnableLocationModal(true);
+  useEffect(() => {
+    if (userData && !userData?.user?.isVerified) {
+      setVerificationModalVisible(true);
+    }
+    if (userId !== userData?.user?._id) {
+      console.log(userData?.user?.userId, "883", userId, "@@@@@@@@@");
+      setUserId(userData?.user?.userId);
+    }
+  }, [userData]);
+
+  const handleLocationSelect = location => {
+    setLocationModal({ visible: false, route: "/show-cargoes" });
+    router.push(
+      `${locationModal.route}?latitude=${location.coords.latitude}&longitude=${location.coords.longitude}`
+    );
   };
 
-  const closeEnableLocationModal = () => {
-    setEnableLocationModal(false);
-  };
-
-  const handleOriginDestinationModal = () => {
-    setOriginDestinationModal(true);
-  };
-
-  const closeOriginDestinationModal = () => {
-    setOriginDestinationModal(false);
-  };
-
-  const handleOpenDrawer = () => {
-    setDrawerVisible(true);
-  };
-
-  const closeDrawer = () => {
+  const handleOptionSelect = option => {
     setDrawerVisible(false);
+    if (option === "location") {
+      setLocationModal({ visible: true, route: "/show-cargoes" });
+    } else if (option === "originDestination") {
+      setOriginDestinationModalVisible(true);
+    }
   };
 
-  const handleOptionSelect = (option: string) => {
-    closeDrawer();
-    if (option === "location") {
-      handleEnableLocationModal();
-    } else if (option === "originDestination") {
-      handleOriginDestinationModal();
+  const handleBoxPress = box => {
+    if (box.route === "/find-cargo-by-location") {
+      setDrawerVisible(true);
+    } else if (box.route === "/announcement-cargos") {
+      // Open location modal for announcement cargos
+      setLocationModal({ visible: true, route: "/announcement-cargos" });
+    } else {
+      router.push(box.route);
     }
   };
 
@@ -68,59 +117,68 @@ export default function HomeScreen() {
     <>
       <Loader isLoading={loading} />
 
-      {/* Parent container with relative positioning to house the floating button */}
-      <View style={tw`flex-1 relative `}>
-        <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-4 `}>
-          <View style={tw`flex-wrap flex-row-reverse justify-between `}>
+      <VerificationModal
+        visible={verificationModalVisible}
+        onClose={() => setVerificationModalVisible(false)}
+        route="/driver-account-setting"
+      />
+
+      <View style={tw`flex-1 relative`}>
+        <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-4`}>
+          <View style={tw`mb-6 p-4 rounded-lg`}>
+            <Text
+              style={tw`text-background text-lg font-vazir-bold text-right`}
+            >
+              پنل راننده
+            </Text>
+            <View style={tw`h-[1px] w-full bg-card rounded-lg mt-2`} />
+          </View>
+
+          <View style={tw`flex-wrap flex-row-reverse justify-between`}>
             {driverHomeBoxes.map(box => (
               <BoxButton
                 key={box.id}
                 id={box.id}
-                source={box.source}
+                iconType={box.iconType}
+                iconName={box.iconName}
                 text={box.text}
                 route={box.route}
-                onPress={() => {
-                  if (box.route === "/find-cargo-by-location") {
-                    handleOpenDrawer();
-                  } else {
-                    router.push(box.route);
-                  }
-                }}
+                onPress={() => handleBoxPress(box)}
+                iconColor="#003366"
               />
             ))}
           </View>
 
           <LocationModal
-            visible={enableLocationModal}
-            onClose={closeEnableLocationModal}
-            setCoordination={setCoordination}
+            visible={locationModal.visible}
+            onClose={() =>
+              setLocationModal({ visible: false, route: "/show-cargoes" })
+            }
+            setCoordination={handleLocationSelect}
+            route={locationModal.route}
           />
 
           <DefineOriginDestination
-            visible={originDestinationModal}
-            onClose={closeOriginDestinationModal}
+            visible={originDestinationModalVisible}
+            onClose={() => setOriginDestinationModalVisible(false)}
           />
 
           <DrawerModal
             visible={drawerVisible}
-            onClose={closeDrawer}
+            onClose={() => setDrawerVisible(false)}
             onOptionSelect={handleOptionSelect}
-            openLocationModal={handleEnableLocationModal}
+            openLocationModal={() =>
+              setLocationModal({ visible: true, route: "/show-cargoes" })
+            }
           />
         </ScrollView>
 
-        {/* Floating Circle Button for Support/FAQ */}
         <TouchableOpacity
           style={tw`absolute bottom-6 right-6 w-15 h-15 bg-secondary rounded-full items-center justify-center shadow-lg`}
           onPress={() => router.push("/support-faq")}
         >
-          <Image
-            source={require("@/assets/images/support-icon.png")}
-            style={tw`h-12 w-12`}
-            resizeMode="contain"
-          />
-          <Text style={tw`font-vazir text-[8px] mt-[-8px]`}>پشتیبانی</Text>
-          {/* <FontAwesome name="contact-support" size={33} color="#fff" /> */}
+          <MaterialCommunityIcons name="headset" size={28} color="#fff" />
+          <Text style={tw`font-vazir text-xs mt-1 text-white`}>پشتیبانی</Text>
         </TouchableOpacity>
       </View>
     </>

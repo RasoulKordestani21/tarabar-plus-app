@@ -24,7 +24,7 @@ const RadioInput = ({
 }) => {
   const [transportType, setTransportType] = useState<number>();
   return (
-    <View style={tw`flex-col  w-full ${formikError ? "bg-red-100" : ""}`}>
+    <View style={tw`flex-col mt-3 mb-0  w-full ${formikError ? "bg-red-100" : ""}`}>
       <Text style={tw`text-background text-right font-vazir`}>نوع حمل</Text>
       <View style={tw`w-full flex-row-reverse`}>
         <View style={tw` flex-row gap-5 mt-2`}>

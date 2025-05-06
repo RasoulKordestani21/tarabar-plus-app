@@ -32,6 +32,7 @@ import {
 } from "@/constants/BoxesList";
 import { getUser, updateVerificationData } from "@/api/services/userServices";
 import { useQuery } from "@tanstack/react-query";
+import { updateDriverProfile } from "@/api/services/driverServices";
 
 const AccountScreen = () => {
   const { phoneNumber, role } = useGlobalContext();
@@ -71,17 +72,17 @@ const AccountScreen = () => {
         values.nationalCard = await uploadedFile?.file?.path;
       }
 
-      const result = await updateVerificationData(role, phoneNumber, values);
+      const result = await updateDriverProfile({ ...values, phoneNumber });
       console.log(result);
       refetch();
       if (result) {
         // If OTP verification is successful, show success message
-        Alert.alert(
-          "Success",
-          "Your driver verification has been completed successfully."
-        );
+        Alert.alert("موفق", "عملیات تکمیل ثبت نام با موفقیت انجام شد..");
       } else {
-        Alert.alert("Error", "Failed to verify your driver information.");
+        Alert.alert(
+          "خطا",
+          err?.message?.split("/")[1] || "خطای غیرمنتظره‌ای رخ داده است."
+        );
       }
 
       // setLoading(false);

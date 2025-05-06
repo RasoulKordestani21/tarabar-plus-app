@@ -37,15 +37,15 @@ const MenuLayout = () => {
           }}
         />
 
-        {/* <Stack.Screen
-          name="account-setting"
+        <Stack.Screen
+          name="announcement-cargos"
           options={{
-            title: "تنظیمات حساب کاربری", // Title of the screen
+            title: "اعلام بار", // Title of the screen
             headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
             headerTintColor: "white", // Set header text color to white
-            headerTitle: () => <Header title="تنظیمات حساب کاربری" /> // Use the custom Header component
+            headerTitle: () => <Header title="اعلام بار" /> // Use the custom Header component
           }}
-        /> */}
+        />
 
         <Stack.Screen
           name="cargo-owner-account-setting"
@@ -66,7 +66,16 @@ const MenuLayout = () => {
           }}
         />
         <Stack.Screen
-          name="wallet-plans"
+          name="driver-wallet-plans"
+          options={{
+            title: "مدریرت کیف پول و اشتراک", // Title of the screen
+            headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
+            headerTintColor: "white", // Set header text color to white
+            headerTitle: () => <Header title="مدیریت کیف پول و اشتراک" /> // Use the custom Header component
+          }}
+        />
+        <Stack.Screen
+          name="cargo-owner-wallet-plans"
           options={{
             title: "مدریرت کیف پول و اشتراک", // Title of the screen
             headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header

@@ -1,192 +1,441 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+// AnouncementsCargoCard.jsx - Improved component
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator
+} from "react-native";
 import tw from "@/libs/twrnc";
-// import { format } from "date-fns-jalali";
+import { FontAwesome } from "@expo/vector-icons";
 import moment from "jalali-moment";
+import { LinearGradient } from "expo-linear-gradient";
+import { useGlobalContext } from "@/context/GlobalProvider";
 
 const AnouncementsCargoCard = ({ cargo, onRegister }) => {
-  // Format the date to Persian (Jalali) date format
-  const formatDate = dateString => {
-    if (!dateString) return "نامشخص";
-    try {
-      const date = new Date(dateString);
-      return moment(date).locale("fa").format("YYYY/MM/DD");
-    } catch (error) {
-      return "نامشخص";
+  const { userId } = useGlobalContext();
+  const [loading, setLoading] = useState(false);
+
+  // Check if this driver has already registered for this cargo
+  const hasRegistered = cargo.driverRegistrations?.some(
+    registration => registration.driver.toString() === userId
+  );
+
+  // Calculate remaining cargo count and check if it's already filled
+  const remainingCount = cargo.cargoCount || 0;
+  const isFilled = remainingCount <= 0;
+
+  // Get driver registration status if already registered
+  const driverRegistration = cargo.driverRegistrations?.find(
+    reg => reg.driver.toString() === userId
+  );
+
+  const registrationStatus = driverRegistration?.status || "pending";
+
+  // Format date to Persian calendar
+  const formatDate = date => {
+    if (!date) return "نامشخص";
+    return moment(date).locale("fa").format("YYYY/MM/DD HH:mm");
+  };
+
+  // Format price for better readability
+  const formatPrice = price => {
+    if (!price && price !== 0) return "توافقی";
+    return price.toLocaleString("fa-IR") + " تومان";
+  };
+
+  // Format weight
+  const formatWeight = weight => {
+    if (!weight) return "نامشخص";
+    return weight.toLocaleString("fa-IR") + " کیلوگرم";
+  };
+
+  // Handle registration with confirmation
+  const handleRegisterPress = async () => {
+    if (hasRegistered) {
+      Alert.alert(
+        "درخواست قبلاً ثبت شده",
+        `وضعیت درخواست شما: ${
+          registrationStatus === "pending"
+            ? "در انتظار تایید"
+            : registrationStatus === "accepted"
+            ? "تایید شده"
+            : "رد شده"
+        }`
+      );
+      return;
+    }
+
+    if (isFilled) {
+      Alert.alert("ظرفیت تکمیل", "ظرفیت این بار تکمیل شده است");
+      return;
+    }
+
+    Alert.alert(
+      "تایید ثبت درخواست",
+      `آیا از ثبت درخواست برای حمل ${cargo.cargoType || "بار"} از ${
+        cargo.origin.cityName
+      } به ${cargo.destination.cityName} اطمینان دارید؟`,
+      [
+        {
+          text: "انصراف",
+          style: "cancel"
+        },
+        {
+          text: "تایید",
+          onPress: async () => {
+            setLoading(true);
+            try {
+              await onRegister();
+            } catch (error) {
+              Alert.alert(
+                "خطا",
+                "مشکلی در ثبت درخواست رخ داد. لطفا دوباره تلاش کنید."
+              );
+              console.error(error);
+            } finally {
+              setLoading(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  // Get status color
+  const getStatusColor = status => {
+    switch (status) {
+      case "accepted":
+        return "bg-green-600";
+      case "rejected":
+        return "bg-red-500";
+      default:
+        return "bg-yellow-500";
     }
   };
 
-  // Format price with thousands separator
-  const formatPrice = price => {
-    if (!price) return "توافقی";
-    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " تومان";
-  };
-
-  // Format distance
-  const formatDistance = distance => {
-    if (!distance && distance !== 0) return "نامشخص";
-    return `${Math.round(distance)} کیلومتر`;
+  // Format fee type
+  const getFeeText = () => {
+    if (cargo.feeType === 1 && cargo.feeOnTonage) {
+      return `${formatPrice(cargo.feeOnTonage)} (تناژی)`;
+    } else if (cargo.feeType === 2 && cargo.cargoFee) {
+      return `${formatPrice(cargo.cargoFee)} (دربستی)`;
+    }
+    return "توافقی";
   };
 
   return (
-    <View
-      style={tw`bg-white rounded-xl shadow-md mb-4 overflow-hidden border border-gray-200`}
-    >
-      {/* Header - Origin to Destination */}
-      <View style={tw`bg-primary p-3 flex-row justify-between items-center`}>
-        <View style={tw`flex-1`}>
-          <Text style={tw`text-white font-vazirBold text-base text-right`}>
-            {cargo.origin.cityId ? `شهر ${cargo.origin.cityId}` : "مبدأ"}
-          </Text>
-          <Text style={tw`text-white text-xs text-right`}>
-            {cargo.origin.provinceId
-              ? `استان ${cargo.origin.provinceId}`
-              : "استان نامشخص"}
-          </Text>
-        </View>
+    <View style={[tw`mb-4 rounded-lg overflow-hidden`, styles.cardShadow]}>
+      <LinearGradient colors={["#003366", "#004488"]} style={tw`p-4 relative`}>
+        {/* Status tag for already registered cargos */}
+        {hasRegistered && (
+          <View
+            style={tw`absolute top-0 left-0 z-10 py-1 px-3 ${getStatusColor(
+              registrationStatus
+            )} rounded-br-lg`}
+          >
+            <Text style={tw`text-white text-xs font-vazir-bold`}>
+              {registrationStatus === "pending"
+                ? "در انتظار تایید"
+                : registrationStatus === "accepted"
+                ? "تایید شده"
+                : "رد شده"}
+            </Text>
+          </View>
+        )}
 
-        <View style={tw`flex-row items-center px-2`}>
-          <View style={tw`w-6 h-[1px] bg-white mx-1`} />
-          <View style={tw`w-2 h-2 bg-white rounded-full`} />
-          <View style={tw`w-6 h-[1px] bg-white mx-1`} />
-        </View>
+        {/* Priority indicator */}
+        {cargo.priority && (
+          <View
+            style={tw`absolute top-0 right-0 z-10 py-1 px-3 ${
+              cargo.priority === "high"
+                ? "bg-red-600"
+                : cargo.priority === "medium"
+                ? "bg-orange-500"
+                : "bg-green-600"
+            } rounded-bl-lg`}
+          >
+            <Text style={tw`text-white text-xs font-vazir-bold`}>
+              {cargo.priority === "high"
+                ? "فوری"
+                : cargo.priority === "medium"
+                ? "متوسط"
+                : "عادی"}
+            </Text>
+          </View>
+        )}
 
-        <View style={tw`flex-1`}>
-          <Text style={tw`text-white font-vazirBold text-base`}>
-            {cargo.destination.cityId
-              ? `شهر ${cargo.destination.cityId}`
-              : "مقصد"}
-          </Text>
-          <Text style={tw`text-white text-xs`}>
-            {cargo.destination.provinceId
-              ? `استان ${cargo.destination.provinceId}`
-              : "استان نامشخص"}
-          </Text>
-        </View>
-      </View>
-
-      {/* Distance Badge */}
-      {cargo.originDistance !== undefined && (
+        {/* Header with cargo type and date */}
         <View
-          style={tw`absolute top-0 left-0 bg-yellow-500 rounded-br-lg rounded-tl-lg px-2 py-1 shadow`}
+          style={tw`flex-row-reverse justify-between items-center mb-4 mt-4`}
         >
-          <Text style={tw`text-white font-vazirBold text-xs`}>
-            {formatDistance(cargo.originDistance)}
+          <Text style={tw`font-vazir-bold text-lg text-white text-right`}>
+            {cargo.cargoType}
+            {cargo.customCargoType ? ` (${cargo.customCargoType})` : ""}
           </Text>
-        </View>
-      )}
-
-      {/* Cargo Details */}
-      <View style={tw`p-4`}>
-        {/* Row 1 */}
-        <View style={tw`flex-row justify-between mb-3`}>
-          <View style={tw`flex-1 items-start`}>
-            <Text style={tw`text-gray-500 text-xs text-right mb-1`}>
-              نوع بار
+          <View style={tw`flex items-center`}>
+            <Text style={tw`font-vazir text-xs text-white`}>
+              تاریخ بارگیری:
             </Text>
-            <Text style={tw`font-vazirBold text-sm text-right`}>
-              {cargo.cargoType}
-            </Text>
-          </View>
-
-          <View style={tw`flex-1 items-center`}>
-            <Text style={tw`text-gray-500 text-xs text-right mb-1`}>
-              وزن (کیلوگرم)
-            </Text>
-            <Text style={tw`font-vazirBold text-sm text-right`}>
-              {cargo.weight}
-            </Text>
-          </View>
-
-          <View style={tw`flex-1 items-end`}>
-            <Text style={tw`text-gray-500 text-xs text-right mb-1`}>
-              نوع بسته‌بندی
-            </Text>
-            <Text style={tw`font-vazirBold text-sm text-right`}>
-              {cargo.packagingType}
-            </Text>
-          </View>
-        </View>
-
-        {/* Row 2 */}
-        <View style={tw`flex-row justify-between mb-3`}>
-          <View style={tw`flex-1 items-start`}>
-            <Text style={tw`text-gray-500 text-xs text-right mb-1`}>
-              تاریخ آماده بودن بار
-            </Text>
-            <Text style={tw`font-vazirBold text-sm text-right`}>
+            <Text style={tw`font-vazir-bold text-xs text-white mt-1`}>
               {formatDate(cargo.readyDate)}
             </Text>
           </View>
+        </View>
 
-          <View style={tw`flex-1 items-end`}>
-            <Text style={tw`text-gray-500 text-xs text-right mb-1`}>
-              کرایه پیشنهادی
+        {/* Route display */}
+        <View
+          style={tw`flex-row justify-between items-center p-3 rounded-lg bg-black-50 mb-4`}
+        >
+          <View style={tw`items-center`}>
+            <View style={tw`flex-row items-center mb-1`}>
+              <Text style={tw`text-white font-vazir-bold text-xs`}>مقصد</Text>
+              <View style={tw`w-2 h-2 rounded-full bg-green-500 ml-1`} />
+            </View>
+            <Text style={tw`text-white font-vazir-bold text-base`}>
+              {cargo.destination.cityName}
             </Text>
-            <Text style={tw`font-vazirBold text-sm text-green-600 text-right`}>
-              {formatPrice(cargo.cargoFee)}
+            <Text style={tw`text-white text-xs font-vazir`}>
+              {cargo.destination.provinceName}
+            </Text>
+          </View>
+
+          {/* Route line */}
+          <View style={tw`flex-1 mx-2 relative justify-center items-center`}>
+            <View style={tw`h-[1px] w-full bg-white`} />
+            {cargo.distance && (
+              <View
+                style={tw`absolute bg-secondary px-2 py-1 rounded-full -top-3`}
+              >
+                <Text style={tw`text-white text-xs font-vazir-bold`}>
+                  {Math.round(cargo.distance)} کیلومتر
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <View style={tw`items-center`}>
+            <View style={tw`flex-row items-center mb-1`}>
+              <View style={tw`w-2 h-2 rounded-full bg-secondary mr-1`} />
+              <Text style={tw`text-white font-vazir-bold text-xs`}>مبدا</Text>
+            </View>
+            <Text style={tw`text-white font-vazir-bold text-base`}>
+              {cargo.origin.cityName}
+            </Text>
+            <Text style={tw`text-white text-xs font-vazir`}>
+              {cargo.origin.provinceName}
             </Text>
           </View>
         </View>
 
-        {/* Divider */}
-        <View style={tw`h-[1px] w-full bg-gray-200 my-2`}></View>
+        {/* Cargo details */}
+        <View style={tw`flex-row flex-wrap -mx-1 mb-3`}>
+          <View style={tw`w-1/2 px-1 mb-2`}>
+            <View style={tw`bg-black-50 p-2 rounded-lg`}>
+              <Text style={tw`text-white text-xs font-vazir text-right`}>
+                وزن:
+              </Text>
+              <View style={tw`flex-row justify-end items-center mt-1`}>
+                <Text style={tw`text-white font-vazir-bold text-right`}>
+                  {formatWeight(cargo.weight)}
+                </Text>
+                <FontAwesome
+                  name="balance-scale"
+                  size={14}
+                  color="#FFAA00"
+                  style={tw`ml-1`}
+                />
+              </View>
+            </View>
+          </View>
 
-        {/* Special Conditions */}
+          <View style={tw`w-1/2 px-1 mb-2`}>
+            <View style={tw`bg-black-50 p-2 rounded-lg`}>
+              <Text style={tw`text-white text-xs font-vazir text-right`}>
+                تعداد باقیمانده:
+              </Text>
+              <View style={tw`flex-row justify-end items-center mt-1`}>
+                <Text
+                  style={tw`text-${
+                    remainingCount > 0 ? "green-400" : "red-400"
+                  } font-vazir-bold text-right`}
+                >
+                  {remainingCount} واحد
+                </Text>
+                <FontAwesome
+                  name="cubes"
+                  size={14}
+                  color="#FFAA00"
+                  style={tw`ml-1`}
+                />
+              </View>
+            </View>
+          </View>
+
+          <View style={tw`w-1/2 px-1 mb-2`}>
+            <View style={tw`bg-black-50 p-2 rounded-lg`}>
+              <Text style={tw`text-white text-xs font-vazir text-right`}>
+                نوع بسته‌بندی:
+              </Text>
+              <View style={tw`flex-row justify-end items-center mt-1`}>
+                <Text style={tw`text-white font-vazir-bold text-right`}>
+                  {cargo.packagingType || "نامشخص"}
+                </Text>
+                <FontAwesome
+                  name="box"
+                  size={14}
+                  color="#FFAA00"
+                  style={tw`ml-1`}
+                />
+              </View>
+            </View>
+          </View>
+
+          <View style={tw`w-1/2 px-1 mb-2`}>
+            <View style={tw`bg-black-50 p-2 rounded-lg`}>
+              <Text style={tw`text-white text-xs font-vazir text-right`}>
+                قیمت:
+              </Text>
+              <View style={tw`flex-row justify-end items-center mt-1`}>
+                <Text style={tw`text-green-400 font-vazir-bold text-right`}>
+                  {getFeeText()}
+                </Text>
+                <FontAwesome
+                  name="money"
+                  size={14}
+                  color="#FFAA00"
+                  style={tw`ml-1`}
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Special conditions */}
         {cargo.specialConditions && cargo.specialConditions.length > 0 && (
-          <View style={tw`mb-3`}>
-            <Text style={tw`text-gray-500 text-xs text-right mb-1`}>
-              شرایط ویژه
+          <View style={tw`bg-black-50 p-2 rounded-lg mb-3`}>
+            <Text style={tw`text-white text-xs font-vazir text-right mb-1`}>
+              شرایط ویژه:
             </Text>
             <View style={tw`flex-row flex-wrap justify-end`}>
               {cargo.specialConditions.map((condition, index) => (
                 <View
                   key={index}
-                  style={tw`bg-blue-100 rounded-full px-2 py-1 ml-2 mb-1`}
+                  style={tw`bg-secondary px-2 py-1 rounded-full m-1`}
                 >
-                  <Text style={tw`text-blue-800 text-xs`}>{condition}</Text>
+                  <Text style={tw`text-white text-xs font-vazir`}>
+                    {getConditionLabel(condition)}
+                  </Text>
                 </View>
               ))}
             </View>
           </View>
         )}
 
-        {/* Notes */}
-        {cargo.notes && cargo.notes.trim() !== "" && (
-          <View style={tw`mb-3`}>
-            <Text style={tw`text-gray-500 text-xs text-right mb-1`}>
-              توضیحات
+        {/* Notes if available */}
+        {cargo.notes && cargo.notes.length > 0 && (
+          <View style={tw`bg-black-50 p-2 rounded-lg mb-3`}>
+            <Text style={tw`text-white text-xs font-vazir text-right mb-1`}>
+              توضیحات:
             </Text>
-            <Text style={tw`text-gray-700 text-sm text-right`}>
+            <Text style={tw`text-white font-vazir text-right`}>
               {cargo.notes}
             </Text>
           </View>
         )}
-      </View>
 
-      {/* Footer Actions */}
-      <View
-        style={tw`bg-gray-50 p-3 flex-row justify-between border-t border-gray-200`}
-      >
-        <TouchableOpacity
-          style={tw`flex-1 bg-primary py-2 rounded-lg mr-2 items-center`}
-          onPress={() => onRegister(cargo._id)}
-        >
-          <Text style={tw`text-white font-vazirBold text-sm`}>
-            ثبت درخواست حمل
-          </Text>
-        </TouchableOpacity>
+        {/* Address details */}
+        <View style={tw`bg-black-50 p-2 rounded-lg mb-3`}>
+          <View style={tw`flex-row justify-between mb-1`}>
+            <View style={tw`flex-1 mr-1`}>
+              <Text style={tw`text-white text-xs font-vazir text-right`}>
+                آدرس مقصد:
+              </Text>
+              <Text style={tw`text-white text-xs font-vazir text-right mt-1`}>
+                {cargo.destination.address || "نامشخص"}
+              </Text>
+            </View>
+            <View style={tw`w-px bg-gray-500 mx-2`} />
+            <View style={tw`flex-1 ml-1`}>
+              <Text style={tw`text-white text-xs font-vazir text-right`}>
+                آدرس مبدا:
+              </Text>
+              <Text style={tw`text-white text-xs font-vazir text-right mt-1`}>
+                {cargo.origin.address || "نامشخص"}
+              </Text>
+            </View>
+          </View>
+        </View>
 
+        {/* Registration button */}
         <TouchableOpacity
-          style={tw`flex-1 bg-white border border-primary py-2 rounded-lg ml-2 items-center`}
+          style={tw`${
+            hasRegistered
+              ? registrationStatus === "accepted"
+                ? "bg-green-600"
+                : registrationStatus === "rejected"
+                ? "bg-red-500"
+                : "bg-yellow-500"
+              : isFilled
+              ? "bg-gray-600"
+              : "bg-primary"
+          } p-3 rounded-lg mt-2`}
+          onPress={handleRegisterPress}
+          disabled={
+            loading || (hasRegistered && registrationStatus !== "rejected")
+          }
         >
-          <Text style={tw`text-primary font-vazirBold text-sm`}>
-            جزئیات بیشتر
-          </Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={tw`text-white text-center font-vazir-bold`}>
+              {hasRegistered
+                ? registrationStatus === "pending"
+                  ? "در انتظار تایید"
+                  : registrationStatus === "accepted"
+                  ? "درخواست تایید شده"
+                  : "درخواست مجدد"
+                : isFilled
+                ? "ظرفیت تکمیل شده"
+                : "ثبت درخواست حمل"}
+            </Text>
+          )}
         </TouchableOpacity>
-      </View>
+      </LinearGradient>
     </View>
   );
 };
+
+// Helper function to translate condition codes to readable Persian text
+const getConditionLabel = condition => {
+  const conditions = {
+    temperature: "دمای کنترل شده",
+    fragile: "شکننده",
+    perishable: "فاسدشدنی",
+    flammable: "قابل اشتعال",
+    livestockAnimals: "حیوانات زنده",
+    hazardousMaterials: "مواد خطرناک",
+    oversizedCargo: "بار بزرگ",
+    urgentDelivery: "تحویل فوری",
+    valueProtection: "ارزش بالا"
+  };
+
+  return conditions[condition] || condition;
+};
+
+const styles = StyleSheet.create({
+  cardShadow: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5
+  }
+});
 
 export default AnouncementsCargoCard;

@@ -4,6 +4,7 @@ import {
   ScrollView,
   Platform,
   KeyboardAvoidingView,
+  Alert,
   Pressable,
   Text
 } from "react-native";
@@ -40,10 +41,10 @@ const CargoForm = ({ initialValues, onSubmit, onClose }: any) => {
         ...values
       });
       console.log("Cargo added successfully:", result);
-      alert("Cargo added successfully!");
+      Alert.alert("موفق", "بار با موفقیت بروز رسانی شد");
     } catch (error) {
       console.error("Error submitting cargo:", error);
-      alert("Failed to add cargo. Please try again.");
+      Alert.alert("خطا", "   بروز رسانی ناموفق بود. لطفا دوباره تلاش کنید.");
     }
   };
 
@@ -52,38 +53,16 @@ const CargoForm = ({ initialValues, onSubmit, onClose }: any) => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={tw`flex-1  `}
     >
-      <View
-        style={tw`m-auto items-center justify-center bg-black-50 w-full h-full `}
-      >
+      <View style={tw` items-center justify-center bg-black-50 w-full h-full `}>
         {isLoading ? (
           <Loader isLoading={isLoading} />
         ) : (
-          <View
-            style={tw` flex jusify-center items-center m-auto bg-white p-4 rounded-xl w-[95%] h-[90%]  `}
-          >
+          <View style={tw` flex jusify-center items-center  bg-white      `}>
             <ScrollView
               style={tw` `}
-              contentContainerStyle={tw`flex-grow     `}
+              contentContainerStyle={tw`flex-grow   p-2  `}
               keyboardShouldPersistTaps="handled"
             >
-              <View style={tw`flex`}>
-                {/* Close Icon */}
-                <Pressable
-                  onPress={() => {
-                    console.log("pressed");
-                    onClose();
-                  }}
-                  style={tw`absolute   top-0  p-4 `}
-                >
-                  <FontAwesome name="close" size={24} />
-                </Pressable>
-                <Text
-                  style={tw`text-center font-vazir  text-xl text-background`}
-                >
-                  ویرایش بار
-                </Text>
-              </View>
-              <View style={tw`w-full h-[1px] bg-card mb-5 mt-3`} />
               <Formik
                 initialValues={createCargoInitialValues(initialValues)}
                 validationSchema={createCargoSchema}
@@ -158,23 +137,6 @@ const CargoForm = ({ initialValues, onSubmit, onClose }: any) => {
                           // disableSearch={true} // Disable search for select-like behavior
                         />
                       </View>
-                      <View style={tw`w-[48%]  mt-5 `}>
-                        <FormField
-                          title={"درصد بیمه"}
-                          handleChangeText={handleChange("insurancePercentage")}
-                          value={values.insurancePercentage}
-                          formikError={errors.insurancePercentage}
-                          isUsingFormik={true}
-                          defaultValue={initialValues?.insurancePercentage}
-                          otherStyles="mb- w-full"
-                          keyboardType={
-                            Platform.OS === "ios"
-                              ? "name-phone-pad"
-                              : "number-pad"
-                          }
-                          color="background"
-                        />
-                      </View>
 
                       <View style={tw`w-[48%] mt-5 `}>
                         <FormField
@@ -241,7 +203,7 @@ const CargoForm = ({ initialValues, onSubmit, onClose }: any) => {
                       </View>
                     </View>
                     <CustomButton
-                      title="ثبت بار جدید"
+                      title="بروز رسانی بار"
                       handlePress={handleSubmit}
                       containerStyles="w-full bg-background"
                     />

@@ -9,15 +9,20 @@ const driverHomeBoxes = [
     text: "باریابی",
     route: "/find-cargo-by-location"
   },
-
   {
     id: 2,
+    source: require("@/assets/images/favicon.png"), // New icon for announcement cargo
+    text: "اعلام بار",
+    route: "/announcement-cargos" // New route for announcement cargo location
+  },
+  {
+    id: 3,
     source: require("@/assets/images/account-icon.png"),
     text: "حساب کاربری",
     route: "/driver-account"
   },
   {
-    id: 3,
+    id: 4,
     source: require("@/assets/images/tools-icon.png"),
     text: "ابزار",
     route: "/driver-tools"
@@ -95,20 +100,19 @@ const tabBoxes = (role: string) => {
 };
 
 const truckTypes = [
-  { label: "ده چرخ", value: "1" },
-  { label: "شش چرخ", value: "2" },
-  { label: "تخت", value: "3" },
+  { label: "اتاقدار (دو محور)", value: "1" },
+  { label: "اتاقدار (تک محور) ", value: "2" },
+  { label: "تیغه کانتینر", value: "3" },
   { label: "یخچالی", value: "4" },
   { label: "تانکر", value: "5" },
   { label: "کفی", value: "6" },
   { label: "کمپرسی", value: "7" },
   { label: "لبه دار", value: "8" },
-  { label: "بغل بازشو", value: "9" },
-  { label: "مسقف", value: "10" },
+  { label: "نیم‌لبه", value: "9" },
+  { label: "اتاقدار (یخچالی)", value: "10" },
   { label: "حمل خودرو", value: "11" },
-  { label: "چادری", value: "12" },
-  { label: "وانت", value: "13" },
-  { label: "تریلی معمولی", value: "14" }
+  { label: "اتاقدار (چادری)", value: "12" },
+  { label: "وانت", value: "13" }
 ];
 
 const cargoTypes = [
@@ -130,7 +134,8 @@ const cargoTypes = [
   { label: "خودرو", value: "16" },
   { label: "دام", value: "17" },
   { label: "مصالح ساختمانی", value: "18" },
-  { label: "اثاثیه منزل", value: "19" }
+  { label: "اثاثیه منزل", value: "19" },
+  { label: "سایر", value: "20" }
 ];
 
 const driverAccountSettingTextInput = [

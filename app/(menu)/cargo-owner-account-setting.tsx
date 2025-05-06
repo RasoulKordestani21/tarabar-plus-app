@@ -1,5 +1,4 @@
-// screens/AccountScreen.tsx
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,96 +9,126 @@ import {
   TouchableWithoutFeedback,
   Keyboard
 } from "react-native";
-import tw from "@/libs/twrnc"; // Ensure you configure tailwind-rn or use a similar library
-import FormField from "@/components/Input/FormField";
-import CustomButton from "@/components/CustomButton";
-import LicensePlateInput from "@/components/LicensePlateInput";
-import { useGlobalContext } from "@/context/GlobalProvider";
-import FileInput from "@/components/Input/FileInput";
-import { uploadFile } from "@/api/services/fileServices";
-import Loader from "@/components/Loader";
+import tw from "@/libs/twrnc";
 import { Formik } from "formik";
 
+// Import necessary components and utilities
+import FormField from "@/components/Input/FormField";
+import CustomButton from "@/components/CustomButton";
+import FileInput from "@/components/Input/FileInput";
+import Loader from "@/components/Loader";
+
+// Import context and services
+import { useGlobalContext } from "@/context/GlobalProvider";
+import { uploadFile } from "@/api/services/fileServices";
 import {
-    cargoOwnerConfirmationInitialValues,
-  cargoOwnerConfirmValidationSchema,
-  driverConfirmationInitialValues,
-  driverConfirmValidationSchema
+  getCargoOwner,
+  updateCargoOwnerProfile
+} from "@/api/services/cargoOwnerServices";
+import { useQuery } from "@tanstack/react-query";
+
+// Import constants
+import { cargoOwnerAccountSettingTextInput } from "@/constants/BoxesList";
+import {
+  cargoOwnerConfirmationInitialValues,
+  cargoOwnerConfirmValidationSchema
 } from "@/constants/FormikValidation";
 
-import { cargoOwnerAccountSettingTextInput } from "@/constants/BoxesList";
-import { getUser, updateVerificationData } from "@/api/services/userServices";
-import { useQuery } from "@tanstack/react-query";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ActivityIndicator } from "react-native";
-
-const AccountScreen = () => {
+const CargoOwnerProfileUpdateScreen = () => {
   const { phoneNumber, role } = useGlobalContext();
 
-  const fileUploader = async (values: any) => {
+  // File upload handler
+  const fileUploader = async (file: any) => {
     try {
       const formData = new FormData();
 
-      values.nationalCard = {
-        type: values.nationalCard.mimeType,
-        ...values.nationalCard
+      // Create file object for FormData
+      const fileToUpload = {
+        uri: file.uri,
+        type: file.mimeType,
+        name: file.name
       };
-      formData.append("file", values.nationalCard);
+
+      formData.append("file", fileToUpload as any);
       formData.append("fieldName", "national-card");
       formData.append("phoneNumber", phoneNumber);
       formData.append("clientEnvironment", "mobile-app");
-      formData.append("role",role)
+      formData.append("role", role);
 
+      // Upload file and return result
       const uploadResult = await uploadFile(
-        "upload/national-card-image",
+        "upload/cargo-owner/national-card-image",
         formData
       );
       return uploadResult?.data;
     } catch (err) {
-      Alert.alert("Error", "Failed to pick document");
+      Alert.alert("خطا", "بارگذاری سند با مشکل مواجه شد");
+      return null;
     }
   };
 
+  // Submit handler for profile update
   const submitHandler = async (values: any) => {
-    // setLoading(true);
     try {
-      if (typeof values.nationalCard !== "string") {
-        const uploadedFile = await fileUploader(values);
-        values.nationalCard = await uploadedFile?.file?.path;
+      // Create a copy of values to avoid mutating the original
+      const formValues = { ...values };
+
+      // Remove nationalCard from formValues if it's a file object (not a string)
+      if (
+        formValues.nationalCard &&
+        typeof formValues.nationalCard === "object" &&
+        formValues.nationalCard.uri
+      ) {
+        // Store the file object temporarily
+        const fileToUpload = formValues.nationalCard;
+
+        // Remove nationalCard from formValues to avoid validation error
+        delete formValues.nationalCard;
+
+        // First, upload the file
+        const uploadedFile = await fileUploader(fileToUpload);
+
+        // If upload successful, add the file path to formValues
+        if (uploadedFile?.file?.path) {
+          formValues.nationalCard = uploadedFile.file.path;
+        }
       }
 
-      const result = await updateVerificationData(role, phoneNumber, values);
-      console.log(result);
+      // Update verification data
+      const result = await updateCargoOwnerProfile({
+        ...formValues,
+        phoneNumber
+      });
+
+      // Refetch user data to ensure updated information
       refetch();
-      if (result) {
-        // If OTP verification is successful, show success message
-        Alert.alert(
-          "Success",
-          "Your driver verification has been completed successfully."
-        );
-      } else {
-        Alert.alert("Error", "Failed to verify your driver information.");
-      }
 
-      // setLoading(false);
+      // Show success message
+      if (result) {
+        Alert.alert("موفقیت", "اطلاعات کاربری شما با موفقیت به روز شد.");
+      } else {
+        Alert.alert("خطا", "به روزرسانی اطلاعات با مشکل مواجه شد.");
+      }
     } catch (err) {
-      Alert.alert("Error", "Failed to pick document");
+      console.error("Submit error:", err?.message?.split("/")[1]);
+      Alert.alert(
+        "خطا",
+        err?.message?.split("/")[1] || "خطای غیرمنتظره‌ای رخ داده است."
+      );
     }
   };
 
-  const { data, error, isLoading, isFetched, refetch } = useQuery({
-    queryKey: ["userInformation", phoneNumber],
-    queryFn: () => getUser(phoneNumber, role)
+  // Fetch user data
+  const { data, error, isLoading, refetch } = useQuery({
+    queryKey: ["cargoOwnerInformation", phoneNumber],
+    queryFn: () => getCargoOwner({ phoneNumber })
   });
 
+  // Render loading state if data is being fetched
   if (isLoading) {
-    return (
-      <SafeAreaView>
-        <ActivityIndicator size="large" color="background" />
-      </SafeAreaView>
-    );
+    return <Loader isLoading={isLoading} />;
   }
-
+  console.log(data, "\n  this is user data ---> \n ---> ");
   return (
     <KeyboardAvoidingView
       style={tw`flex-1 bg-white`}
@@ -112,48 +141,59 @@ const AccountScreen = () => {
           onSubmit={submitHandler}
         >
           {({ handleChange, handleSubmit, values, errors }) => (
-            <ScrollView keyboardShouldPersistTaps="handled" style={tw``}>
-              <View style={tw`min-h-full p-5 `}>
-                <View style={tw`flex-1 p-1 rounded-2 `}>
-                  <Text style={tw`text-lg  text-right font-vazir-bold`}>
-                    اطلاعات کاربر
+            <ScrollView keyboardShouldPersistTaps="handled" style={tw`flex-1`}>
+              <View style={tw`min-h-full p-5`}>
+                {/* Profile Information Section */}
+                <View style={tw`flex-1 p-1 rounded-2`}>
+                  <Text style={tw`text-lg text-right font-vazir-bold`}>
+                    اطلاعات صاحب بار
                   </Text>
+
+                  {/* Divider */}
                   <View
                     style={tw`w-full h-[2px] bg-card mb-3 mt-1 rounded-xl`}
                   ></View>
-                  <View style={tw`flex-row flex-wrap  justify-between `}>
-                    {cargoOwnerAccountSettingTextInput.map(ele => (
-                      <View key={ele.name} style={tw`w-full `}>
+
+                  {/* User Information Fields */}
+                  <View style={tw`flex-row flex-wrap justify-between`}>
+                    {cargoOwnerAccountSettingTextInput.map(field => (
+                      <View key={field.name} style={tw`w-[48%]`}>
                         <FormField
-                          title={ele.title}
-                          handleChangeText={handleChange(ele.name)}
-                          value={values[ele.name]}
-                          formikError={errors[ele.name]}
+                          title={field.title}
+                          handleChangeText={handleChange(field.name)}
+                          value={values[field.name]}
+                          formikError={errors[field.name]}
                           isUsingFormik={true}
-                          defaultValue={data?.user[ele.name]}
+                          defaultValue={data?.user[field.name]}
                           otherStyles="mb-1"
-                          keyboardType={ele.keyboardType}
+                          keyboardType={field.keyboardType}
+                          maxLength={field.maxLength}
+                          pattern={field.pattern}
                           color="background"
                         />
                       </View>
                     ))}
                   </View>
 
+                  {/* Additional Information */}
                   <View
                     style={tw`flex-row-reverse flex-wrap justify-between items-start mb-10`}
                   >
+                    {/* National Card File Upload */}
                     <FileInput
-                      name={"nationalCard"}
+                      name="nationalCard"
                       formikError={errors.nationalCard}
                       defaultValue={data?.user?.nationalCard}
                       label="تصویر کارت ملی"
                     />
                   </View>
                 </View>
+
+                {/* Save Changes Button */}
                 <CustomButton
                   title="ذخیره تغییرات"
                   handlePress={handleSubmit}
-                  containerStyles="w-full mt-7 bg-background mb-5 "
+                  containerStyles="w-full mt-7 bg-background mb-5"
                 />
               </View>
             </ScrollView>
@@ -164,4 +204,4 @@ const AccountScreen = () => {
   );
 };
 
-export default AccountScreen;
+export default CargoOwnerProfileUpdateScreen;

@@ -4,7 +4,8 @@ import {
   ScrollView,
   Platform,
   KeyboardAvoidingView,
-  Text
+  Text,
+  Alert
 } from "react-native";
 import tw from "@/libs/twrnc";
 import { getAllCities, addCargo } from "@/api/services/cargoServices";
@@ -23,11 +24,12 @@ import {
 import Loader from "@/components/Loader";
 import RadioInput from "@/components/Input/RadioInput";
 import { CargoSubmitProps, CargoValuesProps, FetchedCity } from "./types";
-import { showToast } from "@/utils/toast";
+import { router } from "expo-router";
 
 const CreateCargo = () => {
   const { phoneNumber } = useGlobalContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customCargoType, setCustomCargoType] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["listOfCities"],
@@ -52,15 +54,19 @@ const CreateCargo = () => {
         cargoData = { ...cargoData, cargoWeight: values.cargoWeight };
       }
 
+      // If a custom cargo type is provided, add it to the description
+      if (values.cargoType === "20" && customCargoType) {
+        cargoData.customCargoType = customCargoType;
+      }
+
       const result = await addCargo(cargoData);
       if (result) {
-        showToast.success("بار با موفقیت ثبت شد");
+        Alert.alert("عملیات موفق", "بار با موفقیت اضافه شد.");
+        router.push("/cargo-owner-home");
       }
     } catch (error: any) {
       console.error("Error submitting cargo:", error);
-      showToast.error(
-        error.response?.data?.message || "خطا در ثبت بار. لطفا دوباره تلاش کنید"
-      );
+      Alert.alert("خطا", "عملیات با خطا مواجه شد.");
     } finally {
       setIsSubmitting(false);
     }
@@ -107,7 +113,7 @@ const CreateCargo = () => {
                     <DropdownInput
                       title="مقصد"
                       options={data?.map((city: FetchedCity) => ({
-                        label: city.title,
+                        label: `${city.provinceName} / ${city.title}`,
                         value: city.id.toString()
                       }))}
                       name="destination"
@@ -122,7 +128,7 @@ const CreateCargo = () => {
                     <DropdownInput
                       title="مبدا"
                       options={data?.map((city: FetchedCity) => ({
-                        label: city.title,
+                        label: `${city.provinceName} / ${city.title}`,
                         value: city.id.toString()
                       }))}
                       name="origin"
@@ -163,32 +169,37 @@ const CreateCargo = () => {
                       containerStyle="mt-3 w-full"
                       iconName="caret-down"
                       disableSearch={true}
-                      onSelect={() => setFieldError("cargoType", undefined)}
+                      onSelect={() => {
+                        setFieldError("cargoType", undefined);
+                        // Clear custom cargo type when changing selection
+                        if (values.cargoType !== "20") {
+                          setCustomCargoType("");
+                        }
+                      }}
                     />
                   </View>
 
-                  <View style={tw`w-[88%] mt-10`}>
-                    <FormField
-                      title="کرایه (تومان)"
-                      handleChangeText={text => {
-                        const numericValue = text.replace(/,/g, "");
-                        setFieldValue("fee", numericValue);
-                      }}
-                      value={formatFee(values.fee)}
-                      formikError={errors.fee}
-                      isUsingFormik={true}
-                      otherStyles="mb-1 w-full"
-                      keyboardType={
-                        Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
-                      }
-                      color="background"
-                    />
-                    {values.fee && (
-                      <Text style={tw`text-xs text-gray-500  text-right font-vazir`}>
-                        {formatFee(values.fee)} تومان
-                      </Text>
-                    )}
-                  </View>
+                  {/* Custom cargo type input - only shown when "سایر" is selected */}
+                  {values.cargoType === "20" && (
+                    <View style={tw`w-[98%]`}>
+                      <FormField
+                        title="نوع بار (سایر)"
+                        handleChangeText={setCustomCargoType}
+                        value={customCargoType}
+                        formikError={
+                          !customCargoType
+                            ? "لطفا نوع بار را مشخص کنید"
+                            : undefined
+                        }
+                        isUsingFormik={true}
+                        otherStyles="mt-3 w-full"
+                        keyboardType="default"
+                        color="background"
+                        placeholder="نوع بار را وارد کنید"
+                      />
+                    </View>
+                  )}
+
                   {/* {console.log(values)} */}
                   <RadioInput
                     value={values.transportType}
@@ -204,7 +215,7 @@ const CreateCargo = () => {
                         value={values.cargoWeight}
                         formikError={errors.cargoWeight}
                         isUsingFormik={true}
-                        otherStyles="mb-1 w-full"
+                        otherStyles="-mb-3 w-full"
                         keyboardType={
                           Platform.OS === "ios"
                             ? "name-phone-pad"
@@ -216,6 +227,35 @@ const CreateCargo = () => {
                   ) : (
                     <></>
                   )}
+
+                  <View style={tw`w-full mt-5 `}>
+                    <FormField
+                      title={
+                        values.transportType === "3"
+                          ? " کرایه هر تن ( تومان)"
+                          : "کرایه (تومان)"
+                      }
+                      handleChangeText={text => {
+                        const numericValue = text.replace(/,/g, "");
+                        setFieldValue("fee", numericValue);
+                      }}
+                      value={formatFee(values.fee)}
+                      formikError={errors.fee}
+                      isUsingFormik={true}
+                      otherStyles="mb-1 w-full"
+                      keyboardType={
+                        Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
+                      }
+                      color="background"
+                    />
+                    {values.fee && (
+                      <Text
+                        style={tw`text-xs text-green-600  text-right font-vazir -mt-3 mr-2`}
+                      >
+                        {formatFee(values.fee)} تومان
+                      </Text>
+                    )}
+                  </View>
 
                   {/* Add Description Field */}
                   <View style={tw`w-full`}>

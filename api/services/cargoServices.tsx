@@ -57,9 +57,11 @@ export const deleteCargo = async cargoId => {
   }
 };
 
-export const getAllCargoes = async () => {
+export const getAllCargoes = async (phoneNumber: string) => {
   try {
-    const response = await apiClient.get("/cargo"); // Use the appropriate endpoint to fetch all cargoes
+    const response = await apiClient.get("/cargo/history", {
+      params: { ownerPhone: phoneNumber } // Pass phoneNumber as a parameter
+    }); // Use the appropriate endpoint to fetch all cargoes
     return response.data; // Return the data from the response
   } catch (error) {
     console.error("Error fetching cargoes:", error);
@@ -91,6 +93,7 @@ export const getCargoesByLocation = async (
         longitude
       }
     });
+
     return response.data; // Return the filtered cargos data
   } catch (error) {
     console.error("Error fetching cargoes by location:", error);
@@ -115,16 +118,19 @@ export const getCargoesByOriginDestination = async params => {
 export const getAvailableCargosForDriver = async (
   latitude: number,
   longitude: number,
-  radius: number = 50
+  radius: number,
+  phoneNumber: string
 ) => {
   try {
+    console.log(latitude, longitude, phoneNumber);
     const response = await apiClient.get(
       "/api/carrier-cargos-for-drivers/available",
       {
         params: {
           lat: latitude,
-          lng: longitude
-          // radius: radius
+          lng: longitude,
+          radius,
+          phoneNumber
         }
       }
     );

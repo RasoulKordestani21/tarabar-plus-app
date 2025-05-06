@@ -21,6 +21,7 @@ const GlobalProvider = ({ children }) => {
   const [token, setTokenState] = useState("");
   const [deviceId, setDeviceId] = useState(""); // Add state for deviceId
   const [deviceName, setDeviceName] = useState(""); // Add state for deviceName
+  const [userId, setUserIdState] = useState(""); // Add state for userId
 
   useEffect(() => {
     const loadState = async () => {
@@ -33,6 +34,7 @@ const GlobalProvider = ({ children }) => {
         const storedPhoneNumber = await SecureStore.getItemAsync("phoneNumber");
         const storedDeviceId = await SecureStore.getItemAsync("deviceId");
         const storedDeviceName = await SecureStore.getItemAsync("deviceName");
+        const storedUserId = await SecureStore.getItemAsync("userId"); // Add this line
 
         if (storedToken) {
           setTokenState(storedToken);
@@ -41,6 +43,7 @@ const GlobalProvider = ({ children }) => {
           if (storedPhoneNumber) setPhoneNumber(storedPhoneNumber);
           if (storedDeviceId) setDeviceId(storedDeviceId);
           if (storedDeviceName) setDeviceName(storedDeviceName);
+          if (storedUserId) setUserIdState(storedUserId); // Add this line
         } else {
           setIsLoggedState(false);
         }
@@ -115,6 +118,21 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
+  // Add a function to set userId
+  const setUserId = async newUserId => {
+    try {
+      if (newUserId) {
+        await SecureStore.setItemAsync("userId", newUserId);
+        setUserIdState(newUserId);
+      } else {
+        await SecureStore.deleteItemAsync("userId");
+        setUserIdState("");
+      }
+    } catch (error) {
+      console.error("Error saving userId to SecureStore:", error);
+    }
+  };
+
   return (
     <GlobalContext.Provider
       value={{
@@ -130,7 +148,9 @@ const GlobalProvider = ({ children }) => {
         setToken,
         deviceId,
         deviceName,
-        setDeviceInfo // Expose the function to set device info
+        setDeviceInfo, // Expose the function to set device info
+        userId, // Expose userId
+        setUserId // Expose setUserId function
       }}
     >
       {children}

@@ -1,17 +1,18 @@
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
-import Toast from 'react-native-toast-message';
+import Toast from "react-native-toast-message";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 import GlobalProvider, { useGlobalContext } from "@/context/GlobalProvider";
 import { ToastProvider } from "@/context/ToastContext"; // Import the ToastProvider
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { Linking } from "react-native";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

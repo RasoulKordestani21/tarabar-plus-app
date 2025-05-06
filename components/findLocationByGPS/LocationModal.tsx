@@ -19,12 +19,16 @@ type LocationModalProps = {
   visible: boolean;
   onClose: () => void;
   setCoordination: (param: any) => void;
+  route?: string;
+  onLocationSelect?: (location: any) => void;
 };
 
 const LocationModal: React.FC<LocationModalProps> = ({
   visible,
   onClose,
-  setCoordination
+  setCoordination,
+  route = "/show-cargoes",
+  onLocationSelect
 }) => {
   const { loading, setLoading } = useGlobalContext();
   const [locationPermission, setLocationPermission] =
@@ -34,100 +38,126 @@ const LocationModal: React.FC<LocationModalProps> = ({
     boolean | null
   >(null);
 
+  // Error messages in Persian
+  const errorMessages = {
+    permissionError: "خطا در دریافت مجوز موقعیت مکانی",
+    serviceError: "خطا در بررسی وضعیت سرویس موقعیت مکانی",
+    generalError: "خطایی رخ داد. لطفاً دوباره تلاش کنید",
+    locationFetchError: "امکان دریافت موقعیت فعلی وجود ندارد"
+  };
+
   useEffect(() => {
-    setLoading(true);
-    const checkPermissions = async () => {
-      try {
-        // Check for foreground permissions
+    if (!visible) return;
 
-        const { status } = await Location.getForegroundPermissionsAsync();
-        setLocationPermission(status);
-        console.log("Initial foreground Location Permission:", status);
-        // Check for background permissions
-        // const { status: backgroundStatus } =
-        //   await Location.getBackgroundPermissionsAsync();
-        // setBackgroundLocationPermission(backgroundStatus);
-      } catch (error) {
-        onClose();
-        console.error("Error checking initial location permission:", error);
-      }
-    };
-    const checkLocationService = async () => {
+    const initializeLocation = async () => {
+      setLoading(true);
       try {
-        const enabled = await Location.hasServicesEnabledAsync();
-        setLocationServiceEnabled(enabled);
-        console.log("Initial Location Service Enabled:", enabled);
+        await checkPermissions();
+        await checkLocationService();
+
+        if (locationServiceEnabled && locationPermission === "granted") {
+          await getCurrentLocationAndNavigate();
+        }
       } catch (error) {
-        console.error("Error checking initial location service:", error);
+        console.error("Initialization error:", error);
+        Alert.alert("خطا", errorMessages.generalError);
+      } finally {
+        setLoading(false);
       }
     };
 
-    const checkPushing = async () => {
-      try {
-        console.log(locationServiceEnabled, locationPermission);
-        setLoading(true);
-        onClose();
-        let currentLocation = await Location.getCurrentPositionAsync({});
-
-        console.log("_________");
-        console.log(currentLocation);
-        setCoordination(currentLocation);
-
-        router.push(
-          `/show-cargoes?latitude=${currentLocation.coords.latitude}&longitude=${currentLocation.coords.longitude}`
-        );
-      } catch (error) {
-        Alert.alert("خطا", "در هنگام دریافت موقعیت مکانی خطایی رخ داد");
-      }
-    };
-
-    checkPermissions();
-    checkLocationService();
-    console.log(locationServiceEnabled, locationPermission, "enable");
-    setLoading(false);
-    if (locationServiceEnabled && locationPermission === "granted")
-      checkPushing();
+    initializeLocation();
   }, [visible]);
 
-  const handleLocationServiceChoice = async (choice: "enable" | "deny") => {
+  const checkPermissions = async () => {
+    try {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      setLocationPermission(status);
+      console.log("Initial foreground Location Permission:", status);
+    } catch (error) {
+      console.error("Error checking initial location permission:", error);
+      Alert.alert("خطا", errorMessages.permissionError);
+      onClose();
+    }
+  };
+
+  const checkLocationService = async () => {
+    try {
+      const enabled = await Location.hasServicesEnabledAsync();
+      setLocationServiceEnabled(enabled);
+      console.log("Initial Location Service Enabled:", enabled);
+    } catch (error) {
+      console.error("Error checking initial location service:", error);
+      Alert.alert("خطا", errorMessages.serviceError);
+    }
+  };
+
+  const getCurrentLocationAndNavigate = async () => {
     try {
       setLoading(true);
-      if (choice === "enable") {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        setLocationPermission(status);
+      const currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced
+      });
 
-        if (status === "granted") {
-          let currentLocation = await Location.getCurrentPositionAsync();
-          setCoordination(currentLocation);
-          onClose();
-          console.log(currentLocation);
+      console.log("Current location:", currentLocation);
+      setCoordination(currentLocation);
+      onClose();
 
-          router.push(
-            `/show-cargoes?latitude=${currentLocation.coords.latitude}&longitude=${currentLocation.coords.longitude}`
-          );
-        } else {
-          Alert.alert(
-            "عدم دسترسی به مجوز های موقعیت یابی ",
-            "بعد فشردن تنظیمات به قسمت مجوز ها رفته و موقعیت مکانی را فعال کنید .",
-            [
-              {
-                text: "رفتن به تنظیمات",
-                onPress: () => {
-                  Linking.openSettings();
-                }
-              },
-              {
-                text: "لغو",
-                onPress: () => console.log("User canceled")
-              }
-            ]
-          );
-        }
+      // Use custom onLocationSelect callback if provided, otherwise use default navigation
+      if (onLocationSelect) {
+        onLocationSelect(currentLocation);
+      } else {
+        router.push(
+          `${route}?latitude=${currentLocation.coords.latitude}&longitude=${currentLocation.coords.longitude}`
+        );
       }
     } catch (error) {
+      console.error("Error fetching location:", error);
+      Alert.alert("خطا", errorMessages.locationFetchError);
+    } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLocationServiceChoice = async (choice: "enable" | "deny") => {
+    if (choice === "deny") {
+      onClose();
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      setLocationPermission(status);
+
+      if (status === "granted") {
+        await getCurrentLocationAndNavigate();
+      } else {
+        // Enhanced permission dialog
+        Alert.alert(
+          "نیاز به مجوز موقعیت مکانی",
+          "برای استفاده از این ویژگی، باید به تنظیمات بروید و موقعیت مکانی را فعال کنید.",
+          [
+            {
+              text: "رفتن به تنظیمات",
+              onPress: () => {
+                Linking.openSettings();
+                onClose();
+              }
+            },
+            {
+              text: "انصراف",
+              style: "cancel",
+              onPress: () => onClose()
+            }
+          ]
+        );
+      }
+    } catch (error) {
       console.error("Error handling location service choice:", error);
-      Alert.alert("Error", "An error occurred while fetching location");
+      Alert.alert("خطا", "خطایی در فرآیند دریافت مجوز رخ داد");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -147,7 +177,7 @@ const LocationModal: React.FC<LocationModalProps> = ({
               <Feather name="x" size={28} style={tw`text-background`} />
             </Pressable>
             <Text
-              style={tw`text-center font-vazir-bold  mb-4 text-xl text-background`}
+              style={tw`text-center font-vazir-bold mb-4 text-xl text-background`}
             >
               جستجو با موقعیت مکانی
             </Text>
