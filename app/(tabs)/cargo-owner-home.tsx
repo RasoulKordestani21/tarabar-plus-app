@@ -13,6 +13,7 @@ import {
   FontAwesome5
 } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/constants/QueryKeys";
 
 // Updated cargo owner home boxes with vector icons
 const cargoOwnerHomeBoxes = [
@@ -49,16 +50,15 @@ const cargoOwnerHomeBoxes = [
 export default function CargoOwnerHomeScreen() {
   const [verificationModalVisible, setVerificationModalVisible] =
     useState(false);
-  const { phoneNumber, setLoading, token, setUserId } = useGlobalContext();
+  const { phoneNumber, setLoading, user, setUser } = useGlobalContext();
 
   const {
     data: userData,
     error,
     isLoading: loading,
-    isFetched,
-    refetch
+    isFetched
   } = useQuery({
-    queryKey: ["cargoOwnerInformation", phoneNumber],
+    queryKey: [QUERY_KEYS.CARGO_OWNER_INFO, phoneNumber],
     queryFn: () => getCargoOwner({ phoneNumber })
   });
 
@@ -70,15 +70,17 @@ export default function CargoOwnerHomeScreen() {
   );
 
   useEffect(() => {
-    if (userData && !userData?.user?.isVerified) {
-      setVerificationModalVisible(true);
+    if (userData) {
+      setUser(userData?.user);
+      if (!userData?.user?.isVerified) {
+        setVerificationModalVisible(true);
+      }
     }
   }, [userData]);
-  console.log(userData);
+
   // Handle navigation to boxes
   const handleBoxPress = route => {
-    console.log(userData?.user?.balance, route);
-    if (userData?.user?.balance <= 0 && route === "/create-cargo") {
+    if (user?.balance <= 0 && route === "/create-cargo") {
       Alert.alert(
         "تلاش ناموفق",
         "اعتبار حساب شما برای این عملیات کافی نمی‌باشد ."

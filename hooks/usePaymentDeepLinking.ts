@@ -3,27 +3,78 @@ import { useEffect } from "react";
 import { Linking } from "react-native";
 import apiClient from "@/api/apiClient";
 import Toast from "react-native-toast-message";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/constants/QueryKeys";
+import { useGlobalContext } from "@/context/GlobalProvider";
 
 interface PaymentDeepLinkParams {
   Authority?: string;
   Status?: string;
+  RefId?: string;
 }
 
 interface UsePaymentDeepLinkProps {
   onPaymentVerified?: () => void;
+  onPaymentCancelled?: () => void;
+  onPaymentError?: () => void;
 }
 
 export const usePaymentDeepLink = ({
-  onPaymentVerified
+  onPaymentVerified,
+  onPaymentCancelled,
+  onPaymentError
 }: UsePaymentDeepLinkProps = {}) => {
+  const { phoneNumber } = useGlobalContext();
+  const queryClient = useQueryClient();
+
   const handlePaymentResponse = async (params: PaymentDeepLinkParams) => {
-    const { Authority, Status } = params;
+    const { Authority, Status, RefId } = params;
 
     if (!Authority || !Status) {
       console.log("Invalid payment parameters");
       return;
     }
 
+    // If we receive a direct response from the verification page
+    if (Status === "OK" && RefId) {
+      // Payment was already verified by the server and we have the RefId
+      // Just show success message and invalidate queries
+      queryClient.invalidateQueries([QUERY_KEYS.CARGO_OWNER_INFO, phoneNumber]);
+      queryClient.invalidateQueries([QUERY_KEYS.DRIVER_INFO, phoneNumber]);
+
+      Toast.show({
+        type: "success",
+        text1: "موفق",
+        text2: "پرداخت با موفقیت انجام شد"
+      });
+
+      onPaymentVerified?.();
+      return;
+    }
+
+    if (Status === "CANCELLED") {
+      Toast.show({
+        type: "info",
+        text1: "لغو شد",
+        text2: "پرداخت لغو شد"
+      });
+
+      onPaymentCancelled?.();
+      return;
+    }
+
+    if (Status === "ERROR") {
+      Toast.show({
+        type: "error",
+        text1: "خطا",
+        text2: "خطا در تایید پرداخت"
+      });
+
+      onPaymentError?.();
+      return;
+    }
+
+    // If we need to verify the payment status with the server
     try {
       const response = await apiClient.post("api/payment/verify", {
         Authority,
@@ -31,11 +82,18 @@ export const usePaymentDeepLink = ({
       });
 
       if (response.data.success) {
+        queryClient.invalidateQueries([
+          QUERY_KEYS.CARGO_OWNER_INFO,
+          phoneNumber
+        ]);
+        queryClient.invalidateQueries([QUERY_KEYS.DRIVER_INFO, phoneNumber]);
+
         Toast.show({
           type: "success",
           text1: "موفق",
           text2: "پرداخت با موفقیت انجام شد"
         });
+
         onPaymentVerified?.();
       } else {
         Toast.show({
@@ -43,6 +101,8 @@ export const usePaymentDeepLink = ({
           text1: "خطا",
           text2: "پرداخت ناموفق بود"
         });
+
+        onPaymentError?.();
       }
     } catch (error) {
       console.error("Error verifying payment:", error);
@@ -51,6 +111,8 @@ export const usePaymentDeepLink = ({
         text1: "خطا",
         text2: "خطا در تایید پرداخت"
       });
+
+      onPaymentError?.();
     }
   };
 
@@ -62,6 +124,7 @@ export const usePaymentDeepLink = ({
 
       params.Authority = queryParams.get("Authority") || undefined;
       params.Status = queryParams.get("Status") || undefined;
+      params.RefId = queryParams.get("RefId") || undefined;
     } catch (error) {
       console.error("Error parsing deep link:", error);
     }
@@ -82,7 +145,6 @@ export const usePaymentDeepLink = ({
 
     // Check if app was opened via deep link
     Linking.getInitialURL().then(url => {
-      console.log(url);
       if (url) {
         handleDeepLink({ url });
       }

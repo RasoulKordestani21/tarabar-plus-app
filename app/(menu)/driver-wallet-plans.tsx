@@ -12,18 +12,16 @@ import {
   RefreshControl,
   Linking
 } from "react-native";
-import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import tw from "@/libs/twrnc";
-import FormField from "@/components/Input/FormField";
-import DropdownInput from "@/components/Input/DropdownInput";
 import CustomButton from "@/components/CustomButton";
-import { router } from "expo-router";
 import axios from "axios";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import Toast from "react-native-toast-message";
 import { getDriverUser } from "@/api/services/driverServices";
 import apiClient from "@/api/apiClient";
 import { usePaymentDeepLink } from "@/hooks/usePaymentDeepLinking";
+import { QUERY_KEYS } from "@/constants/QueryKeys";
 
 interface Transaction {
   _id: string;
@@ -41,7 +39,8 @@ interface DriverData {
 
 const chargeAmounts = [
   { label: "100,000 تومان", value: "100000" },
-  { label: "200,000 تومان", value: "200000" }
+  { label: "200,000 تومان", value: "200000" },
+  { label: "500,000 تومان", value: "500000" }
 ];
 
 const DriverWalletPlan = () => {
@@ -126,6 +125,15 @@ const DriverWalletPlan = () => {
     onPaymentCancelled: () => {
       // Reset form on payment cancellation
       setForm({ selectedAmount: "" });
+    },
+    onPaymentError: () => {
+      // Reset form on payment error
+      setForm({ selectedAmount: "" });
+      Toast.show({
+        type: "error",
+        text1: "خطا",
+        text2: "خطا در فرآیند پرداخت. لطفاً دوباره تلاش کنید"
+      });
     }
   });
 
@@ -320,65 +328,6 @@ const DriverWalletPlan = () => {
         </View>
 
         <View style={tw`w-full h-[2px] mt-10 bg-black-300`}></View>
-
-        {/* Transaction History Section */}
-        <View style={tw`mt-8`}>
-          <View style={tw`flex-row-reverse justify-between items-center mb-4`}>
-            <Text style={tw`text-sm text-right font-vazir`}>
-              تاریخچه تراکنش‌ها
-            </Text>
-            <Pressable onPress={fetchTransactions}>
-              <MaterialIcons name="refresh" size={24} color="#374151" />
-            </Pressable>
-          </View>
-          <View style={tw`bg-white rounded-lg shadow-sm p-4`}>
-            {driverData?.transactions && driverData.transactions.length > 0 ? (
-              driverData.transactions.map((transaction, index) => (
-                <View
-                  key={transaction._id}
-                  style={[
-                    tw`flex-row-reverse justify-between items-center py-3`,
-                    index !== driverData.transactions.length - 1 &&
-                      tw`border-b border-gray-200`
-                  ]}
-                >
-                  <View>
-                    <Text style={tw`text-right font-vazir text-base`}>
-                      {transaction.description}
-                    </Text>
-                    <Text
-                      style={tw`text-right font-vazir text-sm text-gray-500`}
-                    >
-                      {formatDate(transaction.createdAt)}
-                    </Text>
-                    {transaction.paymentRefId && (
-                      <Text
-                        style={tw`text-right font-vazir text-xs text-gray-400`}
-                      >
-                        کد پیگیری: {transaction.paymentRefId}
-                      </Text>
-                    )}
-                  </View>
-                  <Text
-                    style={[
-                      tw`font-vazir text-base`,
-                      transaction.type === "charge"
-                        ? tw`text-green-600`
-                        : tw`text-red-600`
-                    ]}
-                  >
-                    {transaction.type === "charge" ? "+ " : "- "}
-                    {formatNumber(transaction.amount)} تومان
-                  </Text>
-                </View>
-              ))
-            ) : (
-              <Text style={tw`text-center text-gray-500 font-vazir py-4`}>
-                هیچ تراکنشی وجود ندارد
-              </Text>
-            )}
-          </View>
-        </View>
       </View>
     </ScrollView>
   );

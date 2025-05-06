@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -25,7 +25,7 @@ import {
   getCargoOwner,
   updateCargoOwnerProfile
 } from "@/api/services/cargoOwnerServices";
-import { useQuery } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 
 // Import constants
 import { cargoOwnerAccountSettingTextInput } from "@/constants/BoxesList";
@@ -33,10 +33,11 @@ import {
   cargoOwnerConfirmationInitialValues,
   cargoOwnerConfirmValidationSchema
 } from "@/constants/FormikValidation";
+import { QUERY_KEYS } from "@/constants/QueryKeys";
 
 const CargoOwnerProfileUpdateScreen = () => {
   const { phoneNumber, role } = useGlobalContext();
-
+  const queryClient = useQueryClient();
   // File upload handler
   const fileUploader = async (file: any) => {
     try {
@@ -100,11 +101,12 @@ const CargoOwnerProfileUpdateScreen = () => {
         phoneNumber
       });
 
-      // Refetch user data to ensure updated information
-      refetch();
-
       // Show success message
       if (result) {
+        queryClient.invalidateQueries([
+          QUERY_KEYS.CARGO_OWNER_INFO,
+          phoneNumber
+        ]);
         Alert.alert("موفقیت", "اطلاعات کاربری شما با موفقیت به روز شد.");
       } else {
         Alert.alert("خطا", "به روزرسانی اطلاعات با مشکل مواجه شد.");
@@ -119,10 +121,13 @@ const CargoOwnerProfileUpdateScreen = () => {
   };
 
   // Fetch user data
-  const { data, error, isLoading, refetch } = useQuery({
-    queryKey: ["cargoOwnerInformation", phoneNumber],
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: [QUERY_KEYS.CARGO_OWNER_INFO, phoneNumber],
     queryFn: () => getCargoOwner({ phoneNumber })
   });
+  useEffect(() => {
+    refetch();
+  }, []);
 
   // Render loading state if data is being fetched
   if (isLoading) {

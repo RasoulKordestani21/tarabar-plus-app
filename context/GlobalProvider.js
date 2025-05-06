@@ -22,6 +22,7 @@ const GlobalProvider = ({ children }) => {
   const [deviceId, setDeviceId] = useState(""); // Add state for deviceId
   const [deviceName, setDeviceName] = useState(""); // Add state for deviceName
   const [userId, setUserIdState] = useState(""); // Add state for userId
+  const [user, setUserState] = useState(null); // Add state for user
 
   useEffect(() => {
     const loadState = async () => {
@@ -34,7 +35,8 @@ const GlobalProvider = ({ children }) => {
         const storedPhoneNumber = await SecureStore.getItemAsync("phoneNumber");
         const storedDeviceId = await SecureStore.getItemAsync("deviceId");
         const storedDeviceName = await SecureStore.getItemAsync("deviceName");
-        const storedUserId = await SecureStore.getItemAsync("userId"); // Add this line
+        const storedUserId = await SecureStore.getItemAsync("userId");
+        const storedUser = await SecureStore.getItemAsync("user");
 
         if (storedToken) {
           setTokenState(storedToken);
@@ -43,7 +45,8 @@ const GlobalProvider = ({ children }) => {
           if (storedPhoneNumber) setPhoneNumber(storedPhoneNumber);
           if (storedDeviceId) setDeviceId(storedDeviceId);
           if (storedDeviceName) setDeviceName(storedDeviceName);
-          if (storedUserId) setUserIdState(storedUserId); // Add this line
+          if (storedUserId) setUserIdState(storedUserId);
+          if (storedUser) setUserState(JSON.parse(storedUser));
         } else {
           setIsLoggedState(false);
         }
@@ -133,6 +136,22 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
+  // Add a function to set user
+  const setUser = async newUser => {
+    try {
+      if (newUser) {
+        const userString = JSON.stringify(newUser);
+        await SecureStore.setItemAsync("user", userString);
+        setUserState(newUser);
+      } else {
+        await SecureStore.deleteItemAsync("user");
+        setUserState(null);
+      }
+    } catch (error) {
+      console.error("Error saving user to SecureStore:", error);
+    }
+  };
+
   return (
     <GlobalContext.Provider
       value={{
@@ -150,7 +169,9 @@ const GlobalProvider = ({ children }) => {
         deviceName,
         setDeviceInfo, // Expose the function to set device info
         userId, // Expose userId
-        setUserId // Expose setUserId function
+        setUserId, // Expose setUserId function
+        user, // Expose user
+        setUser // Expose setUser function
       }}
     >
       {children}

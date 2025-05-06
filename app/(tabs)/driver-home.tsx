@@ -12,6 +12,7 @@ import VerificationModal from "@/components/VerificationModal";
 import { getDriverUser } from "@/api/services/driverServices";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/constants/QueryKeys";
 
 const driverHomeBoxes = [
   {
@@ -59,12 +60,12 @@ export default function DriverHomeScreen() {
 
   const {
     data: userData,
+    error,
     isLoading: loading,
-    refetch
+    isFetched
   } = useQuery({
-    queryKey: ["userInformation", phoneNumber],
-    queryFn: () => getDriverUser({ phoneNumber }),
-    enabled: Boolean(phoneNumber)
+    queryKey: [QUERY_KEYS.DRIVER_INFO, phoneNumber],
+    queryFn: () => getDriverUser({ phoneNumber })
   });
 
   useFocusEffect(

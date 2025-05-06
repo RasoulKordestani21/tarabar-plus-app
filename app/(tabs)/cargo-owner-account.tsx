@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import Loader from "@/components/Loader";
 import { SafeAreaView } from "react-native";
 import { ActivityIndicator } from "react-native";
 import { getCargoOwner } from "@/api/services/cargoOwnerServices";
+import { QUERY_KEYS } from "@/constants/QueryKeys";
 
 type MaterialIconNames =
   | "flash-on"
@@ -25,9 +26,9 @@ type MaterialIconNames =
   | "account-balance-wallet";
 
 const AccountScreen = () => {
-  const { phoneNumber, role } = useGlobalContext();
-  const { data, error, isLoading, isFetched, refetch } = useQuery({
-    queryKey: ["cargoOwnerInformation", phoneNumber],
+  const { phoneNumber, role, user } = useGlobalContext();
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: [QUERY_KEYS.CARGO_OWNER_INFO, phoneNumber],
     queryFn: () => getCargoOwner({ phoneNumber })
   });
 
