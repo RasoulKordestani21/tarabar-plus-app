@@ -13,7 +13,7 @@ import GlobalProvider, { useGlobalContext } from "@/context/GlobalProvider";
 import { ToastProvider } from "@/context/ToastContext"; // Import the ToastProvider
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { Linking } from "react-native";
-
+import AuthErrorProvider from "@/context/AuthErrorProvider";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -30,6 +30,7 @@ export default function RootLayout() {
 
   const queryClient = new QueryClient();
 
+  // useInitializeToast();
   useEffect(() => {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
@@ -50,13 +51,15 @@ export default function RootLayout() {
       >
         <QueryClientProvider client={queryClient}>
           <ToastProvider>
-            <Stack>
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="(menu)" options={{ headerShown: false }} />
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="error" options={{ headerShown: false }} />
-            </Stack>
+            <AuthErrorProvider>
+              <Stack>
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="(menu)" options={{ headerShown: false }} />
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="error" options={{ headerShown: false }} />
+              </Stack>
+            </AuthErrorProvider>
           </ToastProvider>
           <StatusBar style="light" />
         </QueryClientProvider>

@@ -1,75 +1,123 @@
-import { useState } from "react";
-import { Modal, Text, View, TouchableOpacity } from "react-native";
-import tw from "@/libs/twrnc"; // Importing Tailwind classes
+// components/CustomToast.js
+import React, { useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  TouchableOpacity
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import tw from "@/libs/twrnc";
 
-type CustomToastTypes = {
-  visible: boolean;
-  message: string;
-  onClose: () => void;
-  type: string;
-};
+const CustomToast = ({ visible, message, onClose, type = "success" }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
-const CustomToast = ({ visible, message, onClose, type }: CustomToastTypes) => {
-  // Set styles based on the `type` (success, pending, or error)
-  let toastStyles = {};
-  let toastTextStyles = {};
-  let closeButtonStyles = {};
+  useEffect(() => {
+    if (visible) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true
+      }).start();
+    } else {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true
+      }).start();
+    }
+  }, [visible, fadeAnim]);
 
-  switch (type) {
-    case "success":
-      toastStyles = tw`bg-green-500`; // Tailwind green for success
-      toastTextStyles = tw`text-white`;
-      closeButtonStyles = tw`text-white`;
-      break;
-    case "pending":
-      toastStyles = tw`bg-yellow-500`; // Tailwind yellow for pending
-      toastTextStyles = tw`text-white`;
-      closeButtonStyles = tw`text-white`;
-      break;
-    case "error":
-      toastStyles = tw`bg-red-500`; // Tailwind red for error
-      toastTextStyles = tw`text-white`;
-      closeButtonStyles = tw`text-white`;
-      break;
-    default:
-      toastStyles = tw`bg-gray-500`; // Default gray if no type is specified
-      toastTextStyles = tw`text-white`;
-      closeButtonStyles = tw`text-white`;
-  }
+  if (!visible) return null;
+
+  // Configure based on type
+  const getToastConfig = () => {
+    switch (type) {
+      case "success":
+        return {
+          backgroundColor: "#4CAF50",
+          icon: "checkmark-circle",
+          iconColor: "#FFFFFF"
+        };
+      case "error":
+        return {
+          backgroundColor: "#F44336",
+          icon: "close-circle",
+          iconColor: "#FFFFFF"
+        };
+      case "warning":
+        return {
+          backgroundColor: "#FF9800",
+          icon: "warning",
+          iconColor: "#FFFFFF"
+        };
+      case "info":
+        return {
+          backgroundColor: "#2196F3",
+          icon: "information-circle",
+          iconColor: "#FFFFFF"
+        };
+      default:
+        return {
+          backgroundColor: "#4CAF50",
+          icon: "checkmark-circle",
+          iconColor: "#FFFFFF"
+        };
+    }
+  };
+
+  const config = getToastConfig();
 
   return (
-    <Modal
-      transparent={true}
-      visible={visible}
-      animationType="slide"
-      onRequestClose={onClose}
+    <Animated.View
+      style={[
+        styles.container,
+        { backgroundColor: config.backgroundColor, opacity: fadeAnim }
+      ]}
     >
-      <View
-        style={tw`flex-1  justify-start items-center bg-black bg-opacity-50`} // Align items to the top
-      >
-        <View
-          style={[
-            tw`p-4 rounded-lg min-w-[300px]  `,
-            toastStyles,
-            { position: "absolute", top: 50 }
-          ]}
-        >
-          <Text
-            style={[tw`text-lg mb-3 text-right font-vazir`, toastTextStyles]}
-          >
-            {message}
-          </Text>
-          <TouchableOpacity onPress={onClose}>
-            <Text
-              style={[tw`text-sm underline font-vazir `, closeButtonStyles]}
-            >
-              بستن
-            </Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.content}>
+        <Ionicons name={config.icon} size={24} color={config.iconColor} />
+        <Text style={styles.message}>{message}</Text>
       </View>
-    </Modal>
+      <TouchableOpacity onPress={onClose}>
+        <Ionicons name="close" size={20} color="#FFFFFF" />
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    right: 20,
+    borderRadius: 8,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    zIndex: 1000
+  },
+  content: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1
+  },
+  message: {
+    marginRight: 10,
+    color: "#ffffff",
+    fontFamily: "Vazir-Regular",
+    fontSize: 14,
+    flex: 1,
+    textAlign: "right"
+  }
+});
 
 export default CustomToast;
