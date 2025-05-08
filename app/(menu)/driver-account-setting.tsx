@@ -1,5 +1,4 @@
-// screens/AccountScreen.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,14 +7,15 @@ import {
   Platform,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  ActivityIndicator
 } from "react-native";
-import tw from "@/libs/twrnc"; // Ensure you configure tailwind-rn or use a similar library
+import tw from "@/libs/twrnc";
 import FormField from "@/components/Input/FormField";
 import CustomButton from "@/components/CustomButton";
 import LicensePlateInput from "@/components/LicensePlateInput";
 import { useGlobalContext } from "@/context/GlobalProvider";
-import FileInput from "@/components/Input/FileInput";
+import FileInput from "@/components/Input/FileInput"; // Use your improved FileInput
 import { uploadFile } from "@/api/services/fileServices";
 import Loader from "@/components/Loader";
 import { Formik } from "formik";
@@ -30,70 +30,85 @@ import {
   driverAccountSettingTextInput,
   truckTypes
 } from "@/constants/BoxesList";
-import { getUser, updateVerificationData } from "@/api/services/userServices";
+import { getUser } from "@/api/services/userServices";
 import { useQuery } from "@tanstack/react-query";
-import { updateDriverProfile } from "@/api/services/driverServices";
+import {
+  getDriverUser,
+  updateDriverProfile
+} from "@/api/services/driverServices";
+import { QUERY_KEYS } from "@/constants/QueryKeys";
 
 const AccountScreen = () => {
   const { phoneNumber, role } = useGlobalContext();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fileUploader = async (values: any) => {
+  const submitHandler = async values => {
     try {
-      const formData = new FormData();
+      setIsSubmitting(true);
 
-      values.nationalCard = {
-        type: values.nationalCard.mimeType,
-        ...values.nationalCard
-      };
-      formData.append("file", values.nationalCard);
-      formData.append("fieldName", "national-card");
-      formData.append("phoneNumber", phoneNumber);
-      formData.append("clientEnvironment", "mobile-app");
-      formData.append("role", role);
+      // Create a copy of values to avoid mutating original
+      const formValues = { ...values };
 
-      console.log(formData?._parts, " this is values.nationalId");
+      // Check if nationalCard is a file object (not a string/URL)
+      if (
+        formValues.nationalCard &&
+        typeof formValues.nationalCard === "object"
+      ) {
+        try {
+          console.log(
+            "File object before upload:",
+            JSON.stringify(formValues.nationalCard)
+          );
+          const uploadResult = await uploadFile(
+            formValues.nationalCard,
+            "national-card",
+            role,
+            phoneNumber
+          );
 
-      const uploadResult = await uploadFile(
-        "upload/driver/national-card-image",
-        formData
-      );
-      return uploadResult?.data;
-    } catch (err) {
-      Alert.alert("Error", "Failed to pick document");
-    }
-  };
-
-  const submitHandler = async (values: any) => {
-    // setLoading(true);
-    try {
-      if (typeof values.nationalCard !== "string") {
-        const uploadedFile = await fileUploader(values);
-        // console.log(uploadedFile, " this is uploadedFile");
-        values.nationalCard = await uploadedFile?.file?.path;
+          console.log("Upload result:", JSON.stringify(uploadResult));
+          // If upload successful, replace with the file path
+          if (uploadResult?.file?.path) {
+            formValues.nationalCard = uploadResult.file.path;
+          } else if (uploadResult?.file?.storageUrl) {
+            // If using Liara, use the storage URL
+            formValues.nationalCard = uploadResult.file.storageUrl;
+          }
+        } catch (uploadError) {
+          console.log(uploadError, "this is error ");
+          setIsSubmitting(false);
+          Alert.alert("خطا", "بارگذاری تصویر کارت ملی با مشکل مواجه شد");
+          return;
+        }
       }
 
-      const result = await updateDriverProfile({ ...values, phoneNumber });
-      console.log(result);
-      refetch();
+      const result = await updateDriverProfile({
+        ...formValues,
+        phoneNumber
+      });
+
+      setIsSubmitting(false);
+
       if (result) {
-        // If OTP verification is successful, show success message
-        Alert.alert("موفق", "عملیات تکمیل ثبت نام با موفقیت انجام شد..");
+        refetch();
+        Alert.alert("موفق", "اطلاعات شما با موفقیت به روز شد.");
       } else {
-        Alert.alert(
-          "خطا",
-          err?.message?.split("/")[1] || "خطای غیرمنتظره‌ای رخ داده است."
-        );
+        Alert.alert("خطا", "به روزرسانی اطلاعات با مشکل مواجه شد.");
       }
-
-      // setLoading(false);
     } catch (err) {
-      Alert.alert("Error", "Failed to pick document");
+      setIsSubmitting(false);
+
+      Alert.alert(
+        "خطا",
+        err?.message?.split("/")[1] || "خطای غیرمنتظره‌ای رخ داده است."
+      );
     }
   };
 
+  // Fetch user data
   const { data, error, isLoading, isFetched, refetch } = useQuery({
-    queryKey: ["userInformation", phoneNumber],
-    queryFn: () => getUser(phoneNumber, role)
+    queryKey: [QUERY_KEYS.DRIVER_INFO, phoneNumber],
+    queryFn: () => getDriverUser({ phoneNumber })
   });
 
   return (
@@ -110,20 +125,23 @@ const AccountScreen = () => {
             validationSchema={driverConfirmValidationSchema}
             onSubmit={submitHandler}
           >
-            {({ handleChange, handleSubmit, values, errors }) => (
+            {({ handleChange, handleSubmit, values, errors, isValid }) => (
               <ScrollView keyboardShouldPersistTaps="handled" style={tw``}>
-                <View style={tw`min-h-full p-5 `}>
-                  <View style={tw`flex-1 p-1 rounded-2 `}>
-                    <Text style={tw`text-lg  text-right font-vazir-bold`}>
+                <View style={tw`min-h-full p-5`}>
+                  <View style={tw`flex-1 p-1 rounded-2`}>
+                    <Text style={tw`text-lg text-right font-vazir-bold`}>
                       اطلاعات کاربر
                     </Text>
                     <View
                       style={tw`w-full h-[2px] bg-card mb-3 mt-1 rounded-xl`}
                     ></View>
-                    <View style={tw`flex-row flex-wrap  justify-between `}>
+
+                    {/* Form Fields Section */}
+                    <View style={tw`flex-row flex-wrap justify-between`}>
                       {driverAccountSettingTextInput.map(ele => (
-                        <View key={ele.name} style={tw`w-[48%] `}>
+                        <View key={ele.name} style={tw`w-[48%]`}>
                           <FormField
+                            disabled={data?.user?.isVerified}
                             title={ele.title}
                             handleChangeText={handleChange(ele.name)}
                             value={values[ele.name]}
@@ -154,12 +172,15 @@ const AccountScreen = () => {
                             ele => ele.value === data?.user?.truckNavigationId
                           )?.label
                         }
+                        onSelect={handleChange("truckNavigationId")}
                       />
                       <FileInput
-                        name={"nationalCard"}
+                        name="nationalCard"
                         formikError={errors.nationalCard}
-                        defaultValue={data?.user?.nationalCard}
+                        defaultValue={data?.user?.nationalCardUrl}
                         label="تصویر کارت ملی"
+                        acceptedTypes={["jpg", "jpeg", "png", "heic"]}
+                        disabled={data?.user?.isVerified}
                       />
                     </View>
 
@@ -169,11 +190,28 @@ const AccountScreen = () => {
                       handleChangeText={handleChange("licensePlate")}
                     />
                   </View>
+
+                  {/* Submit Button with Loading State */}
                   <CustomButton
-                    title="ذخیره تغییرات"
+                    title={isSubmitting ? "در حال ذخیره..." : "ذخیره تغییرات"}
                     handlePress={handleSubmit}
-                    containerStyles="w-full mt-7 bg-background mb-5 "
+                    containerStyles={`w-full mt-7 ${
+                      isSubmitting ? "bg-gray-400" : "bg-background"
+                    } mb-5`}
+                    disabled={isSubmitting || !isValid}
+                    icon={
+                      isSubmitting ? (
+                        <ActivityIndicator size="small" color="white" />
+                      ) : null
+                    }
                   />
+
+                  {/* Form Status Message */}
+                  {isSubmitting && (
+                    <Text style={tw`text-center text-gray-600 mb-5`}>
+                      در حال بارگذاری اطلاعات، لطفا صبر کنید...
+                    </Text>
+                  )}
                 </View>
               </ScrollView>
             )}

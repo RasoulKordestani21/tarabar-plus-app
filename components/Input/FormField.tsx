@@ -29,6 +29,7 @@ type Props = TextInputProps & {
   isUsingFormik?: boolean;
   isSelect?: boolean;
   handlePress?: () => void;
+  disabled?: boolean;
 };
 
 const FormField = ({
@@ -53,6 +54,7 @@ const FormField = ({
   isUsingFormik,
   isSelect,
   handlePress,
+  disabled,
   ...props
 }: Props) => {
   const [error, setError] = useState<string | null>(null);
@@ -112,7 +114,7 @@ const FormField = ({
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={tw`flex mb-5`}
+      style={tw`flex mb-5 `}
     >
       <View style={tw`w-full ${otherStyles ?? ""}`}>
         <Text
@@ -123,9 +125,9 @@ const FormField = ({
 
         <View
           style={tw.style(
-            `w-full h-12 px-4 rounded-md border-2 flex flex-row items-center ${
+            `w-full h-12 px-4 rounded-md border-2 flex flex-row items-center  ${
               isMultiline ? "min-h-20" : ""
-            }`,
+            } ${disabled ? "bg-card" : ""}`,
             {
               borderColor: error
                 ? tw.color("red-500")
@@ -143,6 +145,7 @@ const FormField = ({
             />
           ) : (
             <TextInput
+              editable={!disabled}
               multiline={isMultiline}
               style={tw`flex-1 font-vazir text-sm text-right text-${
                 color ?? "text"

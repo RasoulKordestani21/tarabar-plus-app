@@ -28,7 +28,7 @@
       "kotlinVersion": "1.9.25",
       "enableProguardInReleaseBuilds": true,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/tarabarplusicon.png",
+        "foregroundImage": "./assets/images/vector.png",
         "backgroundColor": "#003366"
       },
       "package": "com.rs_53.tarabarplusfrontend",

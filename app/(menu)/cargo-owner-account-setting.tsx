@@ -7,7 +7,8 @@ import {
   Platform,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  ActivityIndicator
 } from "react-native";
 import tw from "@/libs/twrnc";
 import { Formik } from "formik";
@@ -38,68 +39,73 @@ import { QUERY_KEYS } from "@/constants/QueryKeys";
 const CargoOwnerProfileUpdateScreen = () => {
   const { phoneNumber, role } = useGlobalContext();
   const queryClient = useQueryClient();
-  // File upload handler
-  const fileUploader = async (file: any) => {
-    try {
-      const formData = new FormData();
-
-      // Create file object for FormData
-      const fileToUpload = {
-        uri: file.uri,
-        type: file.mimeType,
-        name: file.name
-      };
-
-      formData.append("file", fileToUpload as any);
-      formData.append("fieldName", "national-card");
-      formData.append("phoneNumber", phoneNumber);
-      formData.append("clientEnvironment", "mobile-app");
-      formData.append("role", role);
-
-      // Upload file and return result
-      const uploadResult = await uploadFile(
-        "upload/cargo-owner/national-card-image",
-        formData
-      );
-      return uploadResult?.data;
-    } catch (err) {
-      Alert.alert("خطا", "بارگذاری سند با مشکل مواجه شد");
-      return null;
-    }
-  };
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Submit handler for profile update
-  const submitHandler = async (values: any) => {
+  const submitHandler = async values => {
     try {
+      setIsSubmitting(true);
+
       // Create a copy of values to avoid mutating the original
       const formValues = { ...values };
 
-      // Remove nationalCard from formValues if it's a file object (not a string)
+      // Check if nationalCard is a file object (not a string/URL)
       if (
         formValues.nationalCard &&
         typeof formValues.nationalCard === "object" &&
         formValues.nationalCard.uri
       ) {
-        // Store the file object temporarily
-        const fileToUpload = formValues.nationalCard;
+        try {
+          // console.log("Uploading nationalCard file:", formValues.nationalCard);
 
-        // Remove nationalCard from formValues to avoid validation error
-        delete formValues.nationalCard;
+          // Upload the file first
+          const uploadResult = await uploadFile(
+            formValues.nationalCard,
+            "national-card",
+            role,
+            phoneNumber
+          );
 
-        // First, upload the file
-        const uploadedFile = await fileUploader(fileToUpload);
-
-        // If upload successful, add the file path to formValues
-        if (uploadedFile?.file?.path) {
-          formValues.nationalCard = uploadedFile.file.path;
+          // If upload successful, use the path or URL
+          if (uploadResult?.file?.storageUrl) {
+            // If using Liara, use the storage URL
+            formValues.nationalCard = uploadResult.file.storageUrl;
+          } else if (uploadResult?.file?.path) {
+            formValues.nationalCard = uploadResult.file.path;
+          } else if (uploadResult?.file?.url) {
+            formValues.nationalCard = uploadResult.file.url;
+          } else {
+            // Fallback to URI if upload succeeded but no path was returned
+            console.log("No file path in upload result, using URI");
+            formValues.nationalCard = formValues.nationalCard.uri;
+          }
+        } catch (uploadError) {
+          console.error("Upload error:", uploadError);
+          setIsSubmitting(false);
+          Alert.alert("خطا", "بارگذاری تصویر کارت ملی با مشکل مواجه شد");
+          return;
         }
+      } else if (
+        formValues.nationalCard &&
+        typeof formValues.nationalCard === "object"
+      ) {
+        // This handles the case where nationalCard is an object but doesn't have a URI
+        console.warn(
+          "nationalCard is an object without URI:",
+          formValues.nationalCard
+        );
+        // Set to empty or null to avoid cast errors
+        formValues.nationalCard = null;
       }
 
       // Update verification data
+      console.log("Submitting form values:", formValues);
       const result = await updateCargoOwnerProfile({
         ...formValues,
         phoneNumber
       });
+
+      setIsSubmitting(false);
 
       // Show success message
       if (result) {
@@ -107,11 +113,13 @@ const CargoOwnerProfileUpdateScreen = () => {
           QUERY_KEYS.CARGO_OWNER_INFO,
           phoneNumber
         ]);
+        console.log(result);
         Alert.alert("موفقیت", "اطلاعات کاربری شما با موفقیت به روز شد.");
       } else {
         Alert.alert("خطا", "به روزرسانی اطلاعات با مشکل مواجه شد.");
       }
     } catch (err) {
+      setIsSubmitting(false);
       console.error("Submit error:", err?.message?.split("/")[1]);
       Alert.alert(
         "خطا",
@@ -125,6 +133,8 @@ const CargoOwnerProfileUpdateScreen = () => {
     queryKey: [QUERY_KEYS.CARGO_OWNER_INFO, phoneNumber],
     queryFn: () => getCargoOwner({ phoneNumber })
   });
+
+  console.log(data?.user?.nationalCardUrl, "this is data from cargo owner");
   useEffect(() => {
     refetch();
   }, []);
@@ -133,7 +143,7 @@ const CargoOwnerProfileUpdateScreen = () => {
   if (isLoading) {
     return <Loader isLoading={isLoading} />;
   }
-  console.log(data, "\n  this is user data ---> \n ---> ");
+
   return (
     <KeyboardAvoidingView
       style={tw`flex-1 bg-white`}
@@ -188,17 +198,29 @@ const CargoOwnerProfileUpdateScreen = () => {
                     <FileInput
                       name="nationalCard"
                       formikError={errors.nationalCard}
-                      defaultValue={data?.user?.nationalCard}
+                      defaultValue={data?.user?.nationalCardUrl}
                       label="تصویر کارت ملی"
+                      acceptedTypes={["jpg", "jpeg", "png", "heic"]}
+                      disabled={data?.user?.isVerified}
                     />
                   </View>
                 </View>
 
                 {/* Save Changes Button */}
                 <CustomButton
-                  title="ذخیره تغییرات"
+                  title={
+                    isSubmitting ? "در حال ذخیره سازی..." : "ذخیره تغییرات"
+                  }
                   handlePress={handleSubmit}
-                  containerStyles="w-full mt-7 bg-background mb-5"
+                  containerStyles={`w-full mt-7 ${
+                    isSubmitting ? "bg-gray-400" : "bg-background"
+                  } mb-5`}
+                  disabled={isSubmitting}
+                  icon={
+                    isSubmitting ? (
+                      <ActivityIndicator size="small" color="white" />
+                    ) : null
+                  }
                 />
               </View>
             </ScrollView>

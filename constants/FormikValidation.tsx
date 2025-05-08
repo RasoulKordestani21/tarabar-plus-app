@@ -30,13 +30,6 @@ const driverConfirmValidationSchema = Yup.object().shape({
     .required("شماره هوشمند خودرو الزامی است"),
   nationalCard: Yup.mixed()
     .test("fileType", "تایپ های قابل قبول (JPG, PNG, JPEG)", (value: any) => {
-      console.log(
-        value,
-        typeof value === "string" && value?.length,
-        value?.mimeType,
-        value?.mimeType?.startsWith("image/"),
-        "this is schema "
-      );
       if (typeof value === "string" && value?.length) {
         return true;
       }
@@ -51,7 +44,7 @@ const driverConfirmValidationSchema = Yup.object().shape({
   licensePlate: Yup.string()
     .matches(/^\d{2}-\d{3}-\d{2}$/, "شماره پلاک را کامل کنید.") // Regex to match the pattern
     .required("شماره پلاک الزامی است"),
-  truckNavigationId: Yup.string().required(" ازامی است ")
+  truckNavigationId: Yup.string().required(" نوع کشنده الزامی است. ")
 });
 
 const cargoOwnerConfirmationInitialValues = (data: any) => {
@@ -72,13 +65,6 @@ const cargoOwnerConfirmValidationSchema = Yup.object().shape({
     .required("نام کاربری الزامی است"),
   nationalCard: Yup.mixed()
     .test("fileType", "تایپ های قابل قبول (JPG, PNG, JPEG)", (value: any) => {
-      console.log(
-        value,
-        typeof value === "string" && value?.length,
-        value?.mimeType,
-        value?.mimeType?.startsWith("image/"),
-        "this is schema "
-      );
       if (typeof value === "string" && value?.length) {
         return true;
       }
@@ -103,8 +89,8 @@ const estimateFeeAndCommisionInitialValues = () => {
 };
 
 const estimateFeeAndCommisionSchema = Yup.object().shape({
-  origin: Yup.string().required("مبدا  ازامی است "),
-  destination: Yup.string().required("مقصد ازامی است "),
+  origin: Yup.string().required("مبدا الزامی است "),
+  destination: Yup.string().required("مقصد الزامی است "),
   truckType: Yup.string().required(" نوع کشنده الزامی است "),
   cargoType: Yup.string().required(" نوع بار الزامی است "),
   insurancePercentage: Yup.string()
@@ -149,8 +135,8 @@ const createCargoInitialValues = (data: any) => {
 };
 
 const createCargoSchema = Yup.object().shape({
-  origin: Yup.string().required("مبدا ازامی است "),
-  destination: Yup.string().required("مقصد ازامی است "),
+  origin: Yup.string().required("مبدا الزامی است "),
+  destination: Yup.string().required("مقصد الزامی است "),
   truckType: Yup.string().required(" نوع کشنده الزامی است "),
   cargoType: Yup.string().required(" نوع بار الزامی است "),
   // insurancePercentage: Yup.string()

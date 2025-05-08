@@ -90,13 +90,10 @@ const DriverWalletPlan = () => {
 
   const fetchTransactions = async () => {
     try {
-      const response = await axios.get(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/driver/transactions`,
-        {
-          params: { phoneNumber },
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const response = await apiClient.get(`api/driver/transactions`, {
+        params: { phoneNumber },
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
       if (driverData) {
         setDriverData({
