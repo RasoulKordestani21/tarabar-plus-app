@@ -5,7 +5,7 @@ import { showToast } from "@/utils/toast";
 import { showAuthErrorModal } from "@/utils/authErrorManager";
 import Constants from "expo-constants";
 
-const API_URL = Constants.expoConfig?.extra?.DEVELOP_URL;
+const API_URL = Constants.expoConfig?.extra?.PRODUCTION_URL;
 console.log("API_URL", API_URL);
 
 // Create axios instance
