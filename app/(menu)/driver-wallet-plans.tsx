@@ -9,18 +9,15 @@ import {
   Image,
   TouchableWithoutFeedback,
   ActivityIndicator,
-  RefreshControl,
-  Linking
+  RefreshControl
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 import tw from "@/libs/twrnc";
 import CustomButton from "@/components/CustomButton";
-import axios from "axios";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import Toast from "react-native-toast-message";
 import { getDriverUser } from "@/api/services/driverServices";
 import apiClient from "@/api/apiClient";
-import { usePaymentDeepLink } from "@/hooks/usePaymentDeepLinking";
+import { usePaymentService } from "@/hooks/usePaymentService";
 import { QUERY_KEYS } from "@/constants/QueryKeys";
 
 interface Transaction {
@@ -53,7 +50,32 @@ const DriverWalletPlan = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [driverData, setDriverData] = useState<DriverData | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Use the new payment service
+  const { initiatePayment, isProcessing } = usePaymentService({
+    userType: "driver",
+    phoneNumber,
+    onPaymentVerified: () => {
+      // Refresh driver data after successful payment
+      fetchDriverData();
+      fetchTransactions();
+      // Reset form
+      setForm({ selectedAmount: "" });
+    },
+    onPaymentCancelled: () => {
+      // Reset form on payment cancellation
+      setForm({ selectedAmount: "" });
+    },
+    onPaymentError: () => {
+      // Reset form on payment error
+      setForm({ selectedAmount: "" });
+      Toast.show({
+        type: "error",
+        text1: "خطا",
+        text2: "خطا در فرآیند پرداخت. لطفاً دوباره تلاش کنید"
+      });
+    }
+  });
 
   const formatNumber = (num: number) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -110,30 +132,6 @@ const DriverWalletPlan = () => {
     }
   };
 
-  // Deep link handling for payment return
-  usePaymentDeepLink({
-    onPaymentVerified: () => {
-      // Refresh driver data after successful payment
-      fetchDriverData();
-      fetchTransactions();
-      // Reset form
-      setForm({ selectedAmount: "" });
-    },
-    onPaymentCancelled: () => {
-      // Reset form on payment cancellation
-      setForm({ selectedAmount: "" });
-    },
-    onPaymentError: () => {
-      // Reset form on payment error
-      setForm({ selectedAmount: "" });
-      Toast.show({
-        type: "error",
-        text1: "خطا",
-        text2: "خطا در فرآیند پرداخت. لطفاً دوباره تلاش کنید"
-      });
-    }
-  });
-
   useEffect(() => {
     fetchDriverData();
   }, []);
@@ -144,55 +142,17 @@ const DriverWalletPlan = () => {
     setRefreshing(false);
   };
 
+  // Updated to use the new payment service
   const handleChargeWallet = async () => {
     if (!form.selectedAmount) return;
 
-    try {
-      setIsProcessing(true);
-      const response = await apiClient.post("api/payment/create", {
-        amount: parseInt(form.selectedAmount),
-        description: `شارژ کیف پول - ${formatNumber(
-          parseInt(form.selectedAmount)
-        )} تومان`,
-        userType: "driver",
-        email: "" // Add email if you collect it
-      });
+    const amount = parseInt(form.selectedAmount);
+    const description = `شارژ کیف پول راننده - ${formatNumber(amount)} تومان`;
 
-      if (response.data.success) {
-        // Open Zarinpal payment URL in browser
-        const paymentUrl = response.data.paymentUrl;
-        console.log("Opening payment URL:", paymentUrl);
+    setPaymentModalVisible(false);
 
-        const supported = await Linking.canOpenURL(paymentUrl);
-        if (supported) {
-          await Linking.openURL(paymentUrl);
-
-          // Show toast that payment is in progress
-          Toast.show({
-            type: "info",
-            text1: "در حال پرداخت",
-            text2: "شما به درگاه بانکی منتقل می‌شوید",
-            autoHide: false
-          });
-        } else {
-          Toast.show({
-            type: "error",
-            text1: "خطا",
-            text2: "امکان باز کردن درگاه پرداخت وجود ندارد"
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Error creating payment:", error);
-      Toast.show({
-        type: "error",
-        text1: "خطا",
-        text2: "خطا در ایجاد پرداخت"
-      });
-    } finally {
-      setIsProcessing(false);
-      setPaymentModalVisible(false);
-    }
+    // Use the payment service to handle payment
+    await initiatePayment(amount, description);
   };
 
   if (loading) {

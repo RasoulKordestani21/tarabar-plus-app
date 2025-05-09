@@ -9,18 +9,16 @@ import {
   Image,
   TouchableWithoutFeedback,
   ActivityIndicator,
-  RefreshControl,
-  Linking
+  RefreshControl
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import tw from "@/libs/twrnc";
 import CustomButton from "@/components/CustomButton";
-import axios from "axios";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import Toast from "react-native-toast-message";
 import { getCargoOwner } from "@/api/services/cargoOwnerServices";
 import apiClient from "@/api/apiClient";
-import { usePaymentDeepLink } from "@/hooks/usePaymentDeepLinking";
+import { usePaymentService } from "@/hooks/usePaymentService";
 import { QUERY_KEYS } from "@/constants/QueryKeys";
 import { useQuery } from "@tanstack/react-query";
 
@@ -89,7 +87,6 @@ const CargoOwnerWalletPlan = () => {
   const [cargoOwnerData, setCargoOwnerData] = useState<CargoOwnerData | null>(
     null
   );
-  const [isProcessing, setIsProcessing] = useState(false);
 
   // Modal for showing the result of plan selection
   const [resultModalVisible, setResultModalVisible] = useState(false);
@@ -103,6 +100,35 @@ const CargoOwnerWalletPlan = () => {
   const { data, isLoading, refetch } = useQuery({
     queryKey: [QUERY_KEYS.CARGO_OWNER_INFO, phoneNumber],
     queryFn: () => getCargoOwner({ phoneNumber })
+  });
+
+  // Use the new payment service
+  const { initiatePayment, isProcessing } = usePaymentService({
+    userType: "cargoOwner",
+    phoneNumber,
+    onPaymentVerified: () => {
+      // Refresh cargo owner data after successful payment
+      refetch();
+      fetchTransactions();
+      // Reset selections
+      setForm({ selectedAmount: "" });
+      setSelectedPlan(null);
+    },
+    onPaymentCancelled: () => {
+      // Reset selections on payment cancellation
+      setForm({ selectedAmount: "" });
+      setSelectedPlan(null);
+    },
+    onPaymentError: () => {
+      // Reset selections on payment error
+      setForm({ selectedAmount: "" });
+      setSelectedPlan(null);
+      Toast.show({
+        type: "error",
+        text1: "خطا",
+        text2: "خطا در فرآیند پرداخت. لطفاً دوباره تلاش کنید"
+      });
+    }
   });
 
   const formatNumber = (num: number) => {
@@ -149,94 +175,26 @@ const CargoOwnerWalletPlan = () => {
     }
   };
 
-  // Deep link handling for payment return
-  usePaymentDeepLink({
-    onPaymentVerified: () => {
-      // Refresh cargo owner data after successful payment
-      refetch();
-      fetchTransactions();
-      // Reset selections
-      setForm({ selectedAmount: "" });
-      setSelectedPlan(null);
-    },
-    onPaymentCancelled: () => {
-      // Reset selections on payment cancellation
-      setForm({ selectedAmount: "" });
-      setSelectedPlan(null);
-    },
-    onPaymentError: () => {
-      // Reset selections on payment error
-      setForm({ selectedAmount: "" });
-      setSelectedPlan(null);
-      Toast.show({
-        type: "error",
-        text1: "خطا",
-        text2: "خطا در فرآیند پرداخت. لطفاً دوباره تلاش کنید"
-      });
-    }
-  });
-
-  // useEffect(() => {
-  //   refetch();
-  // }, []);
-
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
   };
 
+  // Updated to use the new payment service
   const handleChargeWallet = async () => {
     if (!form.selectedAmount) return;
 
-    try {
-      setIsProcessing(true);
-      const response = await apiClient.post("api/payment/create", {
-        amount: parseInt(form.selectedAmount),
-        description: `شارژ کیف پول - ${formatNumber(
-          parseInt(form.selectedAmount)
-        )} تومان`,
-        userType: "cargoOwner",
-        email: "" // Add email if you collect it
-      });
+    const amount = parseInt(form.selectedAmount);
+    const description = `شارژ کیف پول - ${formatNumber(amount)} تومان`;
 
-      if (response.data.success) {
-        // Open Zarinpal payment URL in browser
-        const paymentUrl = response.data.paymentUrl;
-        console.log("Opening payment URL:", paymentUrl);
+    setChargeModalVisible(false);
 
-        const supported = await Linking.canOpenURL(paymentUrl);
-        if (supported) {
-          await Linking.openURL(paymentUrl);
-
-          // Show toast that payment is in progress
-          Toast.show({
-            type: "info",
-            text1: "در حال پرداخت",
-            text2: "شما به درگاه بانکی منتقل می‌شوید",
-            autoHide: false
-          });
-        } else {
-          Toast.show({
-            type: "error",
-            text1: "خطا",
-            text2: "امکان باز کردن درگاه پرداخت وجود ندارد"
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Error creating payment:", error);
-      Toast.show({
-        type: "error",
-        text1: "خطا",
-        text2: "خطا در ایجاد پرداخت"
-      });
-    } finally {
-      setIsProcessing(false);
-      setChargeModalVisible(false);
-    }
+    // Use the payment service to handle payment
+    await initiatePayment(amount, description);
   };
 
+  // Plan selection logic remains mostly the same
   const handleSelectPlan = async () => {
     if (!selectedPlan) return;
 
@@ -248,7 +206,7 @@ const CargoOwnerWalletPlan = () => {
     // Check if user has enough balance to select the plan
     if (cargoOwnerData && cargoOwnerData.balance >= plan.price) {
       try {
-        setIsProcessing(true);
+        const processing = true;
         // Use direct API endpoint for purchasing plan with wallet balance
         const response = await apiClient.post(
           "api/cargo-owner/subscription-plan",
@@ -288,11 +246,10 @@ const CargoOwnerWalletPlan = () => {
           neededAmount: 0
         });
       } finally {
-        setIsProcessing(false);
         setResultModalVisible(true);
       }
     } else {
-      // Not enough balance - show failure result
+      // Not enough balance - show failure result and prompt to charge
       const neededAmount = plan.price - (cargoOwnerData?.balance || 0);
 
       setSelectionResult({

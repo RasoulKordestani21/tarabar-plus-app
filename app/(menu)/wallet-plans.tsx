@@ -23,7 +23,7 @@ import { useGlobalContext } from "@/context/GlobalProvider";
 import Toast from "react-native-toast-message";
 import { getDriverUser } from "@/api/services/driverServices";
 import apiClient from "@/api/apiClient";
-import { usePaymentDeepLink } from "@/hooks/usePaymentDeepLinking";
+import { usePaymentDeepLink } from "@/hooks/usePaymentService";
 
 interface Transaction {
   _id: string;

@@ -80,7 +80,7 @@ const TabBarLabel = React.memo(
 );
 
 export default function TabLayout() {
-  const { role, setToken, setPhoneNumber, setRole ,setIsLogged, loading } =
+  const { role, setToken, setPhoneNumber, setRole, setIsLogged, loading } =
     useGlobalContext();
   console.log(tabBoxes(role).length);
   return (
@@ -101,7 +101,7 @@ export default function TabLayout() {
             <TouchableOpacity
               style={tw`absolute left-2`}
               onPress={() => {
-                setToken();
+                setToken(null);
                 setPhoneNumber();
                 setRole();
                 setIsLogged(false);

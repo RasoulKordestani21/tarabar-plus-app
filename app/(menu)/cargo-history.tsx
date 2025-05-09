@@ -38,7 +38,7 @@ const CargoHistory = () => {
       setLoading(true);
       const data = await getAllCargoes(phoneNumber);
       setCargoes(data || []);
-      console.log(data);
+      // console.log(data);
       setError("");
     } catch (err) {
       setError("Failed to fetch cargo history.");
