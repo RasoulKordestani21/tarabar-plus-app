@@ -51,16 +51,7 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [
-      "expo-router",
-      "expo-secure-store",
-      "expo-build-properties",
-      {
-        "android": {
-          "compileSdkVersion": 36
-        }
-      }
-    ],
+    "plugins": ["expo-router", "expo-secure-store"],
     "splash": {
       "image": "./assets/images/vector.png",
       "resizeMode": "contain",

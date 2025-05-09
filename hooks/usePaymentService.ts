@@ -1,19 +1,11 @@
-// hooks/usePaymentService.ts with better deep link handling
+// hooks/usePaymentService.ts with Expo WebBrowser instead of InAppBrowser
 import { useState, useEffect } from "react";
 import { Linking, Platform, AppState } from "react-native";
 import Toast from "react-native-toast-message";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/constants/QueryKeys";
 import apiClient from "@/api/apiClient";
-
-// Try to import InAppBrowser
-let InAppBrowser;
-try {
-  InAppBrowser = require("react-native-inappbrowser-reborn").default;
-} catch (e) {
-  console.warn("InAppBrowser module not available:", e);
-  InAppBrowser = null;
-}
+import * as WebBrowser from "expo-web-browser";
 
 interface UsePaymentServiceProps {
   onPaymentVerified?: () => void;
@@ -146,18 +138,6 @@ export const usePaymentService = ({
     return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
   };
 
-  // Check if InAppBrowser is available
-  const isInAppBrowserAvailable = async () => {
-    if (!InAppBrowser) return false;
-
-    try {
-      return await InAppBrowser.isAvailable();
-    } catch (e) {
-      console.warn("Error checking InAppBrowser availability:", e);
-      return false;
-    }
-  };
-
   // Initialize payment process
   const initiatePayment = async (
     amount: number,
@@ -204,29 +184,19 @@ export const usePaymentService = ({
       const paymentUrl = response.data.paymentUrl;
       console.log("Payment URL received:", paymentUrl);
 
-      // Check if in-app browser is available
-      const browserAvailable = await isInAppBrowserAvailable();
-      console.log("InAppBrowser available:", browserAvailable);
+      try {
+        // Use Expo's WebBrowser instead of InAppBrowser
+        console.log("Opening payment URL in Expo WebBrowser...");
 
-      if (browserAvailable) {
-        console.log("Opening payment URL in InAppBrowser...");
-        // Open payment URL in in-app browser
-        const result = await InAppBrowser.open(paymentUrl, {
-          // Security and UX focused configuration
-          showTitle: true,
-          enableUrlBarHiding: false,
-          enableDefaultShare: false,
-          forceCloseOnRedirection: false,
-          // Customize to match your app branding
-          toolbarColor: "#059669",
-          secondaryToolbarColor: "black",
-          navigationBarColor: "black",
-          dismissButtonStyle: "cancel"
-        });
+        // Use the redirectUrl that matches your app's deep link scheme
+        // Make sure this is registered in app.json as a scheme
+        const result = await WebBrowser.openAuthSessionAsync(
+          paymentUrl,
+          "tarabarplus://payment-verify"
+        );
 
-        console.log("InAppBrowser result:", result);
+        console.log("WebBrowser result:", result);
 
-        // Handle result based on browser outcome
         if (result.type === "success") {
           console.log("Browser returned success, verifying payment...");
           // Verify the payment status on server
@@ -247,9 +217,12 @@ export const usePaymentService = ({
         }
 
         return true;
-      } else {
-        console.log("Falling back to external browser...");
-        // Fallback to external browser if in-app browser not available
+      } catch (browserError) {
+        console.log(
+          "Error opening WebBrowser, falling back to external browser:",
+          browserError
+        );
+        // Fallback to external browser
         await Linking.openURL(paymentUrl);
 
         // Show instructions to user
