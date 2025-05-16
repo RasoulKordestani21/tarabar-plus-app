@@ -168,7 +168,6 @@ const CreateCargo = () => {
                       textStyle="text-right"
                       containerStyle="mt-3 w-full"
                       iconName="caret-down"
-                      disableSearch={true}
                       onSelect={() => {
                         setFieldError("cargoType", undefined);
                         // Clear custom cargo type when changing selection
@@ -178,27 +177,6 @@ const CreateCargo = () => {
                       }}
                     />
                   </View>
-
-                  {/* Custom cargo type input - only shown when "سایر" is selected */}
-                  {values.cargoType === "20" && (
-                    <View style={tw`w-[98%]`}>
-                      <FormField
-                        title="نوع بار (سایر)"
-                        handleChangeText={setCustomCargoType}
-                        value={customCargoType}
-                        formikError={
-                          !customCargoType
-                            ? "لطفا نوع بار را مشخص کنید"
-                            : undefined
-                        }
-                        isUsingFormik={true}
-                        otherStyles="mt-3 w-full"
-                        keyboardType="default"
-                        color="background"
-                        placeholder="نوع بار را وارد کنید"
-                      />
-                    </View>
-                  )}
 
                   {/* {console.log(values)} */}
                   <RadioInput

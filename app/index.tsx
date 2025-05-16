@@ -74,15 +74,15 @@ export default function OnBoardingScreen({}) {
           style={[tw`items-center justify-center mb-5`, { opacity: fadeAnim }]}
         >
           <Image
-            source={require("@/assets/images/vector.png")}
-            style={tw``}
+            source={require("@/assets/images/splash.png")}
+            style={tw`w-72 h-72`}
           />
         </Animated.View>
       ) : (
         <View style={tw`w-full h-full items-center justify-between gap-12`}>
           <Image
-            source={require("@/assets/images/vector.png")}
-            // style={tw`w-36 h-36`}
+            source={require("@/assets/images/splash.png")}
+            style={tw`w-72 h-72`}
           />
           <CustomCard
             header={
