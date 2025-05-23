@@ -19,6 +19,9 @@ import { getDriverUser } from "@/api/services/driverServices";
 import apiClient from "@/api/apiClient";
 import { usePaymentService } from "@/hooks/usePaymentService";
 import { QUERY_KEYS } from "@/constants/QueryKeys";
+import { useQuery } from "@tanstack/react-query";
+import { getWalletConfig } from "@/api/services/otpServices";
+import Loader from "@/components/Loader";
 
 interface Transaction {
   _id: string;
@@ -96,7 +99,8 @@ const DriverWalletPlan = () => {
     try {
       setLoading(true);
       const response = await getDriverUser({ phoneNumber });
-      setDriverData(response?.data?.user);
+      console.log(response?.user);
+      setDriverData(response?.user);
     } catch (error) {
       console.error("Error fetching driver data:", error);
       Toast.show({
@@ -109,6 +113,14 @@ const DriverWalletPlan = () => {
     }
   };
 
+  const {
+    data: walletPlans,
+    isLoading: isLoadingWallePlans,
+    refetch: refetchWalletPlans
+  } = useQuery({
+    queryKey: [phoneNumber],
+    queryFn: () => getWalletConfig()
+  });
   const fetchTransactions = async () => {
     try {
       const response = await apiClient.get(`api/driver/transactions`, {
@@ -155,12 +167,8 @@ const DriverWalletPlan = () => {
     await initiatePayment(amount, description);
   };
 
-  if (loading) {
-    return (
-      <View style={tw`flex-1 justify-center items-center`}>
-        <ActivityIndicator size="large" color="#059669" />
-      </View>
-    );
+  if (loading || isLoadingWallePlans) {
+    return <Loader isLoading={loading || isLoadingWallePlans} />;
   }
 
   return (
@@ -207,7 +215,7 @@ const DriverWalletPlan = () => {
                 <Text style={tw`text-sm text-right font-vazir mb-3`}>
                   مبلغ شارژ
                 </Text>
-                {chargeAmounts.map(charge => (
+                {(walletPlans.chargeAmounts ?? chargeAmounts).map(charge => (
                   <Pressable
                     key={charge.value}
                     style={[

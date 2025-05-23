@@ -38,7 +38,7 @@ interface SearchableInputProps {
   title?: string;
   defaultValue?: string;
   listContainerStyle?: string;
-  iconName?: "search" | "dot-circle-o" | "location-arrow" | "caret-down";
+  iconName?: "search" | "dot-circle-o" | "location-arrow" | "caret-down" | "map-marker";
   disableSearch?: boolean;
   name?: string;
   formikError?:
@@ -48,6 +48,7 @@ interface SearchableInputProps {
     | FormikErrors<any>[]
     | undefined;
   isLoading?: boolean;
+  disabled?: boolean;
 }
 
 const DropdownInput: React.FC<SearchableInputProps> = ({
@@ -62,7 +63,8 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
   disableSearch = false,
   name,
   formikError,
-  isLoading = false
+  isLoading = false,
+  disabled = false
 }) => {
   const [searchText, setSearchText] = useState(defaultValue);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -81,6 +83,7 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
   }, [formikError]);
 
   const handleOpenModal = useCallback(() => {
+    if (disabled) return;
     setIsModalVisible(true);
     setIsTouched(true);
     if (name && !searchText) {
@@ -197,12 +200,14 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
       <Pressable
         onPress={handleOpenModal}
         style={[
-          tw`rounded px-3 flex-row justify-between items-center border-2`,
+          tw`rounded px-3 flex-row justify-between items-center border-2 ${
+            disabled ? "bg-card" : ""
+          }`,
           focusStyles
         ]}
       >
         <View style={tw`flex-row items-center flex-1`}>
-          {searchText ? (
+          {searchText && !disabled ? (
             <Pressable onPress={handleClear} style={tw`mr-1`}>
               <FontAwesome name={"close"} size={24} color="#888" />
             </Pressable>
@@ -227,7 +232,7 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
             name={iconName}
             size={20}
             color="#888"
-            style={disableSearch ? tw`ml-1` : ""}
+            style={disableSearch ? tw`ml-1` : tw`ml-1`}
           />
         )}
       </Pressable>
@@ -276,7 +281,7 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
                   placeholder={placeholder}
                   style={tw`flex-1 ${
                     textStyle ?? ""
-                  } text-background font-vazir text-right text-sm`}
+                  } text-background font-vazir text-right text-sm  py-2`}
                   value={searchText}
                   autoFocus
                   onChangeText={text => {
@@ -300,7 +305,7 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
                 name={iconName}
                 size={20}
                 color="#888"
-                style={disableSearch ? tw`ml-1` : ""}
+                style={disableSearch ? tw`ml-1` : tw`ml-1`}
               />
             </View>
             <FlatList
@@ -310,8 +315,8 @@ const DropdownInput: React.FC<SearchableInputProps> = ({
               style={tw`max-h-[300px]`}
               keyboardShouldPersistTaps="handled"
               ListEmptyComponent={
-                <Text style={tw`text-center text-background font-vazir`}>
-                  No options found
+                <Text style={tw`text-center text-primary font-vazir`}>
+                  موردی یافت نشد .
                 </Text>
               }
             />

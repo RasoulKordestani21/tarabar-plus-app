@@ -5,10 +5,12 @@ import {
   Platform,
   KeyboardAvoidingView,
   Text,
-  Alert
+  Alert,
+  TouchableOpacity
 } from "react-native";
 import tw from "@/libs/twrnc";
 import { getAllCities, addCargo } from "@/api/services/cargoServices";
+import { FontAwesome, Ionicons } from "@expo/vector-icons"; // For checkbox icon
 
 import DropdownInput from "@/components/Input/DropdownInput";
 import { cargoTypes, truckTypes } from "@/constants/BoxesList";
@@ -30,6 +32,7 @@ const CreateCargo = () => {
   const { phoneNumber } = useGlobalContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customCargoType, setCustomCargoType] = useState("");
+  const [showCustomCargoInput, setShowCustomCargoInput] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["listOfCities"],
@@ -43,7 +46,7 @@ const CreateCargo = () => {
         originId: Number(values.origin),
         destinationId: Number(values.destination),
         truckTypeId: Number(values.truckType),
-        cargoTypeId: Number(values.cargoType),
+        cargoTypeId: showCustomCargoInput ? 0 : Number(values.cargoType), // Set to 0 if using custom
         carriageFee: values.fee,
         description: values.description,
         ownerPhone: phoneNumber,
@@ -54,9 +57,9 @@ const CreateCargo = () => {
         cargoData = { ...cargoData, cargoWeight: values.cargoWeight };
       }
 
-      // If a custom cargo type is provided, add it to the description
-      if (values.cargoType === "20" && customCargoType) {
-        cargoData.customCargoType = customCargoType;
+      // If custom cargo type is provided, add it
+      if (showCustomCargoInput && customCargoType.trim()) {
+        cargoData.customCargoType = customCargoType.trim();
       }
 
       const result = await addCargo(cargoData);
@@ -78,6 +81,49 @@ const CreateCargo = () => {
     return number.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
+  const handleCustomCargoToggle = (setFieldValue: any, setFieldError: any) => {
+    const newShowCustom = !showCustomCargoInput;
+    setShowCustomCargoInput(newShowCustom);
+
+    if (newShowCustom) {
+      // When switching to custom, set cargoType to "0" to satisfy validation
+      setFieldValue("cargoType", "0");
+      setFieldError("cargoType", undefined);
+    } else {
+      // When switching back to dropdown, clear both custom input and cargoType
+      setCustomCargoType("");
+      setFieldValue("cargoType", "");
+    }
+  };
+
+  // Create dynamic validation schema based on showCustomCargoInput
+  const getDynamicValidationSchema = () => {
+    if (showCustomCargoInput) {
+      // Return schema without cargoType requirement when using custom
+      return createCargoSchema.omit(["cargoType"]);
+    }
+    return createCargoSchema;
+  };
+
+  // Custom validation function
+  const validateForm = (values: any) => {
+    const errors: any = {};
+
+    // If using custom cargo input, validate it
+    if (showCustomCargoInput) {
+      if (!customCargoType.trim()) {
+        errors.customCargoType = "نوع بار سفارشی الزامی است";
+      }
+    } else {
+      // If using dropdown, validate cargoType
+      if (!values.cargoType) {
+        errors.cargoType = "نوع بار الزامی است";
+      }
+    }
+
+    return errors;
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -96,7 +142,8 @@ const CreateCargo = () => {
               ...createCargoInitialValues({}),
               id: "new"
             }}
-            validationSchema={createCargoSchema}
+            validationSchema={getDynamicValidationSchema()}
+            validate={validateForm}
             onSubmit={handleSubmit}
           >
             {({
@@ -120,7 +167,7 @@ const CreateCargo = () => {
                       formikError={errors.destination}
                       textStyle="text-right"
                       containerStyle="mt-3 w-full"
-                      iconName="dot-circle-o"
+                      iconName="map-marker"
                       onSelect={() => setFieldError("destination", undefined)}
                     />
                   </View>
@@ -140,6 +187,20 @@ const CreateCargo = () => {
                     />
                   </View>
 
+                  {/* Caution Message */}
+                  <View style={tw`w-full mt-5 mb-3`}>
+                    <View
+                      style={tw`bg-yellow-50 border border-yellow-200 rounded-lg p-3`}
+                    >
+                      <Text
+                        style={tw`text-yellow-800 text-sm text-right font-vazir`}
+                      >
+                        اگر نوع بار مورد نظر خود را در لیست پیدا نکردید، روی
+                        چک‌باکس کلیک کنید و آن را بنویسید
+                      </Text>
+                    </View>
+                  </View>
+
                   <View style={tw`w-[48%]`}>
                     <DropdownInput
                       title="نوع کشنده"
@@ -156,29 +217,70 @@ const CreateCargo = () => {
                       onSelect={() => setFieldError("truckType", undefined)}
                     />
                   </View>
+
                   <View style={tw`w-[48%]`}>
-                    <DropdownInput
-                      title="نوع بار"
-                      options={cargoTypes.map(type => ({
-                        ...type,
-                        value: type.value.toString()
-                      }))}
-                      name="cargoType"
-                      formikError={errors.cargoType}
-                      textStyle="text-right"
-                      containerStyle="mt-3 w-full"
-                      iconName="caret-down"
-                      onSelect={() => {
-                        setFieldError("cargoType", undefined);
-                        // Clear custom cargo type when changing selection
-                        if (values.cargoType !== "20") {
-                          setCustomCargoType("");
-                        }
-                      }}
-                    />
+                    {!showCustomCargoInput ? (
+                      <DropdownInput
+                        title="نوع بار"
+                        options={cargoTypes.map(type => ({
+                          ...type,
+                          value: type.value.toString()
+                        }))}
+                        name="cargoType"
+                        formikError={errors.cargoType}
+                        textStyle="text-right"
+                        containerStyle="mt-3 w-full"
+                        iconName="caret-down"
+                        onSelect={() => setFieldError("cargoType", undefined)}
+                      />
+                    ) : (
+                      <View style={tw`mt-3 w-full`}>
+                        <FormField
+                          title="نوع بار سفارشی"
+                          handleChangeText={text => {
+                            setCustomCargoType(text);
+                            // Clear custom cargo error when user types
+                            if (errors.customCargoType && text.trim()) {
+                              setFieldError("customCargoType", undefined);
+                            }
+                          }}
+                          value={customCargoType}
+                          formikError={errors.customCargoType}
+                          isUsingFormik={true}
+                          otherStyles="w-full"
+                          keyboardType="default"
+                          color="background"
+                          placeholder="نوع بار خود را وارد کنید"
+                        />
+                      </View>
+                    )}
+
+                    {/* Custom Cargo Checkbox */}
+                    <TouchableOpacity
+                      style={tw`flex-row items-center justify-end ${
+                        !showCustomCargoInput ? "mt-2" : ""
+                      }`}
+                      onPress={() =>
+                        handleCustomCargoToggle(setFieldValue, setFieldError)
+                      }
+                    >
+                      <Text style={tw`text-sm text-gray-600 font-vazir mr-2`}>
+                        نوع بار سفارشی
+                      </Text>
+                      <View
+                        style={tw`w-5 h-5 border-2 border-gray-400 rounded items-center justify-center ${
+                          showCustomCargoInput
+                            ? "bg-background border-blue-500"
+                            : "bg-white"
+                        }`}
+                      >
+                        {showCustomCargoInput && (
+                          <FontAwesome name="check" size={14} color="white" />
+                        )}
+                      </View>
+                    </TouchableOpacity>
                   </View>
 
-                  {/* {console.log(values)} */}
                   <RadioInput
                     value={values.transportType}
                     handleChangeOption={handleChange("transportType")}

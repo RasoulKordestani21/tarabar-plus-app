@@ -98,7 +98,7 @@ const AccountScreen = () => {
                 route: "/account-setting"
               },
               {
-                title: "مدریرت کیف پول و اشتراک",
+                title: "مدیریت کیف پول و اشتراک",
                 description: "موجودی کیف پول خود را مدیریت کنید.",
                 icon: "account-balance-wallet" as MaterialIconNames,
                 route: "/wallet-plans"

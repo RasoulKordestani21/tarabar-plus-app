@@ -1,4 +1,5 @@
-import React, { useRef, useEffect } from "react";
+// Updated TabLayout.tsx
+import React, { useRef, useEffect, useState } from "react";
 import {
   Animated,
   Image,
@@ -13,7 +14,7 @@ import tw from "@/libs/twrnc";
 import { tabBoxes } from "@/constants/BoxesList";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { FontAwesome } from "@expo/vector-icons";
-import CustomButton from "@/components/CustomButton";
+import LogoutModal from "@/components/LogoutModel"; // Import the new component
 
 type TabBarLabelProps = {
   focused: boolean;
@@ -21,6 +22,7 @@ type TabBarLabelProps = {
   iconName: string;
   scaleAnim: Animated.Value;
 };
+
 // separate component for label
 const TabBarLabel = React.memo(
   ({ focused, title, iconName, scaleAnim }: TabBarLabelProps) => {
@@ -40,7 +42,6 @@ const TabBarLabel = React.memo(
               inputRange: [0, 1],
               outputRange: ["transparent", "#ffffff"]
             }),
-            // width:"105%",
             borderRadius: 8,
             transform: [
               {
@@ -56,7 +57,7 @@ const TabBarLabel = React.memo(
         {focused && (
           <Animated.Text
             style={[
-              tw`font-vazir-bold  text-[11px]`,
+              tw`font-vazir-bold text-[11px]`,
               {
                 color: scaleAnim.interpolate({
                   inputRange: [0, 1],
@@ -83,37 +84,51 @@ export default function TabLayout() {
   const { role, setToken, setPhoneNumber, setRole, setIsLogged, loading } =
     useGlobalContext();
   console.log(tabBoxes(role).length);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+
+  const handleLogout = () => {
+    setToken(null);
+    setPhoneNumber("");
+    setRole("");
+    setIsLogged(false);
+    setLogoutModalVisible(false);
+    router.replace("/");
+  };
+
   return (
     <Tabs
       screenOptions={({ route }: { route: { name: string } }) => ({
-        tabBarStyle: tw`bg-background rounded-5 mx-2 my-3  h-[60px] ${
+        tabBarStyle: tw`bg-background rounded-5 mx-2 my-3 h-[60px] ${
           loading ? "hidden" : "flex"
         }`,
-        tabBarItemStyle: tw` flex-row min-w-1/3  items-center justify-center`,
+        tabBarItemStyle: tw`flex-row min-w-1/3 items-center justify-center`,
         tabBarActiveTintColor: "rgba(0, 0, 0, 0)",
         tabBarInactiveTintColor: "rgba(0, 0, 0, 0)",
 
         headerShown: !loading,
-        headerStyle: tw`bg-background `,
+        headerStyle: tw`bg-background`,
 
         headerTitle: () => (
-          <View style={tw`flex-row items-center justify-center  min-w-full`}>
+          <View style={tw`flex-row items-center justify-center min-w-full`}>
             <TouchableOpacity
-              style={tw`absolute left-2`}
-              onPress={() => {
-                setToken(null);
-                setPhoneNumber();
-                setRole();
-                setIsLogged(false);
-                router.replace("/");
-              }}
+              style={tw`absolute left-2 flex-row-reverse items-center gap-1`}
+              onPress={() => setLogoutModalVisible(true)}
             >
+              <Text style={tw`text-white font-vazir text-[10px]`}>خروج</Text>
               <FontAwesome name="sign-out" size={24} color="#fff" />
             </TouchableOpacity>
+
+            {/* Use the LogoutModal component */}
+            <LogoutModal
+              visible={logoutModalVisible}
+              onConfirm={handleLogout}
+              onClose={() => setLogoutModalVisible(false)}
+            />
+
             <Image
               source={require("@/assets/images/icon.png")}
               resizeMode="contain"
-              style={tw` py-2 w-12`}
+              style={tw`py-2 w-12`}
             />
           </View>
         ),

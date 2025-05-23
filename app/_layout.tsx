@@ -14,11 +14,29 @@ import { ToastProvider } from "@/context/ToastContext"; // Import the ToastProvi
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { Linking } from "react-native";
 import AuthErrorProvider from "@/context/AuthErrorProvider";
+
+import { I18nManager } from "react-native";
+import { getLocales } from 'expo-localization';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   // const { role, loading } = useGlobalContext();
+
+  useEffect(() => {
+    // Force RTL (to test if your app resists it)
+    I18nManager.allowRTL(true);
+    I18nManager.forceRTL(true);
+    console.log("Simulated RTL:", I18nManager.isRTL); // Should log `true` initially
+
+    // Your LTR enforcement (should override the above)
+    I18nManager.allowRTL(false);
+    I18nManager.forceRTL(false);
+    console.log("Forced LTR:", !I18nManager.isRTL); // Should log `true`
+
+    console.log(I18nManager)
+  }, []);
+
   const [fontsLoaded] = useFonts({
     "Vazir-Bold": require("@/assets/fonts/Vazir-Bold-FD-WOL.ttf"),
     "Vazir-Regular": require("@/assets/fonts/Vazir-FD-WOL.ttf")

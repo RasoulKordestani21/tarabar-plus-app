@@ -78,7 +78,8 @@ export default function DriverHomeScreen() {
   );
 
   useEffect(() => {
-    if (userData && !userData?.user?.isVerified) {
+    console.log(!userData?.user?.userName, "----->");
+    if (userData && !userData?.user?.isVerified && !userData?.user?.userName) {
       setVerificationModalVisible(true);
     }
     if (userId !== userData?.user?._id) {

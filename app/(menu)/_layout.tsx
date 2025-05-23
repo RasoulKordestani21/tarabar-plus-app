@@ -68,7 +68,7 @@ const MenuLayout = () => {
         <Stack.Screen
           name="driver-wallet-plans"
           options={{
-            title: "مدریرت کیف پول و اشتراک", // Title of the screen
+            title: "مدیریت کیف پول و اشتراک", // Title of the screen
             headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
             headerTintColor: "white", // Set header text color to white
             headerTitle: () => <Header title="مدیریت کیف پول و اشتراک" /> // Use the custom Header component
@@ -77,7 +77,7 @@ const MenuLayout = () => {
         <Stack.Screen
           name="cargo-owner-wallet-plans"
           options={{
-            title: "مدریرت کیف پول و اشتراک", // Title of the screen
+            title: "مدیریت کیف پول و اشتراک", // Title of the screen
             headerStyle: tw`bg-background p-8`, // Apply Tailwind classes to header
             headerTintColor: "white", // Set header text color to white
             headerTitle: () => <Header title="مدیریت کیف پول و اشتراک" /> // Use the custom Header component

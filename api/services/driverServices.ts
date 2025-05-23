@@ -9,6 +9,7 @@ type UserDataResponse = {
 
 type GetUserParams = {
   phoneNumber: string;
+  cargoOnly?: boolean;
 };
 
 /**
@@ -17,11 +18,12 @@ type GetUserParams = {
  * @returns User data including verification status
  */
 export const getDriverUser = async ({
-  phoneNumber
+  phoneNumber,
+  cargoOnly
 }: GetUserParams): Promise<UserDataResponse> => {
   try {
     const response = await apiClient.get("api/driver/user", {
-      params: { phoneNumber }
+      params: { phoneNumber, cargoOnly }
     });
     return response.data;
   } catch (error) {

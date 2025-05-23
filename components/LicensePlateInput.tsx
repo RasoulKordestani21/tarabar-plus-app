@@ -16,12 +16,14 @@ type LicensePlateInputProps = {
   value: string;
   error?: string;
   handleChangeText: (text: string) => void;
+  disabled?: boolean;
 };
 
 const LicensePlateInput = ({
   value,
   error,
-  handleChangeText
+  handleChangeText,
+  disabled
 }: LicensePlateInputProps) => {
   const [plateParts, setPlateParts] = useState({
     part1: "",
@@ -108,7 +110,9 @@ const LicensePlateInput = ({
           error ? "border-2 border-red-500 " : ""
         }`}
       >
-        <View style={tw`flex-col items-center bg-background   px-2 py-1`}>
+        <View
+          style={tw`flex-col items-center bg-background  px-2 py-1 rounded-tl-2 rounded-bl-2 `}
+        >
           <View style={tw` justify-center items-center`}>
             <Image
               source={require("@/assets/images/iran-flag-icon.png")}
@@ -120,9 +124,13 @@ const LicensePlateInput = ({
             <Text style={tw`text-[10px] text-white`}>IRAN</Text>
           </View>
         </View>
-        <View style={tw`flex-row items-center `}>
+        <View style={tw`flex-row items-center  `}>
           <TextInput
-            style={tw`w-14 h-14 text-center text-sm border-2 border-secondary   bg-secondary font-vazir`}
+            style={tw`w-14 h-14 text-center text-sm border-2 ${
+              disabled
+                ? "border-card bg-card"
+                : "border-secondary   bg-secondary"
+            }  font-vazir`}
             value={plateParts.part1}
             onChangeText={text => handleInputChange("part1", text)}
             onSubmitEditing={() => {
@@ -135,16 +143,25 @@ const LicensePlateInput = ({
               Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
             }
             ref={part1Ref}
+            editable={!disabled}
           />
 
           <TextInput
-            style={tw`w-14 h-14 text-center text-sm border-2 border-secondary   bg-secondary font-vazir `}
+            style={tw`w-14 h-14 text-center text-sm border-2 ${
+              disabled
+                ? "border-card bg-card"
+                : "border-secondary   bg-secondary"
+            } font-vazir `}
             value={"ع"}
             editable={false}
           />
 
           <TextInput
-            style={tw`w-18 h-14 text-center text-sm border-2 border-secondary   bg-secondary font-vazir`}
+            style={tw`w-18 h-14 text-center text-sm border-2 ${
+              disabled
+                ? "border-card bg-card"
+                : "border-secondary   bg-secondary"
+            } font-vazir`}
             value={plateParts.part2}
             onChangeText={text => handleInputChange("part2", text)}
             placeholder="_ _ _"
@@ -153,11 +170,16 @@ const LicensePlateInput = ({
               Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
             }
             ref={part2Ref}
+            editable={!disabled}
           />
 
           <View style={tw`relative`}>
             <TextInput
-              style={tw`w-16 h-14 text-center text-sm border-2 border-secondary   bg-secondary font-vazir`}
+              style={tw`w-16 h-14 text-center text-sm border-2 rounded-tr-2 rounded-br-2 ${
+                disabled
+                  ? "border-card bg-card"
+                  : "border-secondary   bg-secondary"
+              } font-vazir`}
               value={plateParts.part3}
               onChangeText={text => handleInputChange("part3", text)}
               placeholder="_ _"
@@ -166,6 +188,7 @@ const LicensePlateInput = ({
                 Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
               }
               ref={part3Ref}
+              editable={!disabled}
             />
             <Text
               style={tw`absolute top-0 left-5 text-xs text-background font-vazir`}

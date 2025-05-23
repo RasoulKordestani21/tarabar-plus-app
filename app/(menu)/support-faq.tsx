@@ -1,11 +1,19 @@
 import React, { useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, TouchableOpacity, Linking } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import tw from "@/libs/twrnc"; // Tailwind-style library
+import { useQuery } from "@tanstack/react-query";
+import { getSupportData } from "@/api/services/otpServices";
+import Loader from "@/components/Loader";
 
 const SupportAndFaq = () => {
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
+  const { data: supportData, isLoading } = useQuery({
+    queryKey: ["support-data"],
+    queryFn: () => getSupportData()
+  });
+  console.log(supportData);
   const faqData = [
     {
       id: 1,
@@ -42,6 +50,10 @@ const SupportAndFaq = () => {
     setExpandedId(prevId => (prevId === id ? null : id));
   };
 
+  if (isLoading) {
+    return <Loader isLoading={isLoading} />;
+  }
+
   return (
     <View style={tw`flex-1 bg-white p-4`}>
       {/* Support Card */}
@@ -50,12 +62,30 @@ const SupportAndFaq = () => {
           ارتباط با پشتیبانی سایت:
         </Text>
         <Text style={tw`text-blue-900 font-vazir text-sm mt-2 text-right`}>
-          ساعت‌های پاسخگویی: شنبه تا چهارشنبه - ۸ صبح تا ۶ عصر
+          ساعت‌های پاسخگویی: شنبه تا چهارشنبه
+          {supportData?.contactData?.startTime || "8"} صبح تا{" "}
+          {supportData?.contactData?.finishTime || "6"} عصر
         </Text>
-        <View style={tw`flex-row items-center mt-2`}>
+        {/* <View style={tw`flex-row items-center mt-2`}> */}
+        <TouchableOpacity
+          onPress={() => {
+            Linking.openURL(
+              `tel:${supportData?.contactData?.phoneNumber || "093-22349811"}`
+            );
+          }}
+          style={tw`flex-row items-center mt-2`}
+          activeOpacity={0.8}
+        >
           <FontAwesome name="phone" size={16} color="#0055AA" />
           <Text style={tw`text-blue-900 font-vazir text-base ml-2`}>
-            093-22349811
+            {supportData?.contactData?.phoneNumber || "093-22349811"}
+          </Text>
+        </TouchableOpacity>
+        {/* </View> */}
+        <View style={tw`flex-row items-center mt-2`}>
+          <FontAwesome name="envelope" size={16} color="#0055AA" />
+          <Text style={tw`text-blue-900 font-vazir text-base ml-2`}>
+            {supportData?.contactData?.email || "info@support.com"}
           </Text>
         </View>
       </View>
@@ -67,27 +97,27 @@ const SupportAndFaq = () => {
         سوالات متداول:
       </Text>
 
-      {faqData.map(item => (
+      {(supportData?.faqData || faqData).map(item => (
         <View key={item.id} style={tw`mb-4`}>
           {/* Question Box */}
           <Pressable
             style={tw`flex-row justify-between items-center bg-black-100 p-4 rounded-lg shadow-sm`}
             onPress={() => toggleExpanded(item.id)}
           >
-             <FontAwesome
+            <FontAwesome
               name={expandedId === item.id ? "chevron-up" : "chevron-down"}
               size={16}
               color="#0055AA"
             />
-            <Text style={tw`text-blue-900 font-vazir text-base text-right`}>
+            <Text style={tw`text-background font-vazir text-base text-right`}>
               {item.question}
             </Text>
           </Pressable>
 
           {/* Answer Section */}
           {expandedId === item.id && (
-            <View style={tw`bg-black-200 p-4 mt-2 rounded-lg shadow-inner`}>
-              <Text style={tw`text-gray-700 font-vazir text-sm text-right`}>
+            <View style={tw`bg-text p-4 mt-2 rounded-lg shadow-inner m-3`}>
+              <Text style={tw`text-black-600 font-vazir text-sm text-right`}>
                 {item.answer}
               </Text>
             </View>

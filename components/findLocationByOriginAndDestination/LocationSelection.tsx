@@ -216,7 +216,7 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
             style={tw`flex-row-reverse`}
           />
           <TextInput
-            style={tw`flex-1 text-sm font-vazir`}
+            style={tw`flex-1 text-sm font-vazir py-2`}
             placeholder="جستجو در شهرها"
             value={searchQuery}
             onChangeText={handleSearchChange}

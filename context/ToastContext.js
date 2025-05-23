@@ -26,7 +26,7 @@ export const ToastProvider = ({ children }) => {
     setVisible(true);
 
     // Set a new timeout
-    const id = setTimeout(() => setVisible(false), 100 * 1000);
+    const id = setTimeout(() => setVisible(false), 5 * 1000);
     setTimeoutId(id);
   };
 

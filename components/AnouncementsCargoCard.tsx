@@ -1,4 +1,4 @@
-// AnouncementsCargoCard.jsx - Improved component
+// AnouncementsCargoCard.jsx - Updated for correct data structure and improved colors
 import React, { useState } from "react";
 import {
   View,
@@ -13,6 +13,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import moment from "jalali-moment";
 import { LinearGradient } from "expo-linear-gradient";
 import { useGlobalContext } from "@/context/GlobalProvider";
+import { cargoTypes } from "@/constants/BoxesList";
 
 const AnouncementsCargoCard = ({ cargo, onRegister }) => {
   const { userId } = useGlobalContext();
@@ -34,6 +35,13 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
 
   const registrationStatus = driverRegistration?.status || "pending";
 
+  // Get cargo type label
+  const getCargoTypeLabel = cargoTypeId => {
+    if (cargoTypeId === 0) return "سایر";
+    const cargoType = cargoTypes.find(ele => Number(ele.value) === cargoTypeId);
+    return cargoType?.label || "نوع بار نامشخص";
+  };
+
   // Format date to Persian calendar
   const formatDate = date => {
     if (!date) return "نامشخص";
@@ -49,7 +57,7 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
   // Format weight
   const formatWeight = weight => {
     if (!weight) return "نامشخص";
-    return weight.toLocaleString("fa-IR") + " کیلوگرم";
+    return weight.toLocaleString("fa-IR") + " تن";
   };
 
   // Handle registration with confirmation
@@ -73,11 +81,12 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
       return;
     }
 
+    const cargoTypeDisplay =
+      cargo.customCargoType || getCargoTypeLabel(cargo.cargoType);
+
     Alert.alert(
       "تایید ثبت درخواست",
-      `آیا از ثبت درخواست برای حمل ${cargo.cargoType || "بار"} از ${
-        cargo.origin.cityName
-      } به ${cargo.destination.cityName} اطمینان دارید؟`,
+      `آیا از ثبت درخواست برای حمل ${cargoTypeDisplay} از ${cargo.origin.cityName} به ${cargo.destination.cityName} اطمینان دارید؟`,
       [
         {
           text: "انصراف",
@@ -108,27 +117,42 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
   const getStatusColor = status => {
     switch (status) {
       case "accepted":
-        return "bg-green-600";
+        return "bg-success";
       case "rejected":
-        return "bg-red-500";
+        return "bg-danger";
       default:
-        return "bg-yellow-500";
+        return "bg-secondary";
     }
   };
 
-  // Format fee type
+  // Format fee type with improved display
   const getFeeText = () => {
     if (cargo.feeType === 1 && cargo.feeOnTonage) {
-      return `${formatPrice(cargo.feeOnTonage)} (تناژی)`;
+      return `${formatPrice(cargo.feeOnTonage)} -\n هرتن`;
     } else if (cargo.feeType === 2 && cargo.cargoFee) {
       return `${formatPrice(cargo.cargoFee)} (دربستی)`;
+    } else if (cargo.feeOnTonage) {
+      return `${formatPrice(cargo.feeOnTonage)} -\n هرتن`;
+    } else if (cargo.cargoFee) {
+      return `${formatPrice(cargo.cargoFee)}`;
     }
     return "توافقی";
   };
 
+  // Get hazardous class display
+  const getHazardousDisplay = hazardousClass => {
+    if (!hazardousClass || hazardousClass === "none") return null;
+    return "مواد خطرناک";
+  };
+
+  const hazardousDisplay = getHazardousDisplay(cargo.hazardousClass);
+
   return (
     <View style={[tw`mb-4 rounded-lg overflow-hidden`, styles.cardShadow]}>
-      <LinearGradient colors={["#003366", "#004488"]} style={tw`p-4 relative`}>
+      <LinearGradient
+        colors={[tw.color("background"), tw.color("primary")]}
+        style={tw`p-4 relative`}
+      >
         {/* Status tag for already registered cargos */}
         {hasRegistered && (
           <View
@@ -151,10 +175,10 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
           <View
             style={tw`absolute top-0 right-0 z-10 py-1 px-3 ${
               cargo.priority === "high"
-                ? "bg-red-600"
+                ? "bg-danger"
                 : cargo.priority === "medium"
-                ? "bg-orange-500"
-                : "bg-green-600"
+                ? "bg-secondary"
+                : "bg-success"
             } rounded-bl-lg`}
           >
             <Text style={tw`text-white text-xs font-vazir-bold`}>
@@ -171,10 +195,20 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
         <View
           style={tw`flex-row-reverse justify-between items-center mb-4 mt-4`}
         >
-          <Text style={tw`font-vazir-bold text-lg text-white text-right`}>
-            {cargo.cargoType}
-            {cargo.customCargoType ? ` (${cargo.customCargoType})` : ""}
-          </Text>
+          <View style={tw`flex-1`}>
+            <Text style={tw`font-vazir-bold text-lg text-white text-right`}>
+              {cargo.customCargoType || getCargoTypeLabel(cargo.cargoType)}
+            </Text>
+            {/* Carrier info */}
+            {cargo.carrierDetails && (
+              <Text
+                style={tw`font-vazir text-xs text-secondary text-right mt-1`}
+              >
+                شرکت حمل و نقل: {cargo.carrierDetails.companyName}
+              </Text>
+            )}
+          </View>
+
           <View style={tw`flex items-center`}>
             <Text style={tw`font-vazir text-xs text-white`}>
               تاریخ بارگیری:
@@ -185,6 +219,23 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
           </View>
         </View>
 
+        {/* Carrier contact info */}
+        {cargo.carrierDetails && (
+          <View style={tw`bg-black-50 p-3 rounded-lg mb-3`}>
+            <Text style={tw`text-secondary text-xs font-vazir text-right mb-2`}>
+              اطلاعات تماس:
+            </Text>
+            <Text style={tw`text-white font-vazir-bold text-right mb-1`}>
+              شماره تماس: {cargo.carrierDetails.phoneNumber}
+            </Text>
+            {cargo.carrierDetails.address && (
+              <Text style={tw`text-white font-vazir text-right text-xs`}>
+                آدرس: {cargo.carrierDetails.address}
+              </Text>
+            )}
+          </View>
+        )}
+
         {/* Route display */}
         <View
           style={tw`flex-row justify-between items-center p-3 rounded-lg bg-black-50 mb-4`}
@@ -192,7 +243,7 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
           <View style={tw`items-center`}>
             <View style={tw`flex-row items-center mb-1`}>
               <Text style={tw`text-white font-vazir-bold text-xs`}>مقصد</Text>
-              <View style={tw`w-2 h-2 rounded-full bg-green-500 ml-1`} />
+              <View style={tw`w-2 h-2 rounded-full bg-success ml-1`} />
             </View>
             <Text style={tw`text-white font-vazir-bold text-base`}>
               {cargo.destination.cityName}
@@ -244,7 +295,7 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
                 <FontAwesome
                   name="balance-scale"
                   size={14}
-                  color="#FFAA00"
+                  color={tw.color("secondary")}
                   style={tw`ml-1`}
                 />
               </View>
@@ -259,15 +310,15 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
               <View style={tw`flex-row justify-end items-center mt-1`}>
                 <Text
                   style={tw`text-${
-                    remainingCount > 0 ? "green-400" : "red-400"
+                    remainingCount > 0 ? "success" : "danger"
                   } font-vazir-bold text-right`}
                 >
-                  {remainingCount} واحد
+                  {remainingCount} دستگاه
                 </Text>
                 <FontAwesome
                   name="cubes"
                   size={14}
-                  color="#FFAA00"
+                  color={tw.color("secondary")}
                   style={tw`ml-1`}
                 />
               </View>
@@ -286,7 +337,7 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
                 <FontAwesome
                   name="box"
                   size={14}
-                  color="#FFAA00"
+                  color={tw.color("secondary")}
                   style={tw`ml-1`}
                 />
               </View>
@@ -296,16 +347,16 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
           <View style={tw`w-1/2 px-1 mb-2`}>
             <View style={tw`bg-black-50 p-2 rounded-lg`}>
               <Text style={tw`text-white text-xs font-vazir text-right`}>
-                قیمت:
+                کرایه:
               </Text>
               <View style={tw`flex-row justify-end items-center mt-1`}>
-                <Text style={tw`text-green-400 font-vazir-bold text-right`}>
+                <Text style={tw`text-success font-vazir-bold text-right`}>
                   {getFeeText()}
                 </Text>
                 <FontAwesome
                   name="money"
                   size={14}
-                  color="#FFAA00"
+                  color={tw.color("secondary")}
                   style={tw`ml-1`}
                 />
               </View>
@@ -313,10 +364,47 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
           </View>
         </View>
 
+        {/* Dimensions if available */}
+        {(cargo.dimensions?.length ||
+          cargo.dimensions?.width ||
+          cargo.dimensions?.height) && (
+          <View style={tw`bg-black-50 p-3 rounded-lg mb-3`}>
+            <Text style={tw`text-white text-xs font-vazir text-right mb-2`}>
+              ابعاد (سانتی‌متر):
+            </Text>
+            <Text style={tw`text-white font-vazir-bold text-right`}>
+              {cargo.dimensions.length ? `طول: ${cargo.dimensions.length}` : ""}
+              {cargo.dimensions.width
+                ? ` | عرض: ${cargo.dimensions.width}`
+                : ""}
+              {cargo.dimensions.height
+                ? ` | ارتفاع: ${cargo.dimensions.height}`
+                : ""}
+            </Text>
+          </View>
+        )}
+
+        {/* Hazardous materials warning */}
+        {hazardousDisplay && (
+          <View style={tw`bg-danger p-3 rounded-lg mb-3`}>
+            <View style={tw`flex-row justify-end items-center`}>
+              <Text style={tw`text-white font-vazir-bold text-right`}>
+                {hazardousDisplay}
+              </Text>
+              <FontAwesome
+                name="warning"
+                size={14}
+                color="#ffffff"
+                style={tw`ml-1`}
+              />
+            </View>
+          </View>
+        )}
+
         {/* Special conditions */}
         {cargo.specialConditions && cargo.specialConditions.length > 0 && (
-          <View style={tw`bg-black-50 p-2 rounded-lg mb-3`}>
-            <Text style={tw`text-white text-xs font-vazir text-right mb-1`}>
+          <View style={tw`bg-black-50 p-3 rounded-lg mb-3`}>
+            <Text style={tw`text-white text-xs font-vazir text-right mb-2`}>
               شرایط ویژه:
             </Text>
             <View style={tw`flex-row flex-wrap justify-end`}>
@@ -336,8 +424,8 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
 
         {/* Notes if available */}
         {cargo.notes && cargo.notes.length > 0 && (
-          <View style={tw`bg-black-50 p-2 rounded-lg mb-3`}>
-            <Text style={tw`text-white text-xs font-vazir text-right mb-1`}>
+          <View style={tw`bg-black-50 p-3 rounded-lg mb-3`}>
+            <Text style={tw`text-white text-xs font-vazir text-right mb-2`}>
               توضیحات:
             </Text>
             <Text style={tw`text-white font-vazir text-right`}>
@@ -347,7 +435,7 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
         )}
 
         {/* Address details */}
-        <View style={tw`bg-black-50 p-2 rounded-lg mb-3`}>
+        <View style={tw`bg-black-50 p-3 rounded-lg mb-3`}>
           <View style={tw`flex-row justify-between mb-1`}>
             <View style={tw`flex-1 mr-1`}>
               <Text style={tw`text-white text-xs font-vazir text-right`}>
@@ -357,7 +445,7 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
                 {cargo.destination.address || "نامشخص"}
               </Text>
             </View>
-            <View style={tw`w-px bg-gray-500 mx-2`} />
+            <View style={tw`w-px bg-border mx-2`} />
             <View style={tw`flex-1 ml-1`}>
               <Text style={tw`text-white text-xs font-vazir text-right`}>
                 آدرس مبدا:
@@ -374,13 +462,13 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
           style={tw`${
             hasRegistered
               ? registrationStatus === "accepted"
-                ? "bg-green-600"
+                ? "bg-success"
                 : registrationStatus === "rejected"
-                ? "bg-red-500"
-                : "bg-yellow-500"
+                ? "bg-danger"
+                : "bg-secondary"
               : isFilled
-              ? "bg-gray-600"
-              : "bg-primary"
+              ? "bg-card"
+              : "bg-secondary"
           } p-3 rounded-lg mt-2`}
           onPress={handleRegisterPress}
           disabled={

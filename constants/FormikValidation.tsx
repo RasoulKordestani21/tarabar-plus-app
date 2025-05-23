@@ -21,12 +21,12 @@ const driverConfirmValidationSchema = Yup.object().shape({
     .max(20, "نام کاربری نباید بیشتر از 20 حرف باشد")
     .required("نام کاربری الزامی است"),
   driverSmartNumber: Yup.string()
-    .matches(/^\d{8}$/, "هوشمند راننده 8 رقمی می‌باشد .")
-    .max(8, "شماره هوشمند راننده باید 8 رقم باشد.")
+    .matches(/^\d{7}$/, "هوشمند راننده 7 رقمی می‌باشد .")
+    .max(7, "شماره هوشمند راننده باید 7 رقم باشد.")
     .required("شماره هوشمند راننده الزامی است"),
   truckSmartNumber: Yup.string()
-    .matches(/^\d{9}$/, "هوشمند خودرو 9 رقمی می‌باشد .")
-    .max(9, "شماره هوشمند خودرو باید 9 رقم باشد.")
+    .matches(/^\d{7}$/, "هوشمند خودرو 7 رقمی می‌باشد .")
+    .max(7, "شماره هوشمند خودرو باید 7 رقم باشد.")
     .required("شماره هوشمند خودرو الزامی است"),
   nationalCard: Yup.mixed()
     .test("fileType", "تایپ های قابل قبول (JPG, PNG, JPEG)", (value: any) => {

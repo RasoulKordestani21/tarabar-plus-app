@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -31,17 +31,19 @@ import {
   truckTypes
 } from "@/constants/BoxesList";
 import { getUser } from "@/api/services/userServices";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getDriverUser,
   updateDriverProfile
 } from "@/api/services/driverServices";
 import { QUERY_KEYS } from "@/constants/QueryKeys";
+import { useToast } from "@/context/ToastContext";
 
 const AccountScreen = () => {
   const { phoneNumber, role } = useGlobalContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const { showToast } = useToast();
+  const queryClient = useQueryClient();
   const submitHandler = async values => {
     try {
       setIsSubmitting(true);
@@ -91,7 +93,11 @@ const AccountScreen = () => {
 
       if (result) {
         refetch();
-        Alert.alert("موفق", "اطلاعات شما با موفقیت به روز شد.");
+        showToast(
+          "اطلاعات شما با موفقیت به روز شد. نتیجه ثبت نام شما از طریق پیامک برای شما ارسال خواهد شد .",
+          "success"
+        );
+        queryClient.invalidateQueries([QUERY_KEYS.DRIVER_INFO, phoneNumber]);
       } else {
         Alert.alert("خطا", "به روزرسانی اطلاعات با مشکل مواجه شد.");
       }
@@ -110,6 +116,22 @@ const AccountScreen = () => {
     queryKey: [QUERY_KEYS.DRIVER_INFO, phoneNumber],
     queryFn: () => getDriverUser({ phoneNumber })
   });
+  const rejectionNotified = useRef(false);
+
+  useEffect(() => {
+    // Only proceed if data exists, status is rejected, and we haven't shown the notification yet
+    if (
+      data?.user?.verification?.status === "rejected" &&
+      !rejectionNotified.current
+    ) {
+      showToast(
+        `عدم تایید حساب کابری : \n دلایل : \n ${data?.user?.verification?.rejectionReason}`,
+        "error"
+      );
+      // Mark that we've shown the notification
+      rejectionNotified.current = true;
+    }
+  }, [data]);
 
   return (
     <KeyboardAvoidingView
@@ -173,6 +195,8 @@ const AccountScreen = () => {
                           )?.label
                         }
                         onSelect={handleChange("truckNavigationId")}
+                        disableSearch={true}
+                        disabled={data?.user?.isVerified}
                       />
                       <FileInput
                         name="nationalCard"
@@ -188,6 +212,7 @@ const AccountScreen = () => {
                       error={errors.licensePlate}
                       value={values.licensePlate}
                       handleChangeText={handleChange("licensePlate")}
+                      disabled={data?.user?.isVerified}
                     />
                   </View>
 

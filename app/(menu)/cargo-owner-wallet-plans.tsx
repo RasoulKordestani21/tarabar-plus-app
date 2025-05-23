@@ -21,6 +21,9 @@ import apiClient from "@/api/apiClient";
 import { usePaymentService } from "@/hooks/usePaymentService";
 import { QUERY_KEYS } from "@/constants/QueryKeys";
 import { useQuery } from "@tanstack/react-query";
+import moment from "jalali-moment";
+import { getWalletConfig } from "@/api/services/otpServices";
+import Loader from "@/components/Loader";
 
 interface Transaction {
   _id: string;
@@ -100,6 +103,15 @@ const CargoOwnerWalletPlan = () => {
   const { data, isLoading, refetch } = useQuery({
     queryKey: [QUERY_KEYS.CARGO_OWNER_INFO, phoneNumber],
     queryFn: () => getCargoOwner({ phoneNumber })
+  });
+
+  const {
+    data: walletPlans,
+    isLoading: isLoadingWallePlans,
+    refetch: refetchWalletPlans
+  } = useQuery({
+    queryKey: [phoneNumber],
+    queryFn: () => getWalletConfig()
   });
 
   // Use the new payment service
@@ -198,7 +210,7 @@ const CargoOwnerWalletPlan = () => {
   const handleSelectPlan = async () => {
     if (!selectedPlan) return;
 
-    const plan = subscriptionPlans.find(p => p.id === selectedPlan);
+    const plan = (walletPlans?.subscriptionPlans ?? subscriptionPlans).find(p => p.id === selectedPlan);
     if (!plan) return;
 
     setPlanModalVisible(false);
@@ -263,12 +275,8 @@ const CargoOwnerWalletPlan = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <View style={tw`flex-1 justify-center items-center`}>
-        <ActivityIndicator size="large" color="#059669" />
-      </View>
-    );
+  if (isLoading || isLoadingWallePlans) {
+    return <Loader isLoading={isLoading || isLoadingWallePlans} />;
   }
 
   return (
@@ -316,7 +324,8 @@ const CargoOwnerWalletPlan = () => {
                 <Text style={tw`text-sm text-right font-vazir mb-3`}>
                   مبلغ شارژ
                 </Text>
-                {chargeAmounts.map(charge => (
+
+                {(walletPlans.chargeAmounts ?? chargeAmounts).map(charge => (
                   <Pressable
                     key={charge.value}
                     style={[
@@ -419,75 +428,79 @@ const CargoOwnerWalletPlan = () => {
                 <Text style={tw`text-sm text-right font-vazir mb-3`}>
                   انتخاب طرح اشتراکی
                 </Text>
-                {subscriptionPlans.map(plan => {
-                  const hasEnoughBalance =
-                    cargoOwnerData && cargoOwnerData.balance >= plan.price;
+                {(walletPlans?.subscriptionPlans ?? subscriptionPlans).map(
+                  plan => {
+                    const hasEnoughBalance =
+                      cargoOwnerData && cargoOwnerData.balance >= plan.price;
 
-                  return (
-                    <Pressable
-                      key={plan.id}
-                      style={[
-                        tw`p-4 mb-3 rounded-lg border-2 flex-row-reverse items-center justify-between`,
-                        selectedPlan === plan.id
-                          ? tw`border-green-400 bg-green-200`
-                          : tw`border-gray-300 bg-white`
-                      ]}
-                      onPress={() => setSelectedPlan(plan.id)}
-                    >
-                      <View style={tw`flex-1`}>
-                        <Text
-                          style={tw`text-right font-vazir text-base ${
+                    return (
+                      <Pressable
+                        key={plan.id}
+                        style={[
+                          tw`p-4 mb-3 rounded-lg border-2 flex-row-reverse items-center justify-between`,
+                          selectedPlan === plan.id
+                            ? tw`border-green-400 bg-green-200`
+                            : tw`border-gray-300 bg-white`
+                        ]}
+                        onPress={() => setSelectedPlan(plan.id)}
+                      >
+                        <View style={tw`flex-1`}>
+                          <Text
+                            style={tw`text-right font-vazir text-base ${
+                              selectedPlan === plan.id
+                                ? "text-blue-600"
+                                : "text-gray-700"
+                            }`}
+                          >
+                            {plan.name} ({plan.duration})
+                          </Text>
+                          <Text
+                            style={tw`text-right font-vazir text-sm text-gray-500`}
+                          >
+                            {plan.details} - {formatNumber(plan.price)} تومان
+                          </Text>
+
+                          {/* Balance status */}
+                          <View style={tw`flex-row-reverse mt-2 items-center`}>
+                            <View
+                              style={[
+                                tw`w-2 h-2 rounded-full mr-1`,
+                                hasEnoughBalance
+                                  ? tw`bg-green-500`
+                                  : tw`bg-red-500`
+                              ]}
+                            />
+                            <Text
+                              style={[
+                                tw`text-xs font-vazir`,
+                                hasEnoughBalance
+                                  ? tw`text-green-600`
+                                  : tw`text-red-600`
+                              ]}
+                            >
+                              {hasEnoughBalance
+                                ? "قابل انتخاب با موجودی فعلی"
+                                : "نیاز به شارژ بیشتر"}
+                            </Text>
+                          </View>
+                        </View>
+                        <View
+                          style={tw`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                             selectedPlan === plan.id
-                              ? "text-blue-600"
-                              : "text-gray-700"
+                              ? "border-blue-600"
+                              : "border-gray-300"
                           }`}
                         >
-                          {plan.name} ({plan.duration})
-                        </Text>
-                        <Text
-                          style={tw`text-right font-vazir text-sm text-gray-500`}
-                        >
-                          {plan.details} - {formatNumber(plan.price)} تومان
-                        </Text>
-
-                        {/* Balance status */}
-                        <View style={tw`flex-row-reverse mt-2 items-center`}>
-                          <View
-                            style={[
-                              tw`w-2 h-2 rounded-full mr-1`,
-                              hasEnoughBalance
-                                ? tw`bg-green-500`
-                                : tw`bg-red-500`
-                            ]}
-                          />
-                          <Text
-                            style={[
-                              tw`text-xs font-vazir`,
-                              hasEnoughBalance
-                                ? tw`text-green-600`
-                                : tw`text-red-600`
-                            ]}
-                          >
-                            {hasEnoughBalance
-                              ? "قابل انتخاب با موجودی فعلی"
-                              : "نیاز به شارژ بیشتر"}
-                          </Text>
+                          {selectedPlan === plan.id && (
+                            <View
+                              style={tw`w-3 h-3 rounded-full bg-green-600`}
+                            />
+                          )}
                         </View>
-                      </View>
-                      <View
-                        style={tw`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                          selectedPlan === plan.id
-                            ? "border-blue-600"
-                            : "border-gray-300"
-                        }`}
-                      >
-                        {selectedPlan === plan.id && (
-                          <View style={tw`w-3 h-3 rounded-full bg-green-600`} />
-                        )}
-                      </View>
-                    </Pressable>
-                  );
-                })}
+                      </Pressable>
+                    );
+                  }
+                )}
               </View>
               <View>
                 <CustomButton
@@ -627,7 +640,10 @@ const CargoOwnerWalletPlan = () => {
                 </Text>
               </View>
               <Text style={tw`text-white text-sm font-vazir mt-2 text-center`}>
-                تاریخ انقضا: {formatDate(cargoOwnerData.activePlan.expiresAt)}
+                تاریخ انقضا:
+                {moment(cargoOwnerData.activePlan.expiresAt)
+                  .locale("fa")
+                  .format("YYYY/MM/DD")}
               </Text>
             </View>
           </View>
@@ -666,7 +682,7 @@ const CargoOwnerWalletPlan = () => {
             طرح‌های اشتراکی
           </Text>
           <View style={tw`bg-white rounded-lg shadow-sm p-4`}>
-            {subscriptionPlans.map(plan => {
+            {(walletPlans?.subscriptionPlans ?? subscriptionPlans).map(plan => {
               // Check if user has sufficient balance
               const hasEnoughBalance =
                 cargoOwnerData && cargoOwnerData.balance >= plan.price;

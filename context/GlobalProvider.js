@@ -1,10 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
-import * as Device from "expo-device"; // Import expo-device
+import * as Device from "expo-device";
 
 const GlobalContext = createContext();
 
-// Custom Hook to Use Global Context
 export const useGlobalContext = () => {
   const context = useContext(GlobalContext);
   if (!context) {
@@ -19,10 +18,12 @@ const GlobalProvider = ({ children }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(true);
   const [token, setTokenState] = useState("");
-  const [deviceId, setDeviceId] = useState(""); // Add state for deviceId
-  const [deviceName, setDeviceName] = useState(""); // Add state for deviceName
-  const [userId, setUserIdState] = useState(""); // Add state for userId
-  const [user, setUserState] = useState(null); // Add state for user
+  const [deviceId, setDeviceId] = useState("");
+  const [deviceName, setDeviceName] = useState("");
+  const [userId, setUserIdState] = useState("");
+  const [user, setUserState] = useState(null);
+  // Add new state for rules acceptance
+  const [isAcceptedRules, setIsAcceptedRulesState] = useState(false);
 
   useEffect(() => {
     const loadState = async () => {
@@ -37,6 +38,10 @@ const GlobalProvider = ({ children }) => {
         const storedDeviceName = await SecureStore.getItemAsync("deviceName");
         const storedUserId = await SecureStore.getItemAsync("userId");
         const storedUser = await SecureStore.getItemAsync("user");
+        // Load acceptance status
+        const storedRulesAccepted = await SecureStore.getItemAsync(
+          "isAcceptedRules"
+        );
 
         if (storedToken) {
           setTokenState(storedToken);
@@ -47,6 +52,8 @@ const GlobalProvider = ({ children }) => {
           if (storedDeviceName) setDeviceName(storedDeviceName);
           if (storedUserId) setUserIdState(storedUserId);
           if (storedUser) setUserState(JSON.parse(storedUser));
+          if (storedRulesAccepted)
+            setIsAcceptedRulesState(storedRulesAccepted === "true");
         } else {
           setIsLoggedState(false);
         }
@@ -59,6 +66,22 @@ const GlobalProvider = ({ children }) => {
 
     loadState();
   }, []);
+
+  // Add function to set rules acceptance
+  const setIsAcceptedRules = async accepted => {
+    try {
+      await SecureStore.setItemAsync(
+        "isAcceptedRules",
+        accepted ? "true" : "false"
+      );
+      setIsAcceptedRulesState(accepted);
+    } catch (error) {
+      console.error(
+        "Error saving rules acceptance status to SecureStore:",
+        error
+      );
+    }
+  };
 
   // Function to get and store device information
   const setDeviceInfo = async () => {
@@ -167,11 +190,14 @@ const GlobalProvider = ({ children }) => {
         setToken,
         deviceId,
         deviceName,
-        setDeviceInfo, // Expose the function to set device info
-        userId, // Expose userId
-        setUserId, // Expose setUserId function
-        user, // Expose user
-        setUser // Expose setUser function
+        setDeviceInfo,
+        userId,
+        setUserId,
+        user,
+        setUser,
+        // Add new values to context
+        isAcceptedRules,
+        setIsAcceptedRules
       }}
     >
       {children}

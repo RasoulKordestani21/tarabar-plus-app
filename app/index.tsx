@@ -82,7 +82,7 @@ export default function OnBoardingScreen({}) {
         <View style={tw`w-full h-full items-center justify-between gap-12`}>
           <Image
             source={require("@/assets/images/splash.png")}
-            style={tw`w-72 h-72`}
+            style={tw`w-72 h-20`}
           />
           <CustomCard
             header={

@@ -218,7 +218,7 @@ const CargoCard: React.FC<LoadDetails> = ({
 
           {description && (
             <View
-              style={tw`mt-3 p-3 bg-gray-50 rounded-lg border border-gray-100`}
+              style={tw`mt-3 p-3 bg-gray-50 rounded-lg border border-text`}
             >
               <View style={tw`flex-row items-center justify-end mb-2`}>
                 <Text style={tw`text-white font-vazir-bold text-right mr-2`}>
@@ -235,7 +235,7 @@ const CargoCard: React.FC<LoadDetails> = ({
 
         {/* Action buttons */}
         {showActions && onEdit && onRemove ? (
-          <View style={tw`flex-row p-3 bg-gray-50 border-t border-gray-100`}>
+          <View style={tw`flex-row p-3 bg-gray-50 border-t border-card`}>
             <TouchableOpacity
               onPress={onEdit}
               style={tw`flex-1 bg-primary p-3 mr-2 rounded-lg flex-row justify-center items-center`}

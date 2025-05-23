@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -35,11 +35,14 @@ import {
   cargoOwnerConfirmValidationSchema
 } from "@/constants/FormikValidation";
 import { QUERY_KEYS } from "@/constants/QueryKeys";
+import { useToast } from "@/context/ToastContext";
+import { router } from "expo-router";
 
 const CargoOwnerProfileUpdateScreen = () => {
   const { phoneNumber, role } = useGlobalContext();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showToast } = useToast();
 
   // Submit handler for profile update
   const submitHandler = async values => {
@@ -109,12 +112,15 @@ const CargoOwnerProfileUpdateScreen = () => {
 
       // Show success message
       if (result) {
+        showToast(
+          "اطلاعات شما با موفقیت به روز شد. نتیجه ثبت نام شما از طریق پیامک برای شما ارسال خواهد شد .",
+          "success"
+        );
         queryClient.invalidateQueries([
           QUERY_KEYS.CARGO_OWNER_INFO,
           phoneNumber
         ]);
-        console.log(result);
-        Alert.alert("موفقیت", "اطلاعات کاربری شما با موفقیت به روز شد.");
+        // router.push("/cargo-owner-account");
       } else {
         Alert.alert("خطا", "به روزرسانی اطلاعات با مشکل مواجه شد.");
       }
@@ -134,14 +140,27 @@ const CargoOwnerProfileUpdateScreen = () => {
     queryFn: () => getCargoOwner({ phoneNumber })
   });
 
-  console.log(data?.user?.nationalCardUrl, "this is data from cargo owner");
+  const rejectionNotified = useRef(false);
+
   useEffect(() => {
-    refetch();
-  }, []);
+    // Only proceed if data exists, status is rejected, and we haven't shown the notification yet
+    if (
+      data?.user?.verification?.status === "rejected" &&
+      !rejectionNotified.current
+    ) {
+      showToast(
+        `عدم تایید حساب کابری : \n دلایل : \n ${data?.user?.verification?.rejectionReason}`,
+        "error"
+      );
+      // Mark that we've shown the notification
+      rejectionNotified.current = true;
+    }
+  }, [data]);
+
 
   // Render loading state if data is being fetched
-  if (isLoading) {
-    return <Loader isLoading={isLoading} />;
+  if (isLoading || isSubmitting) {
+    return <Loader isLoading={isLoading || isSubmitting} />;
   }
 
   return (
@@ -174,6 +193,7 @@ const CargoOwnerProfileUpdateScreen = () => {
                     {cargoOwnerAccountSettingTextInput.map(field => (
                       <View key={field.name} style={tw`w-[48%]`}>
                         <FormField
+                          disabled={data?.user?.isVerified}
                           title={field.title}
                           handleChangeText={handleChange(field.name)}
                           value={values[field.name]}

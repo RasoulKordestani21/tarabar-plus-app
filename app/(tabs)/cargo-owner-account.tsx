@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import Loader from "@/components/Loader";
 import { SafeAreaView } from "react-native";
 import { ActivityIndicator } from "react-native";
 import { getCargoOwner } from "@/api/services/cargoOwnerServices";
+import { useToast } from "@/context/ToastContext";
 import { QUERY_KEYS } from "@/constants/QueryKeys";
 
 type MaterialIconNames =
@@ -27,10 +28,28 @@ type MaterialIconNames =
 
 const AccountScreen = () => {
   const { phoneNumber, role, user } = useGlobalContext();
+  const { showToast } = useToast();
   const { data, isLoading, refetch } = useQuery({
     queryKey: [QUERY_KEYS.CARGO_OWNER_INFO, phoneNumber],
     queryFn: () => getCargoOwner({ phoneNumber })
   });
+
+  const rejectionNotified = useRef(false);
+
+  useEffect(() => {
+    if (data) {
+      if (
+        data?.user?.verification?.status === "rejected" &&
+        !rejectionNotified.current
+      ) {
+        showToast(
+          `عدم تایید حساب کابری : \n دلایل : \n ${data?.user?.verification?.rejectionReason}`,
+          "error"
+        );
+        rejectionNotified.current = true;
+      }
+    }
+  }, [data]);
 
   const formatFee = (value: string) => {
     if (!value) return "";
@@ -113,7 +132,7 @@ const AccountScreen = () => {
             route: "/cargo-owner-account-setting"
           },
           {
-            title: "مدریرت کیف پول و اشتراک",
+            title: "مدیریت کیف پول و اشتراک",
             description: "موجودی کیف پول خود را مدیریت کنید.",
             icon: "account-balance-wallet" as MaterialIconNames,
             route: "/cargo-owner-wallet-plans"

@@ -31,9 +31,10 @@ export const usePaymentService = ({
   // Handle deep links for payment verification
   useEffect(() => {
     // Function to handle deep link
+    console.log("Setting up deep link handler...");
     const handleDeepLink = (event: { url: string }) => {
       const url = event.url;
-
+      console.log(url, "url in line 36");
       // Check if this is a payment verification deep link
       if (url.includes("payment-verify")) {
         console.log("Payment verification deep link received:", url);
@@ -91,6 +92,7 @@ export const usePaymentService = ({
 
     // Check if app was opened via deep link
     Linking.getInitialURL().then(url => {
+      console.log("Initial URL:", url);
       if (url) {
         handleDeepLink({ url });
       }
@@ -167,7 +169,7 @@ export const usePaymentService = ({
       // Create payment request
       console.log("Sending payment creation request to API...");
       const response = await apiClient.post("api/payment/create", {
-        amount: 12000,
+        amount: amount,
         description,
         userType,
         transactionId,
@@ -190,9 +192,10 @@ export const usePaymentService = ({
 
         // Use the redirectUrl that matches your app's deep link scheme
         // Make sure this is registered in app.json as a scheme
+
         const result = await WebBrowser.openAuthSessionAsync(
           paymentUrl,
-          "tarabarplus://payment-verify"
+          `exp://192.168.1.104:8081/`
         );
 
         console.log("WebBrowser result:", result);

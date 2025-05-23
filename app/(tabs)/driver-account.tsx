@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,8 @@ import { useGlobalContext } from "@/context/GlobalProvider";
 import Loader from "@/components/Loader";
 import { ActivityIndicator } from "react-native";
 import { getDriverUser } from "@/api/services/driverServices";
+import { useToast } from "@/context/ToastContext";
+import { QUERY_KEYS } from "@/constants/QueryKeys";
 
 type MaterialIconNames =
   | "flash-on"
@@ -32,11 +34,28 @@ const formatFee = (value: string) => {
 
 const AccountScreen = () => {
   const { phoneNumber, role } = useGlobalContext();
+  const { showToast } = useToast();
   const { data, error, isLoading, isFetched, refetch } = useQuery({
-    queryKey: ["userInformation", phoneNumber],
+    queryKey: [QUERY_KEYS.DRIVER_INFO, phoneNumber],
     queryFn: () => getDriverUser({ phoneNumber })
   });
-  console.log(data);
+
+  const rejectionNotified = useRef(false);
+
+  useEffect(() => {
+    if (data) {
+      if (
+        data?.user?.verification?.status === "rejected" &&
+        !rejectionNotified.current
+      ) {
+        showToast(
+          `عدم تایید حساب کابری : \n دلایل : \n ${data?.user?.verification?.rejectionReason}`,
+          "error"
+        );
+        rejectionNotified.current = true;
+      }
+    }
+  }, [data]);
 
   if (isLoading) {
     return (
@@ -60,7 +79,6 @@ const AccountScreen = () => {
             color="white"
             style={tw`mt-2`}
           />
-
           <Text
             style={tw`${
               data?.user?.isVerified ? "bg-green-700" : "bg-orange-700"
@@ -113,7 +131,7 @@ const AccountScreen = () => {
             route: "/driver-account-setting"
           },
           {
-            title: "مدریرت کیف پول و اشتراک",
+            title: "مدیریت کیف پول و اشتراک",
             description: "موجودی کیف پول خود را مدیریت کنید.",
             icon: "account-balance-wallet" as MaterialIconNames,
             route: "/driver-wallet-plans"

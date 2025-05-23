@@ -619,7 +619,7 @@ const driverAccountSettingTextInput = [
     keyboardType: Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
   },
   {
-    title: "نام کاربری",
+    title: "نام و نام خانوادگی",
     name: "userName",
     maxLength: 30,
     minLength: 4,
@@ -659,7 +659,7 @@ const cargoOwnerAccountSettingTextInput = [
     keyboardType: Platform.OS === "ios" ? "name-phone-pad" : "number-pad"
   },
   {
-    title: "نام کاربری",
+    title: "نام و نام خانوادگی",
     name: "userName",
     maxLength: 30,
     minLength: 4,

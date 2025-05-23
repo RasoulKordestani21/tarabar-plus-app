@@ -72,7 +72,7 @@ export default function CargoOwnerHomeScreen() {
   useEffect(() => {
     if (userData) {
       setUser(userData?.user);
-      if (!userData?.user?.isVerified) {
+      if (!userData?.user?.isVerified && !userData?.user?.userName) {
         setVerificationModalVisible(true);
       }
     }
