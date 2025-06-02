@@ -59,7 +59,7 @@ export const updateVerificationData = async (
     console.error("Error updating verification data:", axiosError.message);
     const errorMessage =
       axiosError.response?.data?.message || axiosError.message;
-    Alert.alert("Error", errorMessage); // Show error alert
+    Alert.alert("خطا", errorMessage, [{ text: "بستن", style: "cancel" }]); // Show error alert
     throw new Error(errorMessage);
   }
 };

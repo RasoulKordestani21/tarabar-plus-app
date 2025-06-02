@@ -110,9 +110,7 @@ const LicensePlateInput = ({
           error ? "border-2 border-red-500 " : ""
         }`}
       >
-        <View
-          style={tw`flex-col items-center bg-background  px-2 py-1 rounded-tl-2 rounded-bl-2 `}
-        >
+        <View style={tw`flex-col items-center bg-background  px-2 py-1 `}>
           <View style={tw` justify-center items-center`}>
             <Image
               source={require("@/assets/images/iran-flag-icon.png")}
@@ -175,7 +173,7 @@ const LicensePlateInput = ({
 
           <View style={tw`relative`}>
             <TextInput
-              style={tw`w-16 h-14 text-center text-sm border-2 rounded-tr-2 rounded-br-2 ${
+              style={tw`w-16 h-14 text-center text-sm border-2  ${
                 disabled
                   ? "border-card bg-card"
                   : "border-secondary   bg-secondary"

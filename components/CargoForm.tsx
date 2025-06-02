@@ -66,7 +66,7 @@ const CargoForm = ({ initialValues, onSubmit, onClose }: any) => {
 
       if (isCustomCargo) {
         if (!customCargoValue.trim()) {
-          setCustomCargoError("نوع بار سفارشی الزامی است");
+          setCustomCargoError("نوع بار الزامی است");
           hasError = true;
         }
       } else {
@@ -77,7 +77,9 @@ const CargoForm = ({ initialValues, onSubmit, onClose }: any) => {
       }
 
       if (hasError) {
-        Alert.alert("خطا", "لطفا تمام فیلدهای الزامی را پر کنید");
+        Alert.alert("خطا", "لطفا تمام فیلدهای الزامی را پر کنید", [
+          { text: "بستن", style: "cancel" }
+        ]);
         return;
       }
 
@@ -112,11 +114,15 @@ const CargoForm = ({ initialValues, onSubmit, onClose }: any) => {
       });
 
       console.log("Cargo updated successfully:", result);
-      Alert.alert("موفق", "بار با موفقیت بروز رسانی شد");
+      Alert.alert("موفق", "بار با موفقیت بروز رسانی شد", [
+        { text: "بستن", style: "cancel" }
+      ]);
       if (onClose) onClose();
     } catch (error) {
       console.error("Error updating cargo:", error);
-      Alert.alert("خطا", "بروز رسانی ناموفق بود. لطفا دوباره تلاش کنید.");
+      Alert.alert("خطا", "بروز رسانی ناموفق بود. لطفا دوباره تلاش کنید.", [
+        { text: "بستن", style: "cancel" }
+      ]);
     }
   };
 
@@ -309,7 +315,7 @@ const CargoForm = ({ initialValues, onSubmit, onClose }: any) => {
                               style={tw`text-yellow-800 text-sm text-right font-vazir`}
                             >
                               اگر نوع بار مورد نظر خود را در لیست پیدا نکردید،
-                              روی چک‌باکس کلیک کنید و آن را بنویسید
+                              روی سایر بارها کلیک کنید و آن را بنویسید
                             </Text>
                           </View>
                         </View>
@@ -363,7 +369,7 @@ const CargoForm = ({ initialValues, onSubmit, onClose }: any) => {
                           ) : (
                             <View style={tw`mt-3 w-full`}>
                               <FormField
-                                title="نوع بار سفارشی"
+                                title="نوع بار (سایر)"
                                 handleChangeText={text => {
                                   setCustomCargoValue(text);
                                   if (text.trim()) {
@@ -398,7 +404,7 @@ const CargoForm = ({ initialValues, onSubmit, onClose }: any) => {
                             <Text
                               style={tw`text-sm text-gray-600 font-vazir mr-2`}
                             >
-                              نوع بار سفارشی
+                              سایر بارها
                             </Text>
                             <View
                               style={tw`w-5 h-5 border-2 rounded items-center justify-center ${
@@ -473,7 +479,7 @@ const CargoForm = ({ initialValues, onSubmit, onClose }: any) => {
                           {/* Match the CreateCargo helper text behavior */}
                           {values.fee && (
                             <Text
-                              style={tw`text-xs text-green-600 text-right font-vazir -mt-3 mr-2`}
+                              style={tw`text-xs text-green-600  text-right font-vazir -mt-3 mr-2 absolute bg-card text-white p-3 rounded-3`}
                             >
                               {formatFee(values.fee)} تومان
                             </Text>

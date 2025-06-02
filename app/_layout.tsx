@@ -16,7 +16,7 @@ import { Linking } from "react-native";
 import AuthErrorProvider from "@/context/AuthErrorProvider";
 
 import { I18nManager } from "react-native";
-import { getLocales } from 'expo-localization';
+import { getLocales } from "expo-localization";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -34,7 +34,7 @@ export default function RootLayout() {
     I18nManager.forceRTL(false);
     console.log("Forced LTR:", !I18nManager.isRTL); // Should log `true`
 
-    console.log(I18nManager)
+    console.log(I18nManager);
   }, []);
 
   const [fontsLoaded] = useFonts({

@@ -4,6 +4,8 @@ import * as SecureStore from "expo-secure-store";
 import { showToast } from "@/utils/toast";
 import { showAuthErrorModal } from "@/utils/authErrorManager";
 import Constants from "expo-constants";
+import { router } from "expo-router";
+// import { clearAllQueries } from "@/utils/queryClient";
 
 const API_URL = Constants.expoConfig?.extra?.PRODUCTION_URL;
 console.log("API_URL", API_URL);
@@ -16,6 +18,38 @@ const apiClient = axios.create({
   },
   timeout: 10000 // 10 second timeout
 });
+
+// Function to completely reset the app
+const resetAppToInitialState = async () => {
+  try {
+    console.log("Resetting app to initial state...");
+
+    // // 1. Clear all React Query cache and ongoing requests
+    // clearAllQueries();
+
+    // 2. Clear ALL SecureStore data (complete reset)
+    await SecureStore.deleteItemAsync("token");
+    await SecureStore.deleteItemAsync("isLogged");
+    await SecureStore.deleteItemAsync("role");
+    await SecureStore.deleteItemAsync("phoneNumber");
+    await SecureStore.deleteItemAsync("userId");
+    await SecureStore.deleteItemAsync("user");
+    await SecureStore.deleteItemAsync("isAcceptedRules");
+    await SecureStore.deleteItemAsync("deviceId");
+    await SecureStore.deleteItemAsync("deviceName");
+
+    // 3. Reset to initial screen (like app startup)
+    router.dismissAll(); // Close all modals and screens
+    router.replace("/"); // Go to initial screen
+
+    console.log("App reset completed");
+  } catch (error) {
+    console.error("Error resetting app:", error);
+    // Force reset even if there's an error
+    router.dismissAll();
+    router.replace("/");
+  }
+};
 
 // Add an interceptor to dynamically set the Authorization header
 apiClient.interceptors.request.use(
@@ -73,16 +107,18 @@ apiClient.interceptors.response.use(
             // For OTP verification, just show a toast instead of the modal
             showToast.error("کد وارد شده نامعتبر است. لطفا دوباره تلاش کنید.");
           } else {
-            // For other 401 errors, show the auth error modal
+            // For other 401 errors, show modal with callback to reset app
             showAuthErrorModal(
-              "جلسه شما منقضی شده است. لطفا دوباره وارد شوید."
+              "جلسه شما منقضی شده است. لطفا دوباره وارد شوید.",
+              resetAppToInitialState // Pass reset function as callback
             );
           }
           break;
         case 403:
-          // Show auth error modal for forbidden
+          // Show auth error modal for forbidden with app reset
           showAuthErrorModal(
-            "شما اجازه دسترسی به این بخش را ندارید. لطفا دوباره وارد شوید."
+            "شما اجازه دسترسی به این بخش را ندارید. لطفا دوباره وارد شوید.",
+            resetAppToInitialState // Pass reset function as callback
           );
           break;
         case 404:

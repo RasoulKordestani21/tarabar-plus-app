@@ -52,7 +52,9 @@ const AccountScreen = () => {
       );
       return uploadResult?.data;
     } catch (err) {
-      Alert.alert("Error", "Failed to pick document");
+      Alert.alert("خطا", "بارگذاری تصویر ناموفق", [
+        { text: "بستن", style: "cancel" }
+      ]);
     }
   };
 
@@ -69,17 +71,20 @@ const AccountScreen = () => {
       refetch();
       if (result) {
         // If OTP verification is successful, show success message
-        Alert.alert(
-          "Success",
-          "Your driver verification has been completed successfully."
-        );
+        Alert.alert("موفق", "احراز هویت با موفقیت کامل شد.", [
+          { text: "بستن", style: "cancel" }
+        ]);
       } else {
-        Alert.alert("Error", "Failed to verify your driver information.");
+        Alert.alert("خطا", "خطا در حین احراز هویت", [
+          { text: "بستن", style: "cancel" }
+        ]);
       }
 
       // setLoading(false);
     } catch (err) {
-      Alert.alert("Error", "Failed to pick document");
+      Alert.alert("خطا", "خطا در بارگذاری تصویر", [
+        { text: "بستن", style: "cancel" }
+      ]);
     }
   };
 

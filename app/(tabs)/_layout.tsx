@@ -14,7 +14,9 @@ import tw from "@/libs/twrnc";
 import { tabBoxes } from "@/constants/BoxesList";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { FontAwesome } from "@expo/vector-icons";
-import LogoutModal from "@/components/LogoutModel"; // Import the new component
+import LogoutModal from "@/components/LogoutModel";
+import * as SecureStore from "expo-secure-store"; // Add this import
+import { clearAllQueries } from "@/utils/queryClient"; // Add this import
 
 type TabBarLabelProps = {
   focused: boolean;
@@ -86,13 +88,44 @@ export default function TabLayout() {
   console.log(tabBoxes(role).length);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
-  const handleLogout = () => {
-    setToken(null);
-    setPhoneNumber("");
-    setRole("");
-    setIsLogged(false);
-    setLogoutModalVisible(false);
-    router.replace("/");
+  // FIXED: Complete logout function that clears both context AND SecureStore
+  const handleLogout = async () => {
+    try {
+      console.log("Starting complete logout from TabLayout...");
+
+      // 1. Clear React Query cache first
+      clearAllQueries();
+
+      // 2. Clear SecureStore (permanent storage)
+      await SecureStore.deleteItemAsync("token");
+      await SecureStore.deleteItemAsync("isLogged");
+      await SecureStore.deleteItemAsync("role");
+      await SecureStore.deleteItemAsync("phoneNumber");
+      await SecureStore.deleteItemAsync("userId");
+      await SecureStore.deleteItemAsync("user");
+      await SecureStore.deleteItemAsync("isAcceptedRules");
+
+      // 3. Clear context state (in-memory)
+      setToken(null);
+      setPhoneNumber("");
+      setRole("");
+      setIsLogged(false);
+
+      // 4. Close modal and navigate
+      setLogoutModalVisible(false);
+      router.replace("/");
+
+      console.log("Complete logout finished");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Even if there's an error, still clear context and navigate
+      setToken(null);
+      setPhoneNumber("");
+      setRole("");
+      setIsLogged(false);
+      setLogoutModalVisible(false);
+      router.replace("/");
+    }
   };
 
   return (

@@ -64,12 +64,16 @@ const CreateCargo = () => {
 
       const result = await addCargo(cargoData);
       if (result) {
-        Alert.alert("عملیات موفق", "بار با موفقیت اضافه شد.");
+        Alert.alert("عملیات موفق", "بار با موفقیت اضافه شد.", [
+          { text: "بستن", style: "cancel" }
+        ]);
         router.push("/cargo-owner-home");
       }
     } catch (error: any) {
       console.error("Error submitting cargo:", error);
-      Alert.alert("خطا", "عملیات با خطا مواجه شد.");
+      Alert.alert("خطا", "عملیات با خطا مواجه شد.", [
+        { text: "بستن", style: "cancel" }
+      ]);
     } finally {
       setIsSubmitting(false);
     }
@@ -112,7 +116,7 @@ const CreateCargo = () => {
     // If using custom cargo input, validate it
     if (showCustomCargoInput) {
       if (!customCargoType.trim()) {
-        errors.customCargoType = "نوع بار سفارشی الزامی است";
+        errors.customCargoType = "نوع بار الزامی است";
       }
     } else {
       // If using dropdown, validate cargoType
@@ -196,7 +200,7 @@ const CreateCargo = () => {
                         style={tw`text-yellow-800 text-sm text-right font-vazir`}
                       >
                         اگر نوع بار مورد نظر خود را در لیست پیدا نکردید، روی
-                        چک‌باکس کلیک کنید و آن را بنویسید
+                        سایر بارها کلیک کنید و آن را بنویسید
                       </Text>
                     </View>
                   </View>
@@ -236,7 +240,7 @@ const CreateCargo = () => {
                     ) : (
                       <View style={tw`mt-3 w-full`}>
                         <FormField
-                          title="نوع بار سفارشی"
+                          title="نوع بار (سایر)"
                           handleChangeText={text => {
                             setCustomCargoType(text);
                             // Clear custom cargo error when user types
@@ -265,7 +269,7 @@ const CreateCargo = () => {
                       }
                     >
                       <Text style={tw`text-sm text-gray-600 font-vazir mr-2`}>
-                        نوع بار سفارشی
+                        سایر بارها
                       </Text>
                       <View
                         style={tw`w-5 h-5 border-2 border-gray-400 rounded items-center justify-center ${
@@ -330,7 +334,7 @@ const CreateCargo = () => {
                     />
                     {values.fee && (
                       <Text
-                        style={tw`text-xs text-green-600  text-right font-vazir -mt-3 mr-2`}
+                        style={tw`text-xs text-green-600  text-right font-vazir -mt-3 mr-2 absolute bg-card text-white p-3 rounded-3`}
                       >
                         {formatFee(values.fee)} تومان
                       </Text>

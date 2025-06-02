@@ -8,7 +8,8 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
-  ActivityIndicator
+  ActivityIndicator,
+  Linking
 } from "react-native";
 import tw from "@/libs/twrnc";
 import FormField from "@/components/Input/FormField";
@@ -38,12 +39,17 @@ import {
 } from "@/api/services/driverServices";
 import { QUERY_KEYS } from "@/constants/QueryKeys";
 import { useToast } from "@/context/ToastContext";
+import { useRouter } from "expo-router";
+import { getSupportData } from "@/api/services/otpServices";
+import { FontAwesome } from "@expo/vector-icons";
 
 const AccountScreen = () => {
   const { phoneNumber, role } = useGlobalContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
   const queryClient = useQueryClient();
+  const router = useRouter();
+
   const submitHandler = async values => {
     try {
       setIsSubmitting(true);
@@ -79,7 +85,9 @@ const AccountScreen = () => {
         } catch (uploadError) {
           console.log(uploadError, "this is error ");
           setIsSubmitting(false);
-          Alert.alert("خطا", "بارگذاری تصویر کارت ملی با مشکل مواجه شد");
+          Alert.alert("خطا", "بارگذاری تصویر کارت ملی با مشکل مواجه شد", [
+            { text: "بستن", style: "cancel" }
+          ]);
           return;
         }
       }
@@ -98,15 +106,19 @@ const AccountScreen = () => {
           "success"
         );
         queryClient.invalidateQueries([QUERY_KEYS.DRIVER_INFO, phoneNumber]);
+        router.push("/driver-account");
       } else {
-        Alert.alert("خطا", "به روزرسانی اطلاعات با مشکل مواجه شد.");
+        Alert.alert("خطا", "به روزرسانی اطلاعات با مشکل مواجه شد.", [
+          { text: "بستن", style: "cancel" }
+        ]);
       }
     } catch (err) {
       setIsSubmitting(false);
 
       Alert.alert(
         "خطا",
-        err?.message?.split("/")[1] || "خطای غیرمنتظره‌ای رخ داده است."
+        err?.message?.split("/")[1] || "خطای غیرمنتظره‌ای رخ داده است.",
+        [{ text: "بستن", style: "cancel" }]
       );
     }
   };
@@ -116,10 +128,17 @@ const AccountScreen = () => {
     queryKey: [QUERY_KEYS.DRIVER_INFO, phoneNumber],
     queryFn: () => getDriverUser({ phoneNumber })
   });
+
+  const { data: supportData, isLoading: supportDataLoading } = useQuery({
+    queryKey: ["support-data"],
+    queryFn: () => getSupportData()
+  });
+
   const rejectionNotified = useRef(false);
 
   useEffect(() => {
     // Only proceed if data exists, status is rejected, and we haven't shown the notification yet
+
     if (
       data?.user?.verification?.status === "rejected" &&
       !rejectionNotified.current
@@ -139,8 +158,8 @@ const AccountScreen = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        {isLoading ? (
-          <Loader isLoading={isLoading} />
+        {isLoading || supportDataLoading ? (
+          <Loader isLoading={isLoading || supportDataLoading} />
         ) : (
           <Formik
             initialValues={driverConfirmationInitialValues(data)}
@@ -151,8 +170,42 @@ const AccountScreen = () => {
               <ScrollView keyboardShouldPersistTaps="handled" style={tw``}>
                 <View style={tw`min-h-full p-5`}>
                   <View style={tw`flex-1 p-1 rounded-2`}>
-                    <Text style={tw`text-lg text-right font-vazir-bold`}>
-                      اطلاعات کاربر
+                    {data?.user?.isVerified && (
+                      <View style={tw`bg-orange-200 p-3 rounded-3 -mt-3`}>
+                        <View
+                          style={tw`flex flex-row-reverse gap-2 items-center`}
+                        >
+                          <FontAwesome
+                            name={"warning"}
+                            size={18}
+                            style={tw`text-secondary`}
+                          />
+                          <Text
+                            style={tw`text-lg text-right text-sm font-vazir text-background`}
+                          >
+                            در صورت تغییر اطلاعات کاربری با پشتیبانی تماس بگیرید
+                            .
+                          </Text>
+                        </View>
+                        <CustomButton
+                          title="📞 تماس با پشتیبانی"
+                          handlePress={() => {
+                            Linking.openURL(
+                              `tel:${
+                                supportData?.contactData?.phoneNumber ||
+                                "00000000000"
+                              }`
+                            );
+                          }}
+                          containerStyles="w-30 mt-1 p-2 bg-secondary rounded-xl"
+                          textStyles="font-vazir text-3  font-vazir"
+                        />
+                      </View>
+                    )}
+                    <Text
+                      style={tw`text-lg text-right mt-2 font-vazir-bold text-background`}
+                    >
+                      اطلاعات راننده
                     </Text>
                     <View
                       style={tw`w-full h-[2px] bg-card mb-3 mt-1 rounded-xl`}
@@ -223,7 +276,9 @@ const AccountScreen = () => {
                     containerStyles={`w-full mt-7 ${
                       isSubmitting ? "bg-gray-400" : "bg-background"
                     } mb-5`}
-                    disabled={isSubmitting || !isValid}
+                    disabled={
+                      isSubmitting || !isValid || data?.user?.isVerified
+                    }
                     icon={
                       isSubmitting ? (
                         <ActivityIndicator size="small" color="white" />

@@ -79,7 +79,9 @@ const EstimateFareDrawer: React.FC<Props> = ({ onClose }) => {
       console.log(response);
       setFeeRangeOpened(true); // Open the fee range drawer
     } catch (error) {
-      Alert.alert("Error estimating fare:", error.message);
+      Alert.alert("Error estimating fare:", error.message, [
+        { text: "بستن", style: "cancel" }
+      ]);
     }
   };
 
@@ -150,7 +152,6 @@ const EstimateFareDrawer: React.FC<Props> = ({ onClose }) => {
                     textStyle="text-right"
                     containerStyle="mt-3 w-full"
                     iconName="caret-down"
-                   
                   />
                 </View>
                 <View style={tw`w-full  mt-5`}>

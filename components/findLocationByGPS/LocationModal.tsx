@@ -48,26 +48,25 @@ const LocationModal: React.FC<LocationModalProps> = ({
 
   useEffect(() => {
     if (!visible) return;
-
-    const initializeLocation = async () => {
-      setLoading(true);
-      try {
-        await checkPermissions();
-        await checkLocationService();
-
-        if (locationServiceEnabled && locationPermission === "granted") {
-          await getCurrentLocationAndNavigate();
-        }
-      } catch (error) {
-        console.error("Initialization error:", error);
-        Alert.alert("خطا", errorMessages.generalError);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     initializeLocation();
   }, [visible]);
+
+  const initializeLocation = async () => {
+    setLoading(true);
+    try {
+      await checkPermissions();
+      await checkLocationService();
+
+      if (locationServiceEnabled && locationPermission === "granted") {
+        await getCurrentLocationAndNavigate();
+      }
+    } catch (error) {
+      console.error("Initialization error:", error);
+      showRetryAlert("خطا", errorMessages.generalError, initializeLocation);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const checkPermissions = async () => {
     try {
@@ -76,8 +75,8 @@ const LocationModal: React.FC<LocationModalProps> = ({
       console.log("Initial foreground Location Permission:", status);
     } catch (error) {
       console.error("Error checking initial location permission:", error);
-      Alert.alert("خطا", errorMessages.permissionError);
-      onClose();
+      showRetryAlert("خطا", errorMessages.permissionError, checkPermissions);
+      throw error;
     }
   };
 
@@ -88,7 +87,8 @@ const LocationModal: React.FC<LocationModalProps> = ({
       console.log("Initial Location Service Enabled:", enabled);
     } catch (error) {
       console.error("Error checking initial location service:", error);
-      Alert.alert("خطا", errorMessages.serviceError);
+      showRetryAlert("خطا", errorMessages.serviceError, checkLocationService);
+      throw error;
     }
   };
 
@@ -96,7 +96,9 @@ const LocationModal: React.FC<LocationModalProps> = ({
     try {
       setLoading(true);
       const currentLocation = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced
+        accuracy: Location.Accuracy.Balanced,
+        timeout: 15000, // 15 second timeout
+        maximumAge: 300000 // Accept cached location up to 5 minutes old
       });
 
       console.log("Current location:", currentLocation);
@@ -113,7 +115,11 @@ const LocationModal: React.FC<LocationModalProps> = ({
       }
     } catch (error) {
       console.error("Error fetching location:", error);
-      Alert.alert("خطا", errorMessages.locationFetchError);
+      showRetryAlert(
+        "خطا",
+        errorMessages.locationFetchError,
+        getCurrentLocationAndNavigate
+      );
     } finally {
       setLoading(false);
     }
@@ -146,6 +152,10 @@ const LocationModal: React.FC<LocationModalProps> = ({
               }
             },
             {
+              text: "تلاش مجدد",
+              onPress: () => handleLocationServiceChoice("enable")
+            },
+            {
               text: "انصراف",
               style: "cancel",
               onPress: () => onClose()
@@ -155,10 +165,31 @@ const LocationModal: React.FC<LocationModalProps> = ({
       }
     } catch (error) {
       console.error("Error handling location service choice:", error);
-      Alert.alert("خطا", "خطایی در فرآیند دریافت مجوز رخ داد");
+      showRetryAlert("خطا", "خطایی در فرآیند دریافت مجوز رخ داد", () =>
+        handleLocationServiceChoice("enable")
+      );
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to show retry alert
+  const showRetryAlert = (
+    title: string,
+    message: string,
+    retryFunction: () => void
+  ) => {
+    Alert.alert(title, message, [
+      {
+        text: "تلاش مجدد",
+        onPress: retryFunction
+      },
+      {
+        text: "انصراف",
+        style: "cancel",
+        onPress: () => onClose()
+      }
+    ]);
   };
 
   return (

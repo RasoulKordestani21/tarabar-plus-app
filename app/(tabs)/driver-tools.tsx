@@ -3,8 +3,10 @@ import React from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import tw from "@/libs/twrnc";
 import { router } from "expo-router";
+import { useToast } from "@/context/ToastContext";
 
 export default function ToolsScreen() {
+  const { showToast } = useToast();
   // Extended tools array with four items
   const tools = [
     // {
@@ -34,7 +36,8 @@ export default function ToolsScreen() {
       bgColor: "bg-green-400",
       iconName: "id-card",
       onPress: () => {
-        router.push("/driver-smart-card-inquiry");
+        showToast(" این قابلیت در این نسخه وجود ندارد.", "info");
+        // router.push("/driver-smart-card-inquiry");
       }
     }
     // ,

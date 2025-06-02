@@ -45,7 +45,7 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
   // Format date to Persian calendar
   const formatDate = date => {
     if (!date) return "نامشخص";
-    return moment(date).locale("fa").format("YYYY/MM/DD HH:mm");
+    return moment(date).locale("fa").format("YYYY/MM/DD");
   };
 
   // Format price for better readability
@@ -77,7 +77,9 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
     }
 
     if (isFilled) {
-      Alert.alert("ظرفیت تکمیل", "ظرفیت این بار تکمیل شده است");
+      Alert.alert("ظرفیت تکمیل", "ظرفیت این بار تکمیل شده است", [
+        { text: "بستن", style: "cancel" }
+      ]);
       return;
     }
 
@@ -101,7 +103,8 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
             } catch (error) {
               Alert.alert(
                 "خطا",
-                "مشکلی در ثبت درخواست رخ داد. لطفا دوباره تلاش کنید."
+                "مشکلی در ثبت درخواست رخ داد. لطفا دوباره تلاش کنید.",
+                [{ text: "بستن", style: "cancel" }]
               );
               console.error(error);
             } finally {
@@ -211,10 +214,12 @@ const AnouncementsCargoCard = ({ cargo, onRegister }) => {
 
           <View style={tw`flex items-center`}>
             <Text style={tw`font-vazir text-xs text-white`}>
-              تاریخ بارگیری:
+              تاریخ و زمان اعلام بار:
             </Text>
             <Text style={tw`font-vazir-bold text-xs text-white mt-1`}>
               {formatDate(cargo.readyDate)}
+              {"\n"}
+              {cargo.openTime} تا {cargo.closeTime}
             </Text>
           </View>
         </View>

@@ -31,17 +31,21 @@ const DriverSmartCardInquiry = () => {
         // If OTP verification is successful, show success message
         Alert.alert(
           "Success",
-          "Your driver verification has been completed successfully."
+          "Your driver verification has been completed successfully.",
+          [{ text: "بستن", style: "cancel" }]
         );
       } else {
         // If OTP verification fails, show an error message
-        Alert.alert("Error", "Failed to verify your driver information.");
+        Alert.alert("Error", "Failed to verify your driver information.", [
+          { text: "بستن", style: "cancel" }
+        ]);
       }
     } catch (error) {
       // Handle unexpected errors
       Alert.alert(
         "Error",
-        "An error occurred while verifying your driver data."
+        "An error occurred while verifying your driver data.",
+        [{ text: "بستن", style: "cancel" }]
       );
     }
   };

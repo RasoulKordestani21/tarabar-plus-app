@@ -83,12 +83,14 @@ export const getUserHistoryCargoes = async (ownerPhone: string) => {
 
 // Fetch cargos based on the location (latitude, longitude)
 export const getCargoesByLocation = async (
+  phoneNumber: string,
   latitude: number,
   longitude: number
 ) => {
   try {
     const response = await apiClient.get("/cargo/filter", {
       params: {
+        phoneNumber,
         latitude,
         longitude
       }

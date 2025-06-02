@@ -32,9 +32,13 @@ class CustomEventEmitter {
 
 const emitter = new CustomEventEmitter();
 
-// Function to show auth error modal
-export const showAuthErrorModal = message => {
-  emitter.emit("authError", { visible: true, message });
+// Function to show auth error modal with optional callback
+export const showAuthErrorModal = (message, onConfirmCallback = null) => {
+  emitter.emit("authError", {
+    visible: true,
+    message,
+    onConfirm: onConfirmCallback
+  });
 };
 
 // Export the emitter for the AuthErrorProvider

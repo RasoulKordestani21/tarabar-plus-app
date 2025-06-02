@@ -17,8 +17,10 @@ import CargoCard from "@/components/CargoCard";
 import { cargoTypes, truckTypes } from "@/constants/BoxesList";
 import { FontAwesome } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
+import { useGlobalContext } from "@/context/GlobalProvider";
 
 export default function ShowCargoes() {
+  const { phoneNumber } = useGlobalContext();
   const { latitude, longitude, origin, destination } = useLocalSearchParams();
   const [filterVisible, setFilterVisible] = useState<boolean>(false);
 
@@ -29,11 +31,13 @@ export default function ShowCargoes() {
     if (latitude && longitude) {
       console.log(latitude, longitude);
       filteredCargoes = await getCargoesByLocation(
+        phoneNumber,
         parseFloat(latitude as string),
         parseFloat(longitude as string)
       );
     } else if (origin && destination) {
       const params = {
+        phoneNumber,
         originIds: JSON.parse(origin as string)
           .split(",")
           .join(","),
@@ -158,7 +162,7 @@ export default function ShowCargoes() {
                     ? `${
                         cargoTypes.find(
                           ele => Number(ele.value) === cargo.cargoTypeId
-                        )?.label || "نامشخص"
+                        )?.label || "*"
                       } (${cargo.customCargoType})`
                     : cargoTypes.find(
                         ele => Number(ele.value) === cargo.cargoTypeId

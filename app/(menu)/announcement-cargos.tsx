@@ -53,7 +53,9 @@ export default function AnnouncementCargos() {
       }
     } catch (err) {
       console.error("Error fetching available cargoes:", err);
-      Alert.alert("خطا", "خطا در دریافت بارها");
+      Alert.alert("خطا", "خطا در دریافت بارها", [
+        { text: "بستن", style: "cancel" }
+      ]);
       throw err;
     }
   };
@@ -131,12 +133,16 @@ export default function AnnouncementCargos() {
         vehicle: ""
       });
 
-      Alert.alert("موفقیت", "درخواست حمل با موفقیت ثبت شد");
+      Alert.alert("موفقیت", "درخواست حمل با موفقیت ثبت شد", [
+        { text: "بستن", style: "cancel" }
+      ]);
       refetch();
       refetchDriver();
     } catch (error) {
       console.error("Error registering for cargo:", error);
-      Alert.alert("خطا", "خطا در ثبت درخواست حمل");
+      Alert.alert("خطا", "خطا در ثبت درخواست حمل", [
+        { text: "بستن", style: "cancel" }
+      ]);
     }
   };
 

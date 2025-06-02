@@ -172,8 +172,6 @@ const CargoHistory = () => {
   };
 
   const handleEdit = (cargo: CargoData) => {
-    console.log("🔍 CARGO EDIT - Original cargo data:", cargo);
-
     const truckTypeValue =
       truckTypes
         .find(ele => Number(ele.value) === cargo.truckTypeId)
@@ -208,7 +206,6 @@ const CargoHistory = () => {
       customCargoType: cargo?.customCargoType || ""
     };
 
-    console.log("🔍 CARGO EDIT - Final edit data:", editData);
     setEditingCargo(editData);
     setModalVisible(true);
   };
@@ -230,12 +227,15 @@ const CargoHistory = () => {
                   cargo => (cargo._id || cargo.cargoId) !== cargoId
                 )
               );
-              Alert.alert("موفقیت", "بار با موفقیت حذف شد");
+              Alert.alert("موفقیت", "بار با موفقیت حذف شد", [
+                { text: "بستن", style: "cancel" }
+              ]);
             } catch (error) {
               console.error("Error deleting cargo:", error);
               Alert.alert(
                 "خطا",
-                "حذف بار با خطا مواجه شد. لطفا مجددا تلاش کنید."
+                "حذف بار با خطا مواجه شد. لطفا مجددا تلاش کنید.",
+                [{ text: "بستن", style: "cancel" }]
               );
             }
           }
@@ -247,7 +247,7 @@ const CargoHistory = () => {
   const handleArchive = async (cargoId: string) => {
     Alert.alert(
       "لغو بار",
-      "با لغو کردن ، بار شما به رانندگان نمایش داده نمی‌شود و پس از آن می‌توانید با مراجعه به قسمت بار های آرشیو شده آن را فعال کنید. لازم به ذکر است برای فعال سازی دوباره آن باید اشتراک یا کیف پول شما شارژ حذاقل ۲۵،۰۰۰ داشته باشید .  \n آیا می‌خواهید این بار را به آرشیو منتقل کنید؟",
+      "با لغو کردن ، بار شما به رانندگان نمایش داده نمی‌شود و پس از آن می‌توانید با مراجعه به قسمت بار های آرشیو شده آن را فعال کنید. لازم به ذکر است برای فعال سازی دوباره آن باید اشتراک یا کیف پول شما شارژ حداقل ۲۵،۰۰۰ داشته باشید .  \n آیا می‌خواهید این بار را به آرشیو منتقل کنید؟",
       [
         { text: "لغو", style: "cancel" },
         {
@@ -269,10 +269,14 @@ const CargoHistory = () => {
                 ]);
               }
 
-              Alert.alert("موفقیت", "بار با موفقیت آرشیو شد");
+              Alert.alert("موفقیت", "بار با موفقیت آرشیو شد", [
+                { text: "بستن", style: "cancel" }
+              ]);
             } catch (error) {
               console.error("Error archiving cargo:", error);
-              Alert.alert("خطا", "آرشیو بار با خطا مواجه شد.");
+              Alert.alert("خطا", "آرشیو بار با خطا مواجه شد.", [
+                { text: "بستن", style: "cancel" }
+              ]);
             }
           }
         }
@@ -285,7 +289,9 @@ const CargoHistory = () => {
       "بازگردانی بار",
       `توجه داشته باشید برای بارگردانی اگر اشتراک شما فعال باشد ۱ بار از تعداد مجموع کم می‌شود .اگر هم اشتراک نداشته باشید مبلغ ۲۵,۰۰۰ از حساب شما کم می‌شود . \nحساب شما: ${
         balanceAndSubscription.subscriptionPlan?.isActive
-          ? `فعال \n تعداد بار های باقیمانده: ${balanceAndSubscription.subscriptionPlan?.remainingCargos}`
+          ? `فعال \n تعداد بار های باقیمانده: ${
+              balanceAndSubscription.subscriptionPlan?.remainingCargos ?? "0"
+            }`
           : "غیرفعال"
       } \nموجودی کیف پول شما ${
         balanceAndSubscription?.balance
@@ -311,11 +317,15 @@ const CargoHistory = () => {
                 ]);
               }
 
-              Alert.alert("موفقیت", "بار با موفقیت بازگردانی شد");
+              Alert.alert("موفقیت", "بار با موفقیت بازگردانی شد", [
+                { text: "بستن", style: "cancel" }
+              ]);
               fetchCargoes();
             } catch (error) {
               console.error("Error restoring cargo:", error);
-              Alert.alert("خطا", "بازگردانی بار با خطا مواجه شد.");
+              Alert.alert("خطا", "بازگردانی بار با خطا مواجه شد.", [
+                { text: "بستن", style: "cancel" }
+              ]);
             }
           }
         }
@@ -400,7 +410,7 @@ const CargoHistory = () => {
               style={tw`mr-2`}
             />
             <TextInput
-              style={tw`flex-1 font-vazir text-right`}
+              style={tw`flex-1 font-vazir text-right py-2`}
               placeholder=" جستجو با نام شهر مبدا و مقصد ..."
               placeholderTextColor="#9CA3AF"
               value={searchText}

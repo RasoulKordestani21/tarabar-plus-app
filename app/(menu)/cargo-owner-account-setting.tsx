@@ -85,7 +85,9 @@ const CargoOwnerProfileUpdateScreen = () => {
         } catch (uploadError) {
           console.error("Upload error:", uploadError);
           setIsSubmitting(false);
-          Alert.alert("خطا", "بارگذاری تصویر کارت ملی با مشکل مواجه شد");
+          Alert.alert("خطا", "بارگذاری تصویر کارت ملی با مشکل مواجه شد", [
+            { text: "بستن", style: "cancel" }
+          ]);
           return;
         }
       } else if (
@@ -120,16 +122,19 @@ const CargoOwnerProfileUpdateScreen = () => {
           QUERY_KEYS.CARGO_OWNER_INFO,
           phoneNumber
         ]);
-        // router.push("/cargo-owner-account");
+        router.push("/cargo-owner-account");
       } else {
-        Alert.alert("خطا", "به روزرسانی اطلاعات با مشکل مواجه شد.");
+        Alert.alert("خطا", "به روزرسانی اطلاعات با مشکل مواجه شد.", [
+          { text: "بستن", style: "cancel" }
+        ]);
       }
     } catch (err) {
       setIsSubmitting(false);
       console.error("Submit error:", err?.message?.split("/")[1]);
       Alert.alert(
         "خطا",
-        err?.message?.split("/")[1] || "خطای غیرمنتظره‌ای رخ داده است."
+        err?.message?.split("/")[1] || "خطای غیرمنتظره‌ای رخ داده است.",
+        [{ text: "بستن", style: "cancel" }]
       );
     }
   };
@@ -156,7 +161,6 @@ const CargoOwnerProfileUpdateScreen = () => {
       rejectionNotified.current = true;
     }
   }, [data]);
-
 
   // Render loading state if data is being fetched
   if (isLoading || isSubmitting) {
@@ -235,7 +239,7 @@ const CargoOwnerProfileUpdateScreen = () => {
                   containerStyles={`w-full mt-7 ${
                     isSubmitting ? "bg-gray-400" : "bg-background"
                   } mb-5`}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || data?.user?.isVerified}
                   icon={
                     isSubmitting ? (
                       <ActivityIndicator size="small" color="white" />

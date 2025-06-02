@@ -48,7 +48,9 @@ const DrawerModal = ({
       //   router.push(`/show-cargoes?latitude=${latitude}&longitude=${longitude}`);
     } catch (error) {
       console.error("Error fetching location:", error);
-      Alert.alert("Error", "There was an issue fetching your location.");
+      Alert.alert("Error", "There was an issue fetching your location.", [
+        { text: "بستن", style: "cancel" }
+      ]);
     }
   };
 

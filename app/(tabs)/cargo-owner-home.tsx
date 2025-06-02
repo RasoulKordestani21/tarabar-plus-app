@@ -80,14 +80,14 @@ export default function CargoOwnerHomeScreen() {
 
   // Handle navigation to boxes
   const handleBoxPress = route => {
-    if (user?.balance <= 0 && route === "/create-cargo") {
-      Alert.alert(
-        "تلاش ناموفق",
-        "اعتبار حساب شما برای این عملیات کافی نمی‌باشد ."
-      );
-    } else {
-      router.push(route);
-    }
+    // if (user?.balance <= 0 && route === "/create-cargo") {
+    //   Alert.alert(
+    //     "تلاش ناموفق",
+    //     "اعتبار حساب شما برای این عملیات کافی نمی‌باشد ."
+    //   );
+    // } else {
+    router.push(route);
+    // }
   };
 
   return (

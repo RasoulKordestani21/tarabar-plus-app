@@ -89,7 +89,6 @@ export const getAllCargoes = async (
   phoneNumber: string
 ): Promise<CargoResponse> => {
   try {
-    console.log("Fetching cargoes for phone number:", phoneNumber);
     const response = await apiClient.get("api/cargo-owner/cargos", {
       params: { phoneNumber }
     });

@@ -61,7 +61,8 @@ const DefineOriginDestination: React.FC<DefineOriginDestinationProps> = ({
     } else {
       Alert.alert(
         "Invalid Selection",
-        "Please select both origin and destination"
+        "Please select both origin and destination",
+        [{ text: "بستن", style: "cancel" }]
       );
     }
   };

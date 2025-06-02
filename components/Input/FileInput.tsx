@@ -160,7 +160,8 @@ const FileInput = ({
         setIsUploading(false);
         Alert.alert(
           "خطای فرمت فایل",
-          `لطفاً فقط از فرمت‌های ${acceptedTypes.join(", ")} استفاده کنید.`
+          `لطفاً فقط از فرمت‌های ${acceptedTypes.join(", ")} استفاده کنید.`,
+          [{ text: "بستن", style: "cancel" }]
         );
         return;
       }
@@ -189,7 +190,9 @@ const FileInput = ({
     } catch (err) {
       console.error("File selection error:", err);
       setIsUploading(false);
-      Alert.alert("خطا", "انتخاب فایل با مشکل مواجه شد");
+      Alert.alert("خطا", "انتخاب فایل با مشکل مواجه شد", [
+        { text: "بستن", style: "cancel" }
+      ]);
     }
   };
 
@@ -198,12 +201,6 @@ const FileInput = ({
       <Text style={tw`text-right text-background font-vazir text-base mb-1`}>
         {label}
       </Text>
-
-      {formikError && (
-        <Text style={tw`text-red-500 text-xs mb-1 text-right`}>
-          {formikError}
-        </Text>
-      )}
 
       {/* File Selection Area */}
       <View
@@ -220,7 +217,7 @@ const FileInput = ({
           </View>
         ) : imageUrl ? (
           <View style={tw`mb-2`}>
-            <View style={tw`flex-row items-center justify-between mb-2`}>
+            {/* <View style={tw`flex-row items-center justify-between mb-2`}>
               <Text
                 style={tw`text-right text-gray-700 flex-1 text-xs`}
                 numberOfLines={1}
@@ -228,7 +225,7 @@ const FileInput = ({
                 {fileName || "تصویر انتخاب شده"}
               </Text>
               <Ionicons name="document" size={20} color="#0077b6" />
-            </View>
+            </View> */}
 
             <View style={tw`flex-row`}>
               <CustomButton
@@ -252,16 +249,20 @@ const FileInput = ({
             title="بارگذاری تصویر"
             handlePress={openPicker}
             containerStyles="w-full bg-white"
-            iconName="cloud-upload-outline"
+            iconName="cloud-upload"
             textStyles="text-background"
           />
         )}
 
-        <Text style={tw`text-xs text-gray-500 text-center mt-1`}>
+        <Text style={tw`text-xs text-gray-500 text-center mt-1 font-vazir`}>
           فقط فرمت‌های {acceptedTypes.join("، ")} پذیرفته می‌شوند
         </Text>
       </View>
-
+      {formikError && (
+        <Text style={tw`text-red-500 text-xs mt-1 text-right`}>
+          {formikError}
+        </Text>
+      )}
       {/* Image Preview Modal */}
       <Modal
         visible={imageModal}

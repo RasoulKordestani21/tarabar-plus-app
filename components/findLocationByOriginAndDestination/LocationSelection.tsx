@@ -34,6 +34,7 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
     const fetchCities = async () => {
       try {
         const result = await getAllCities();
+        console.log(result.length);
         const formatedResult = await result.map((ele: FetchedCities) => {
           return {
             id: ele.id,
@@ -113,7 +114,9 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
   // Handle confirming the selection
   const handleConfirmSelection = () => {
     if (selectedCities.length === 0) {
-      Alert.alert("Error", "Please select at least one city.");
+      Alert.alert("خطا", "انتخاب حداقل یک شهر الزامی است .", [
+        { text: "بستن", style: "cancel" }
+      ]);
     } else {
       onSelect(selectedCities); // Pass the selected cities to parent
       onClose(); // Close the modal

@@ -70,7 +70,7 @@ const SupportAndFaq = () => {
         <TouchableOpacity
           onPress={() => {
             Linking.openURL(
-              `tel:${supportData?.contactData?.phoneNumber || "093-22349811"}`
+              `tel:${supportData?.contactData?.phoneNumber}`
             );
           }}
           style={tw`flex-row items-center mt-2`}
